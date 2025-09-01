@@ -1,0 +1,119 @@
+.header {
+  width: 100%;
+  background: #fff;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  box-shadow: 0 2px 4px rgba(0,0,0,.06);
+  border-bottom: 1px solid #f0f2f5;
+}
+
+.inner {
+  width: 100%;
+  padding: 10px 16px;
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  align-items: center;
+  gap: 16px;
+  grid-template-areas: "logo search actions";
+}
+
+.logo {
+  grid-area: logo;
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: var(--brand);
+  text-decoration: none;
+  letter-spacing: .2px;
+  transition: transform .15s ease;
+}
+.logo:hover { transform: scale(1.03); }
+
+.search {
+  grid-area: search;
+  width: 100%;
+}
+
+.actions {
+  grid-area: actions;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.username {
+  color: #333;
+  font-weight: 500;
+}
+
+.profileLink {
+  color: #0d6efd;
+  text-decoration: none;
+  padding: 6px 12px;
+  border-radius: 8px;
+  background: #f5f7fb;
+  transition: background-color .15s ease;
+}
+.profileLink:hover { background: #e9eef8; }
+
+.logoutBtn {
+  background: #dc3545;
+  color: #fff;
+  border: none;
+  padding: 6px 12px;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: filter .15s ease;
+}
+.logoutBtn:hover { filter: brightness(0.95); }
+
+/* Гость */
+.authLinks {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.loginBtn, .registerBtn {
+  padding: 6px 12px;
+  border-radius: 8px;
+  text-decoration: none;
+  transition: transform .1s ease, background-color .15s ease, color .15s ease, border-color .15s ease;
+  will-change: transform;
+}
+.loginBtn:active,
+.registerBtn:active { transform: translateY(1px); }
+
+.loginBtn {
+  color: #0d6efd;
+  background: transparent;
+  border: 1px solid #0d6efd;
+}
+.loginBtn:hover {
+  background: #0d6efd;
+  color: #fff;
+}
+
+.registerBtn {
+  color: #fff;
+  background: #28a745;
+  border: 1px solid #28a745;
+}
+.registerBtn:hover { background: #218838; }
+
+.loading {
+  opacity: .85;
+  font-size: .95rem;
+}
+
+@media (max-width: 900px) {
+  .inner {
+    grid-template-columns: 1fr auto;
+    grid-template-areas:
+      "logo actions"
+      "search search";
+    row-gap: 10px;
+  }
+}
