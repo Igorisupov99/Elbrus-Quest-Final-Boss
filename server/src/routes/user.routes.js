@@ -1,4 +1,5 @@
 const express = require('express');
+const userRouter = express.Router();
 const {User} = require('../../db/models')
 
 /// Ручка для получения информации об авторизованном пользователе
