@@ -2,7 +2,7 @@ import axios, { AxiosError } from 'axios';
 import type { InternalAxiosRequestConfig } from 'axios';
 import { getAccessToken, setAccessToken, clearAccessToken } from './tokenStorage';
 
-const API_BASE_URL = 'http://localhost:3000';
+const API_BASE_URL = import.meta.env.BASE_URL;
 
 const api = axios.create({
   baseURL: API_BASE_URL,
