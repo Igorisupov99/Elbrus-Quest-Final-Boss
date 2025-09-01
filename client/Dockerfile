@@ -2,6 +2,7 @@ FROM node:20-alpine AS build
 WORKDIR /application
 COPY package.json ./
 COPY package-lock.json ./
+RUN npm ci
 COPY . .
 RUN npm run build
 RUN ls -al /application
