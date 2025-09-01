@@ -5,7 +5,7 @@ const {User} = require('../../db/models')
 userRouter.get('/profile', async (req, res) => {
     try {
       const user = await User.findByPk(req.userId, {
-        attributes: ['username(login)', 'email'],
+        attributes: ['username(login)', 'email', 'image_url'],
       });
       if (!user)
         return res.status(404).json({ message: 'Пользователь не найден' });
