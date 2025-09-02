@@ -47,7 +47,7 @@ function initSocket(httpServer) {
                 include: [
                     {
                         model: db.User,
-                        as: 'User',
+                        as: 'user',
                         attributes: ['id', 'username'],
                     },
                 ],
@@ -58,7 +58,7 @@ function initSocket(httpServer) {
             const history = lastMessages.map((m) => ({
                 id: m.id,
                 text: m.message,
-                user: { id: m.User.id, username: m.User.username },
+                user: { id: m.user.id, username: m.user.username },
                 createdAt: m.createdAt,
             }));
 
