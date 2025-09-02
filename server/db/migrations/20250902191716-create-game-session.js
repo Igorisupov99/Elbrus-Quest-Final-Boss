@@ -41,7 +41,7 @@ module.exports = {
       },
       room_code: {
         type: Sequelize.TEXT,
-        allowNull: false,
+        allowNull: true,
         unique: true
       },
       is_active: {
