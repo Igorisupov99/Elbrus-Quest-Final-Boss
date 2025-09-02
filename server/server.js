@@ -1,6 +1,6 @@
 require('dotenv').config();
 const http = require('http');
-const { initSocket } = require('./src/socket')
+const { initSocket } = require('./src/sockets/socketLobbyPage')
 const express = require('express');
 const cors = require('cors');
 const morgan = require('morgan');

@@ -2,7 +2,7 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import styles from './LobbyPage.module.css';
 import { Button } from '../../components/common/Button/Button';
-import { socketClient, type ChatHistoryItem, type IncomingChatMessage, type SystemEvent } from '../../socket/socket';
+import { socketClient, type ChatHistoryItem, type IncomingChatMessage, type SystemEvent } from '../../socket/socketLobbyPage';
 
 export function LobbyPage() {
     const { id } = useParams<{ id: string }>();
@@ -30,7 +30,7 @@ export function LobbyPage() {
             navigate('/login');
             return;
         }
-        
+
         socketClient.connectWithToken(token);
 
         const s = socketClient.socket;

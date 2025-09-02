@@ -1,6 +1,6 @@
 const { Server } = require('socket.io');
 const jwt = require('jsonwebtoken');
-const db = require('../db/models');
+const db = require('../../db/models');
 
 function initSocket(httpServer) {
     const io = new Server(httpServer, {
