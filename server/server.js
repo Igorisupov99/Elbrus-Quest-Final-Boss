@@ -5,6 +5,8 @@ const morgan = require('morgan');
 const cookieParser = require('cookie-parser');
 const db = require('./db/models');
 const authRoutes = require('./src/routes/auth.routes');
+const userRouter = require('./src/routes/user.routes');
+const roomRouter = require('./src/routes/room.routes');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -21,6 +23,8 @@ app.use(cors({
 }));
 
 app.use('/api/auth', authRoutes);
+app.use('/api/user', userRouter);
+app.use('/api/room', roomRouter);
 
 // Глобальный обработчик ошибок
 app.use((err, req, res, next) => {
