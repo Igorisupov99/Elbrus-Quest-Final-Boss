@@ -1,6 +1,6 @@
 import axios, { AxiosError } from 'axios';
 import type { InternalAxiosRequestConfig } from 'axios'; // Добавляем это
-import type { ApiError } from '../types/auth';
+import type { ApiError } from '../types/auth'
 
 interface ExtendedAxiosRequestConfig extends InternalAxiosRequestConfig {
   _retry?: boolean;
