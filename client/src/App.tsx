@@ -27,10 +27,13 @@ export function App() {
   }
 
   const hideHeaderRoutes = ['/lobby'];
+  const shouldHideHeader = hideHeaderRoutes.some(route =>
+    location.pathname.startsWith(route)
+  );
 
   return (
     <>
-      {!hideHeaderRoutes.includes(location.pathname) && <Header />}
+      {!shouldHideHeader && <Header />}
       <Routes>
         <Route path="/" element={<MainPage />} />
         <Route path="/login" element={<Login />} />
@@ -42,7 +45,6 @@ export function App() {
               <Profile />
             </PrivateRoute>
           }
-          
         />
         <Route
           path="/lobby/:id"
