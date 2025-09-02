@@ -1,4 +1,5 @@
 const express = require('express');
+const roomRouter = express.Router();
 const {Game_sessions} = require('../../db/models')
 
 // создать новую комнату
