@@ -104,6 +104,14 @@ export function LobbyPage() {
         sendMessage();
     };
 
+    const handleExiteLobby = () => {
+      if (connected) {
+        socketClient.socket.emit('leaveLobby', { lobbyId });
+        socketClient.socket.disconnect();
+      }
+      navigate('/');
+    }
+
   return (
     <div className={styles.lobbyPage}>
       <div className={styles.gameArea}>
@@ -112,10 +120,9 @@ export function LobbyPage() {
       </div>
 
       <div className={styles.sidebar}>
-        <Button className={styles.exitButton}>
+        <Button className={styles.exitButton} onClick={handleExiteLobby}>
           Выйти из комнаты
         </Button>
-        {/* Добавить функционал(выход из лобби) */}
 
         <div className={styles.chat}>
           <h3 className={styles.chatTitle}>Чат комнаты {connected ? '🟢' : '🔴'}</h3>

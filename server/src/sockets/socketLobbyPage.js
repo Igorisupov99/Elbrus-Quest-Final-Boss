@@ -95,6 +95,17 @@ function initSocket(httpServer) {
             io.to(roomKey).emit('chat:message', dto);
         });
 
+        socket.on('leaveLobby', ({ lobbyId }) => {
+            const roomKey = `lobby:${lobbyId}`;
+            socket.leave(roomKey);
+
+            io.to(roomKey).emit('system', {
+                type: 'leave',
+                userId: socket.data.user.id,
+                username: socket.data.user.username,
+            });
+        });
+
         socket.on('disconnect', (reason) => {
             console.log(`Socket disconnected: ${socket.id}, reason=${reason}`);
         });

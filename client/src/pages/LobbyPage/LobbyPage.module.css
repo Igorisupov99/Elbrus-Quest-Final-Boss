@@ -24,7 +24,7 @@
 }
 
 .sidebar {
-  width: 300px;
+  width: 340px;
   display: flex;
   flex-direction: column;
   gap: 16px;
@@ -35,29 +35,10 @@
 }
 
 .chat {
-  flex: 1;
-  background: #fff;
-  border-radius: 16px;
-  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.25);
-  padding: 16px;
   display: flex;
   flex-direction: column;
-}
-
-.chatTitle {
-  font-size: 1.2rem;
-  font-weight: 600;
-  margin-bottom: 12px;
-  color: #2c3e50;
-}
-
-/* Контейнеры у тебя уже есть: .lobbyPage, .gameArea, .sidebar, .chat, ... */
-
-.chat {
-  display: flex;
-  flex-direction: column;
-  height: 60vh;
-  background: #0f172a;            /* тёмная тема в духе макетов */
+  height: 100%;
+  background: #0f172a;
   border-radius: 12px;
   padding: 12px;
   box-shadow: 0 6px 16px rgba(0,0,0,0.25);
@@ -81,7 +62,6 @@
   background: rgba(255,255,255,0.03);
 }
 
-/* обычные сообщения */
 .message {
   display: inline-flex;
   align-items: baseline;
@@ -93,7 +73,6 @@
   color: #e5e7eb;
 }
 
-/* системные сообщения (join/leave) */
 .systemMessage {
   align-self: center;
   font-size: 0.85rem;
@@ -101,23 +80,21 @@
   background: transparent;
 }
 
-/* «ник:» */
 .author {
   font-weight: 700;
   color: #93c5fd;
 }
 
-/* текст сообщения */
 .text {
   white-space: pre-wrap;
   word-break: break-word;
 }
 
-/* форма ввода */
 .chatForm {
   display: flex;
   gap: 8px;
   margin-top: 10px;
+  align-items: center;
 }
 
 .chatInput {
@@ -136,5 +113,13 @@
 }
 
 .sendButton {
+  height: 40px;
+  min-width: 100px;
+  padding: 0 12px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 500;
   white-space: nowrap;
 }
