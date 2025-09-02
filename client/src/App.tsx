@@ -42,9 +42,10 @@ export function App() {
               <Profile />
             </PrivateRoute>
           }
+          
         />
         <Route
-          path="/lobby"
+          path="/lobby/:id"
           element={
             <PrivateRoute>
               <LobbyPage />

@@ -50,3 +50,91 @@
   margin-bottom: 12px;
   color: #2c3e50;
 }
+
+/* Контейнеры у тебя уже есть: .lobbyPage, .gameArea, .sidebar, .chat, ... */
+
+.chat {
+  display: flex;
+  flex-direction: column;
+  height: 60vh;
+  background: #0f172a;            /* тёмная тема в духе макетов */
+  border-radius: 12px;
+  padding: 12px;
+  box-shadow: 0 6px 16px rgba(0,0,0,0.25);
+}
+
+.chatTitle {
+  margin: 0 0 8px 0;
+  font-weight: 700;
+  color: #e2e8f0;
+}
+
+.chatList {
+  flex: 1;
+  overflow-y: auto;
+  padding: 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  border: 1px solid rgba(255,255,255,0.08);
+  border-radius: 8px;
+  background: rgba(255,255,255,0.03);
+}
+
+/* обычные сообщения */
+.message {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 6px;
+  line-height: 1.35;
+  padding: 6px 10px;
+  border-radius: 10px;
+  background: rgba(59,130,246,0.1);
+  color: #e5e7eb;
+}
+
+/* системные сообщения (join/leave) */
+.systemMessage {
+  align-self: center;
+  font-size: 0.85rem;
+  color: #94a3b8;
+  background: transparent;
+}
+
+/* «ник:» */
+.author {
+  font-weight: 700;
+  color: #93c5fd;
+}
+
+/* текст сообщения */
+.text {
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+/* форма ввода */
+.chatForm {
+  display: flex;
+  gap: 8px;
+  margin-top: 10px;
+}
+
+.chatInput {
+  flex: 1;
+  height: 40px;
+  border-radius: 10px;
+  border: 1px solid rgba(255,255,255,0.1);
+  background: rgba(255,255,255,0.06);
+  outline: none;
+  padding: 0 12px;
+  color: #e2e8f0;
+}
+
+.chatInput::placeholder {
+  color: #94a3b8;
+}
+
+.sendButton {
+  white-space: nowrap;
+}

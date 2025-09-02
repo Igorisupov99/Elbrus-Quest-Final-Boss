@@ -11,7 +11,7 @@ const userRouter = require('./src/routes/user.routes');
 const roomRouter = require('./src/routes/room.routes');
 
 const app = express();
-const PORT = process.env.PORT || 3001;
+const PORT = process.env.PORT || 3000;
 
 const server = http.createServer(app);
 initSocket(server);

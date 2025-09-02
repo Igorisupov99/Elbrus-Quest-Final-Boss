@@ -47,6 +47,7 @@ function initSocket(httpServer) {
                 include: [
                     {
                         model: db.User,
+                        as: 'User',
                         attributes: ['id', 'username'],
                     },
                 ],
