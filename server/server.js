@@ -1,4 +1,6 @@
 require('dotenv').config();
+const http = require('http');
+const { initSocket } = require('./src/sockets/socketLobbyPage')
 const express = require('express');
 const cors = require('cors');
 const morgan = require('morgan');
@@ -10,6 +12,9 @@ const roomRouter = require('./src/routes/room.routes');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
+
+const server = http.createServer(app);
+initSocket(server);
 
 app.use(express.json());
 app.use(cookieParser());
@@ -41,7 +46,7 @@ app.use((err, req, res, next) => {
     console.log('✔ PostgreSQL connected');
     await db.sequelize.sync();
     console.log('✔ Models synchronized');
-    app.listen(PORT, () => console.log(`🚀 Server on :${PORT}`));
+    server.listen(PORT, () => console.log(`🚀 Server on :${PORT}`));
   } catch (err) {
     console.error('✖ DB connection error:', err);
   }
