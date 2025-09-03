@@ -8,6 +8,7 @@ import {
   type IncomingChatMessage,
   type SystemEvent,
 } from '../../socket/socketLobbyPage';
+import { Point } from '../../components/map/Point/Point'; // 👈 импорт точки
 
 export function LobbyPage() {
   const { id } = useParams<{ id: string }>();
@@ -132,6 +133,15 @@ export function LobbyPage() {
     <div className={styles.lobbyPage}>
       <div className={styles.gameArea}>
         <img src="/map.png" alt="Игровая карта" className={styles.gameMap} />
+
+        {/* Точка интереса */}
+        <Point
+          id="easy-walk"
+          title="Лёгкая прогулка"
+          top={78}   // проценты от высоты карты
+          left={22}  // проценты от ширины карты
+          status="available"
+        />
       </div>
 
       <div className={styles.sidebar}>
