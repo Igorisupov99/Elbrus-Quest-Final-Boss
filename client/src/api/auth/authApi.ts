@@ -1,45 +1,54 @@
 import api from '../axios';
+import type {
+  User,
+  LoginCredentials,
+  RegisterData,
+  AuthResponse,
+} from '../../types/auth';
 
-export interface LoginCredentials {
-  username: string;
-  password: string;
-}
-
-export interface RegisterData {
-  username: string;
-  password: string;
-}
-
-export interface User {
-  id: number;
-  username: string;
-  score: number;
-  isActive: boolean;
-}
-
-export interface AuthResponse {
-  accessToken: string;
-  user: User;
+function handleError(error: any): never {
+  const msg =
+    error?.response?.data?.message ||
+    error?.response?.data?.errors?.[0]?.msg ||
+    error?.message ||
+    'Произошла ошибка';
+  throw new Error(msg);
 }
 
 export const authApi = {
   async login(credentials: LoginCredentials): Promise<AuthResponse> {
-    const response = await api.post('/api/auth/login', credentials);
-    return response.data.data;
+    try {
+      const response = await api.post('/api/auth/login', credentials);
+      return response.data.data;
+    } catch (err) {
+      handleError(err);
+    }
   },
 
   async register(data: RegisterData): Promise<AuthResponse> {
-    const response = await api.post('/api/auth/register', data);
-    return response.data.data;
+    try {
+      const response = await api.post('/api/auth/register', data);
+      return response.data.data;
+    } catch (err) {
+      handleError(err);
+    }
   },
 
   async logout(): Promise<void> {
-    await api.post('/api/auth/logout');
+    try {
+      await api.post('/api/auth/logout');
+    } catch (err) {
+      handleError(err);
+    }
   },
 
   async getCurrentUser(): Promise<User> {
-    const response = await api.get('/api/auth/profile');
-    return response.data.data;
+    try {
+      const response = await api.get('/api/auth/profile');
+      return response.data.data;
+    } catch (err) {
+      handleError(err);
+    }
   },
 };
 

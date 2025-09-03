@@ -41,9 +41,12 @@ export function Login() {
 
   useEffect(() => {
     if (user) {
-      navigate('/');
+      setTimeout(() => {
+        navigate('/');
+      }, 3000); 
     }
   }, [user, navigate]);
+
 
   return (
     <div className={styles.loginPage}>

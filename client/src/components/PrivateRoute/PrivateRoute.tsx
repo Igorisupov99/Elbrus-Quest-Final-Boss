@@ -9,7 +9,9 @@ interface PrivateRouteProps {
 export function PrivateRoute({ children }: PrivateRouteProps) {
   const { user, loading } = useAppSelector((state) => state.auth);
 
-  if (loading) {
+  const hasToken = Boolean(localStorage.getItem('accessToken'));
+
+  if (loading || (!user && hasToken)) {
     return <div>Загрузка...</div>;
   }
 

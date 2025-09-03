@@ -3,6 +3,11 @@ import type { AnyObjectSchema } from 'yup';
 
 /* ===== Регистрация ===== */
 export const registerSchema: AnyObjectSchema = yup.object({
+  email: yup
+    .string()
+    .required('Email обязателен')
+    .email('Введите корректный email'),
+
   username: yup
     .string()
     .required('Имя героя обязательно')
@@ -13,10 +18,10 @@ export const registerSchema: AnyObjectSchema = yup.object({
   password: yup
     .string()
     .required('Пароль обязателен')
-    .min(8, 'Пароль должен содержать минимум 8 символов')
+    .min(4, 'Пароль должен содержать минимум 4 символа')
     .matches(
-      /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])/,
-      'Пароль должен содержать заглавную, строчную букву, цифру и спецсимвол'
+      /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/,
+      'Пароль должен содержать заглавную, строчную букву и цифру'
     ),
 });
 
