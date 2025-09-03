@@ -1,10 +1,10 @@
-const { Game_sessions } = require("../../db/models");
+const { GameSession } = require("../../db/models");
 
 class RoomController {
   // отдать перечень всех комнат
   async getAllRooms(req, res) {
     try {
-      const data = await Game_sessions.findAll();
+      const data = await GameSession.findAll();
       res.status(200).json({ message: "success", data });
       return;
     } catch (error) {
@@ -41,7 +41,7 @@ class RoomController {
           .send("Не все обязательные поля переданы с клиента");
       }
 
-      const room = await Game_sessions.create({
+      const room = await GameSession.create({
         phase_id,
         current_topic_id,
         current_question_id,
