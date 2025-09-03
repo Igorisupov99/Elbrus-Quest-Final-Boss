@@ -32,7 +32,7 @@ services:
       dockerfile: Dockerfile
     labels:
       - "traefik.enable=true"
-      - "traefik.http.routers.api.rule=Host(`87.228.103.64`) && PathPrefix(`/api`)"
+      - "traefik.http.routers.api.rule=Host(`questcode.ru`) && PathPrefix(`/api`)"
       - "traefik.http.services.api.loadbalancer.server.port=3000"
     networks:
       - web
@@ -44,7 +44,7 @@ services:
       dockerfile: Dockerfile
     labels:
       - "traefik.enable=true"
-      - "traefik.http.routers.ui.rule=Host(`87.228.103.64`) && PathPrefix(`/`)"
+      - "traefik.http.routers.ui.rule=Host(`questcode.ru`) && PathPrefix(`/`)"
       - "traefik.http.services.ui.loadbalancer.server.port=80"
     networks:
       - web
