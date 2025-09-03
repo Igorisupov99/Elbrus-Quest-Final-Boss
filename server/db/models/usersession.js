@@ -17,7 +17,6 @@ module.exports = (sequelize, DataTypes) => {
     game_session_id: DataTypes.BIGINT,
     user_id: DataTypes.BIGINT,
     score: DataTypes.BIGINT,
-    is_current_active: DataTypes.BOOLEAN,
     is_user_active: DataTypes.BOOLEAN,
     player_name: DataTypes.TEXT
   }, {
