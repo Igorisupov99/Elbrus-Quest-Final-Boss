@@ -17,7 +17,6 @@ class RoomController {
   // отдать всех пользователей в комнате
   async getUsers(req, res) {}
 
-  // создать новую комнату
   async createRoom(req, res) {
     try {
       const {
@@ -64,26 +63,60 @@ class RoomController {
     try {
       const { id } = req.params;
       const { room_name } = req.body;
-      const data = await Game_sessions.update(
-        {
-          room_name
-        },
-        { where: { id: +id } }
-      );
+      const currentUserId = req.user.id;
   
-      const newData = await Game_sessions.findByPk(id);
+      if (!room_name) {
+        return res.status(400).json({ message: "Поле room_name обязательно" });
+      }
   
-      res.status(200).json({ message: "success", data: newData });
-      return;
-    } catch ({ message }) {
+
+      const room = await GameSession.findByPk(id);
+  
+      if (!room) {
+        return res.status(404).json({ message: "Комната с таким id не найдена" });
+      }
+  
+      if (room.creator_user_id !== currentUserId) {
+        return res.status(403).json({ message: "Изменять название комнаты может только её создатель" });
+      }
+  
+      room.room_name = room_name;
+      await room.save();
+  
+      res.status(200).json({ message: "success", data: room });
+    } catch (error) {
       console.log("ошибка на сервере", error);
-      res.status(500).json(error);
-      return;
+      res.status(500).json({ message: "Ошибка сервера", error: error.message });
     }
   }
 
   // удалить комнату
-  async deleteRoom(req, res) {}
+  async deleteRoom(req, res) {
+    try {
+      const { id } = req.params;
+      const currentUserId = req.user.id;  
+
+  
+      const room = await GameSession.findByPk(id);
+
+      if (!room) {
+        return res.status(404).json({ message: "Комната не найдена" });
+      }
+
+
+      if (room.creator_user_id !== currentUserId) {
+        return res.status(403).json({ message: "Нет прав на удаление этой комнаты" });
+      }
+
+ 
+      await room.destroy();
+
+      res.status(200).json({ message: "Комната успешно удалена" });
+    } catch (error) {
+      console.error("Ошибка на сервере:", error);
+      res.status(500).json({ message: "Ошибка сервера", error: error.message });
+    }
+  }
 }
 
 module.exports = new RoomController();
