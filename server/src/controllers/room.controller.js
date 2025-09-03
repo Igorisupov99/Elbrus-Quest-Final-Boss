@@ -79,6 +79,13 @@ class RoomController {
       if (room.creator_user_id !== currentUserId) {
         return res.status(403).json({ message: "Изменять название комнаты может только её создатель" });
       }
+
+      // const data = await GameSession.update(
+      //   {
+      //     room_name
+      //   },
+      //   { where: { id: +id } }
+      // );
   
       room.room_name = room_name;
       await room.save();
