@@ -3,12 +3,16 @@ const express = require('express');
 const cors = require('cors');
 const morgan = require('morgan');
 const cookieParser = require('cookie-parser');
+const { createServer } = require('http');
+
 const db = require('./db/models');
 const authRoutes = require('./src/routes/auth.routes');
 const userRouter = require('./src/routes/user.routes');
 const roomRouter = require('./src/routes/room.routes');
+const initSocketMainPage = require('./src/sockets/socketMainPage'); // ⬅️ renamed import
 
 const app = express();
+const httpServer = createServer(app);
 const PORT = process.env.PORT || 3000;
 
 app.use(express.json());
@@ -26,13 +30,13 @@ app.use('/api/auth', authRoutes);
 app.use('/api/user', userRouter);
 app.use('/api/room', roomRouter);
 
-// Глобальный обработчик ошибок
+// ✅ Initialize socketMainPage
+initSocketMainPage(httpServer);
+
+// Error handler
 app.use((err, req, res, next) => {
   console.error(err.stack);
-  res.status(500).json({
-    success: false,
-    message: 'Что-то пошло не так!'
-  });
+  res.status(500).json({ success: false, message: 'Что-то пошло не так!' });
 });
 
 (async () => {
@@ -41,10 +45,8 @@ app.use((err, req, res, next) => {
     console.log('✔ PostgreSQL connected');
     await db.sequelize.sync();
     console.log('✔ Models synchronized');
-    app.listen(PORT, () => console.log(`🚀 Server on :${PORT}`));
+    httpServer.listen(PORT, () => console.log(`🚀 Server on :${PORT}`));
   } catch (err) {
     console.error('✖ DB connection error:', err);
   }
 })();
-
-module.exports = app;
