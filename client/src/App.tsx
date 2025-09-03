@@ -6,11 +6,8 @@ import { Login } from './pages/Login/Login';
 import { Profile } from './pages/Profile/Profile';
 import { LobbyPage } from './pages/LobbyPage/LobbyPage';
 import { PrivateRoute } from './components/PrivateRoute/PrivateRoute';
-<<<<<<< HEAD
-=======
 import { useAppSelector } from './store/hooks';
 // import MainPageChat from './components/MainPageChat/MainPageChat';
->>>>>>> 34ee7b6f8571395f2331afad2353d533f94475a0
 
 export function App() {
   const location = useLocation();
