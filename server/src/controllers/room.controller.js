@@ -13,10 +13,7 @@ class RoomController {
       return;
     }
   }
-
-  // отдать всех пользователей в комнате
-  async getUsers(req, res) {}
-
+// создать новую комнату
   async createRoom(req, res) {
     try {
       const {
@@ -25,7 +22,8 @@ class RoomController {
         current_question_id,
         room_code,
         is_active,
-        room_mame,
+        room_name,
+        room_creator
       } = req.body;
 
       if (
@@ -34,7 +32,8 @@ class RoomController {
         !current_question_id ||
         !room_code ||
         !is_active ||
-        !room_mame
+        !room_name ||
+        !room_creator
       ) {
         return res
           .status(400)
@@ -47,7 +46,8 @@ class RoomController {
         current_question_id,
         room_code,
         is_active,
-        room_mame,
+        room_name,
+        room_creator
       });
 
       res.status(201).json({ message: "success", data: room });
