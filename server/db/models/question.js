@@ -13,6 +13,7 @@ module.exports = (sequelize, DataTypes) => {
     topic_id: DataTypes.BIGINT,
     question_text: DataTypes.TEXT,
     correct_answer: DataTypes.TEXT,
+    question_type:DataTypes.TEXT,
     mentor_tip: DataTypes.TEXT
   }, {
     sequelize,

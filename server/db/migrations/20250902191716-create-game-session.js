@@ -53,6 +53,10 @@ module.exports = {
         type: Sequelize.TEXT,
         allowNull: true
       },
+      room_creator:{
+        type: Sequelize.TEXT,
+        allowNull: true
+      },
       createdAt: {
         allowNull: false,
         type: Sequelize.DATE

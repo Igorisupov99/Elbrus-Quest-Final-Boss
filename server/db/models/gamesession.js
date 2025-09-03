@@ -31,7 +31,8 @@ module.exports = (sequelize, DataTypes) => {
     current_question_id: DataTypes.BIGINT,
     room_code: DataTypes.TEXT,
     is_active: DataTypes.BOOLEAN,
-    room_name: DataTypes.TEXT
+    room_name: DataTypes.TEXT,
+    room_creator: DataTypes.TEXT
   }, {
     sequelize,
     modelName: 'GameSession',
