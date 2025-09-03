@@ -1,21 +1,11 @@
 import { createSlice } from '@reduxjs/toolkit';
 import type { PayloadAction } from '@reduxjs/toolkit';
-import type { User } from '../api/auth/authApi';
-import {
-  loginUser,
-  registerUser,
-  fetchProfile,
-  logoutUser,
-} from './authThunks';
-
-export interface AuthState {
-  user: User | null;
-  loading: boolean;
-  error: string | null;
-}
+import type { User, AuthState, AuthResponse } from '../types/auth';
+import { loginUser, registerUser, fetchProfile, logoutUser } from './authThunks';
 
 const initialState: AuthState = {
   user: null,
+  accessToken: null,
   loading: false,
   error: null,
 };
@@ -30,9 +20,10 @@ const authSlice = createSlice({
       state.loading = true;
       state.error = null;
     });
-    builder.addCase(loginUser.fulfilled, (state, action: PayloadAction<User>) => {
+    builder.addCase(loginUser.fulfilled, (state, action: PayloadAction<AuthResponse>) => {
       state.loading = false;
-      state.user = action.payload;
+      state.user = action.payload.user;
+      state.accessToken = action.payload.accessToken;
     });
     builder.addCase(loginUser.rejected, (state, action) => {
       state.loading = false;
@@ -44,9 +35,10 @@ const authSlice = createSlice({
       state.loading = true;
       state.error = null;
     });
-    builder.addCase(registerUser.fulfilled, (state, action: PayloadAction<User>) => {
+    builder.addCase(registerUser.fulfilled, (state, action: PayloadAction<AuthResponse>) => {
       state.loading = false;
-      state.user = action.payload;
+      state.user = action.payload.user;
+      state.accessToken = action.payload.accessToken;
     });
     builder.addCase(registerUser.rejected, (state, action) => {
       state.loading = false;
@@ -67,8 +59,10 @@ const authSlice = createSlice({
       state.error = action.payload || 'Ошибка загрузки профиля';
     });
 
+    // logout
     builder.addCase(logoutUser.fulfilled, (state) => {
       state.user = null;
+      state.accessToken = null;
     });
   },
 });

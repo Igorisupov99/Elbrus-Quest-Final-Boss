@@ -32,7 +32,7 @@ export const Button: React.FC<ButtonProps> = ({
         ${className}
       `}
     >
-      {loading ? 'Загрузка...' : children}
+      {loading ? children || 'Загрузка...' : children}
     </button>
   );
 };

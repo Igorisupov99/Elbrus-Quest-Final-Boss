@@ -1,31 +1,25 @@
 export interface User {
-  id: string;
+  id: number;
   email: string;
   username: string;
-}
-
-export interface AuthTokens {
-  accessToken: string;
-  refreshToken: string;
+  score: number;
+  isActive: boolean;
 }
 
 export interface LoginCredentials {
-  email: string;
+  username: string;
   password: string;
 }
 
 export interface RegisterData {
   email: string;
+  username: string;
   password: string;
-  firstName: string;
-  lastName: string;
-  middleName?: string;
-  birthDate: string;
 }
 
 export interface AuthResponse {
   user: User;
-  tokens: AuthTokens;
+  accessToken: string;
 }
 
 export interface ApiError {
@@ -40,7 +34,7 @@ export interface ApiResponse<T> {
 
 export interface AuthState {
   user: User | null;
-  tokens: AuthTokens | null;
+  accessToken: string | null;
   loading: boolean;
   error: string | null;
 }

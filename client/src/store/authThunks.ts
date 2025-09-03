@@ -1,5 +1,6 @@
 import { createAsyncThunk } from '@reduxjs/toolkit';
-import { authApi, type LoginCredentials, type RegisterData, type User } from '../api/auth/authApi';
+import { authApi } from '../api/auth/authApi';
+import type { User, LoginCredentials, RegisterData, AuthResponse } from '../types/auth';
 
 // initAuth
 export const initAuth = createAsyncThunk<void, void, { rejectValue: string }>(
@@ -16,29 +17,33 @@ export const initAuth = createAsyncThunk<void, void, { rejectValue: string }>(
 );
 
 // login
-export const loginUser = createAsyncThunk<User, LoginCredentials, { rejectValue: string }>(
+export const loginUser = createAsyncThunk<AuthResponse, LoginCredentials, { rejectValue: string }>(
   'auth/loginUser',
   async (credentials, { rejectWithValue }) => {
     try {
       const { user, accessToken } = await authApi.login(credentials);
       localStorage.setItem('accessToken', accessToken);
-      return user;
+      return { user, accessToken };
     } catch (err: any) {
-      return rejectWithValue(err?.message || 'Ошибка входа');
+      const message =
+        err.response?.data?.message ||
+        err.response?.data?.error || 
+        'Ошибка входа';
+      return rejectWithValue(message);
     }
   }
 );
 
 // register
-export const registerUser = createAsyncThunk<User, RegisterData, { rejectValue: string }>(
+export const registerUser = createAsyncThunk<AuthResponse, RegisterData, { rejectValue: string }>(
   'auth/registerUser',
   async (data, { rejectWithValue }) => {
     try {
       const { user, accessToken } = await authApi.register(data);
       localStorage.setItem('accessToken', accessToken);
-      return user;
+      return { user, accessToken };
     } catch (err: any) {
-      return rejectWithValue(err?.message || 'Ошибка регистрации');
+      return rejectWithValue(err.message);
     }
   }
 );
@@ -50,7 +55,7 @@ export const fetchProfile = createAsyncThunk<User, void, { rejectValue: string }
     try {
       return await authApi.getCurrentUser();
     } catch (err: any) {
-      return rejectWithValue(err?.message || 'Ошибка загрузки профиля');
+      return rejectWithValue(err.message);
     }
   }
 );
@@ -63,7 +68,7 @@ export const logoutUser = createAsyncThunk<void, void, { rejectValue: string }>(
       await authApi.logout();
       localStorage.removeItem('accessToken');
     } catch (err: any) {
-      return rejectWithValue(err?.message || 'Ошибка выхода');
+      return rejectWithValue(err.message);
     }
   }
 );

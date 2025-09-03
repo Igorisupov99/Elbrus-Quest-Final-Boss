@@ -9,23 +9,23 @@ const registerValidation = [
     .matches(/^[a-zA-Z0-9_]+$/)
     .withMessage('Имя пользователя может содержать только латинские буквы, цифры и символ "_"'),
 
+  body('email')
+    .trim()
+    .isEmail()
+    .withMessage('Некорректный email')
+    .normalizeEmail(),
+
   body('password')
-    .isLength({ min: 8 })
-    .withMessage('Пароль должен содержать минимум 8 символов')
-    .matches(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])/)
-    .withMessage('Пароль должен содержать заглавную и строчную буквы, цифру и спецсимвол'),
+    .isLength({ min: 4 })
+    .withMessage('Пароль должен содержать минимум 4 символа')
+    .matches(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).*$/)
+    .withMessage('Пароль должен содержать заглавную, строчную буквы и цифру'),
 ];
 
 // Логин
 const loginValidation = [
-  body('username')
-    .trim()
-    .notEmpty()
-    .withMessage('Имя пользователя обязательно'),
-
-  body('password')
-    .notEmpty()
-    .withMessage('Пароль обязателен'),
+  body('username').trim().notEmpty().withMessage('Имя пользователя обязательно'),
+  body('password').notEmpty().withMessage('Пароль обязателен'),
 ];
 
 module.exports = { registerValidation, loginValidation };

@@ -15,7 +15,7 @@ class AuthController {
         });
       }
 
-      const { username, password } = req.body;
+      const { username, email, password } = req.body;
 
       const existingUser = await User.findOne({ where: { username } });
       if (existingUser) {
@@ -25,10 +25,19 @@ class AuthController {
         });
       }
 
+      const existingEmail = await User.findOne({ where: { email }});
+      if (existingEmail) {
+        return res.status(409).json({
+          success: false,
+          message: 'Пользователь с таким email уже существует'
+        });
+      }
+
       const password_hash = await bcrypt.hash(password, 10);
 
       const user = await User.create({
         username,
+        email,
         password_hash,
         score: 0,
         isActive: true,
@@ -50,6 +59,7 @@ class AuthController {
           user: {
             id: user.id,
             username: user.username,
+            email: user.email,
             score: user.score,
             isActive: user.isActive,
           },
@@ -109,6 +119,7 @@ class AuthController {
           user: {
             id: user.id,
             username: user.username,
+            email: user.email,
             score: user.score,
             isActive: user.isActive,
           },

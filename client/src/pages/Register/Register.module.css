@@ -3,55 +3,75 @@
   align-items: center;
   justify-content: center;
   min-height: 100vh;
-  background: linear-gradient(135deg, #0f2027, #203a43, #2c5364);
+  background: linear-gradient(135deg, #f4e1c1, #e6d2b5, #d8c3a5);
   padding: 20px;
+  font-family: 'Cinzel', serif;
 }
 
 .registerCard {
-  background: #fff;
-  padding: 40px;
-  border-radius: 16px;
-  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.25);
+  background: rgba(255, 248, 230, 0.95);
+  padding: 32px;
+  border-radius: 12px;
+  border: 2px solid #8b5a2b;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
   width: 100%;
-  max-width: 420px;
+  max-width: 380px;
   text-align: center;
+  max-height: 90vh;
+  overflow-y: auto;
 }
 
 .title {
-  font-size: 2rem;
+  font-size: 1.8rem;
   font-weight: 700;
-  color: #2c3e50;
-  margin-bottom: 8px;
+  color: #4b2e05;
+  margin-bottom: 6px;
+  text-shadow: 1px 1px #f9e4b7;
 }
 
 .subtitle {
-  font-size: 1rem;
-  color: #555;
-  margin-bottom: 24px;
+  font-size: 0.95rem;
+  color: #5c3b09;
+  margin-bottom: 18px;
 }
 
 .form {
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: 12px;
 }
 
 .submitButton {
-  margin-top: 12px;
+  margin-top: 10px;
   width: 100%;
+  background: linear-gradient(180deg, #d4a017, #a97400);
+  border: 2px solid #5a3c00;
+  border-radius: 8px;
+  color: #fff6d6;
+  font-weight: bold;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: transform 0.1s ease-in-out;
+}
+
+.submitButton:hover {
+  transform: scale(1.03);
+  background: linear-gradient(180deg, #f0c33b, #c48a00);
 }
 
 .linkText {
-  margin-top: 20px;
+  margin-top: 16px;
   font-size: 0.9rem;
-  color: #666;
+  color: #5c3b09;
 }
 
 .link {
-  color: #007bff;
+  color: #a45c00;
   text-decoration: none;
+  font-weight: bold;
 }
 
 .link:hover {
   text-decoration: underline;
+  color: #e67e00;
 }

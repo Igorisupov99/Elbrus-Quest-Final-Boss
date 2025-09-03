@@ -7,7 +7,7 @@ html, body {
 .lobbyPage {
   display: flex;
   height: 100vh;
-  background: #d6b37a; /* фон под карту */
+  background: #d6b37a; 
   padding: 20px;
   gap: 20px;
   box-sizing: border-box;
