@@ -27,6 +27,10 @@ module.exports = {
         type: Sequelize.TEXT,
         allowNull: false
       },
+      question_type: {
+        type: Sequelize.TEXT,
+        allowNull: false
+      },
       mentor_tip: {
         type: Sequelize.TEXT,
         allowNull: false
