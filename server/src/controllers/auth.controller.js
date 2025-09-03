@@ -34,7 +34,7 @@ class AuthController {
         isActive: true,
       });
 
-      const { accessToken, refreshToken } = generateToken(user.id);
+      const { accessToken, refreshToken } = generateToken(user);
 
       res.cookie('refreshToken', refreshToken, {
         httpOnly: true,
@@ -93,7 +93,7 @@ class AuthController {
         });
       }
 
-      const { accessToken, refreshToken } = generateToken(user.id);
+      const { accessToken, refreshToken } = generateToken(user);
 
       res.cookie('refreshToken', refreshToken, {
         httpOnly: true,
@@ -134,8 +134,8 @@ class AuthController {
         });
       }
 
-      const { userId } = jwt.verify(refreshToken, process.env.JWT_REFRESH_SECRET);
-      const { accessToken } = generateToken(userId);
+      const { id } = jwt.verify(refreshToken, process.env.JWT_REFRESH_SECRET);
+      const { accessToken } = generateToken({ id });
 
       res.json({
         success: true,

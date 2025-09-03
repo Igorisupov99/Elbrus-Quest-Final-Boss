@@ -41,7 +41,7 @@ module.exports = {
       },
       room_code: {
         type: Sequelize.TEXT,
-        allowNull: false,
+        allowNull: true,
         unique: true
       },
       is_active: {
@@ -50,6 +50,10 @@ module.exports = {
         defaultValue: true
       },
       room_name: {
+        type: Sequelize.TEXT,
+        allowNull: true
+      },
+      room_creator:{
         type: Sequelize.TEXT,
         allowNull: true
       },

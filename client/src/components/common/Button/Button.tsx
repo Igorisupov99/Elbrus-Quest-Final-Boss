@@ -18,13 +18,19 @@ export const Button: React.FC<ButtonProps> = ({
   disabled = false,
   variant = 'primary',
   loading = false,
+  className = '',
 }) => {
   return (
     <button
       type={type}
       onClick={onClick}
       disabled={disabled || loading}
-      className={`${styles.button} ${styles[variant]} ${loading ? styles.loading : ''}`}
+      className={`
+        ${styles.button} 
+        ${styles[variant]} 
+        ${loading ? styles.loading : ''} 
+        ${className}
+      `}
     >
       {loading ? 'Загрузка...' : children}
     </button>

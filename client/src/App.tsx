@@ -1,15 +1,17 @@
-import { Routes, Route } from 'react-router-dom';
+import { Routes, Route, useLocation } from 'react-router-dom';
 import { Header } from './components/Header/Header';
 import { MainPage } from './pages/MainPage/MainPage';
 import { Register } from './pages/Register/Register';
 import { Login } from './pages/Login/Login';
 import { Profile } from './pages/Profile/Profile';
+import { LobbyPage } from './pages/LobbyPage/LobbyPage';
 import { PrivateRoute } from './components/PrivateRoute/PrivateRoute';
 import { useAppSelector } from './store/hooks';
 // import MainPageChat from './components/MainPageChat/MainPageChat';
 
 export function App() {
   const loading = useAppSelector((state) => state.auth.loading);
+  const location = useLocation();
 
   if (loading) {
     return (
@@ -25,9 +27,14 @@ export function App() {
     );
   }
 
+  const hideHeaderRoutes = ['/lobby'];
+  const shouldHideHeader = hideHeaderRoutes.some(route =>
+    location.pathname.startsWith(route)
+  );
+
   return (
     <>
-      <Header />
+      {!shouldHideHeader && <Header />}
       <Routes>
         <Route path="/" element={<MainPage />} />
         {/* <Route path="/chat" element={<MainPageChat />} /> */}
@@ -38,6 +45,14 @@ export function App() {
           element={
             <PrivateRoute>
               <Profile />
+            </PrivateRoute>
+          }
+        />
+        <Route
+          path="/lobby/:id"
+          element={
+            <PrivateRoute>
+              <LobbyPage />
             </PrivateRoute>
           }
         />

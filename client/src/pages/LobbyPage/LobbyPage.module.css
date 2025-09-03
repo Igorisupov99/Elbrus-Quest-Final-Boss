@@ -1,0 +1,176 @@
+html, body {
+  height: 100%;
+  margin: 0;
+  overflow: hidden; /* убираем вертикальный скролл */
+}
+
+.lobbyPage {
+  display: flex;
+  height: 100vh;
+  background: #d6b37a; /* фон под карту */
+  padding: 20px;
+  gap: 20px;
+  box-sizing: border-box;
+}
+
+.gameArea {
+  flex: 1;
+  position: relative;
+  border-radius: 16px;
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.25);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+
+.sidebar {
+  width: 340px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.exitButton,
+.sendButton {
+  background: linear-gradient(180deg, #d8a35d, #b0752d);
+  border: 2px solid #6b3e15;
+  border-radius: 8px;
+  padding: 10px 14px;
+  font-weight: bold;
+  font-size: 1rem;
+  color: #2c1810;
+  text-shadow: 0 1px 0 #f3e0c0;
+  box-shadow: 0 4px 0 #6b3e15, 0 6px 10px rgba(0, 0, 0, 0.25);
+  cursor: pointer;
+  transition: all 0.2s ease-in-out;
+}
+
+.exitButton:hover,
+.sendButton:hover {
+  background: linear-gradient(180deg, #e8b76d, #c6853d);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 0 #6b3e15, 0 8px 12px rgba(0, 0, 0, 0.3);
+}
+
+.exitButton:active,
+.sendButton:active {
+  transform: translateY(2px);
+  box-shadow: 0 2px 0 #6b3e15, 0 3px 6px rgba(0, 0, 0, 0.2);
+}
+
+.chat {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  background: #f5deb3; /* пергамент */
+  border-radius: 12px;
+  padding: 12px;
+  box-shadow: 0 6px 16px rgba(0,0,0,0.25);
+  min-height: 0; /* чтобы chatList не ломал высоту */
+}
+
+.chatTitle {
+  margin: 0 0 8px 0;
+  font-weight: 700;
+  color: #5c3d2e;
+}
+
+.chatList {
+  flex: 1;
+  padding: 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  border: 1px solid rgba(0,0,0,0.1);
+  border-radius: 8px;
+  background: rgba(255, 248, 220, 0.6);
+  overflow-y: auto; /* скролл только для сообщений */
+}
+
+.message {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 6px;
+  line-height: 1.35;
+  padding: 6px 10px;
+  border-radius: 8px;
+  background: #fff8dc;
+  color: #5c3d2e;
+  border: 1px solid rgba(0,0,0,0.08);
+  box-shadow: 1px 1px 3px rgba(0,0,0,0.1);
+}
+
+.systemMessage {
+  align-self: center;
+  font-size: 0.85rem;
+  color: #7f8c8d;
+  font-style: italic;
+}
+
+.author {
+  font-weight: 700;
+  color: #8b4513;
+}
+
+.text {
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+.chatForm {
+  display: flex;
+  gap: 8px;
+  margin-top: 10px;
+  align-items: center;
+}
+
+.chatInput {
+  flex: 1;
+  height: 40px;
+  border-radius: 10px;
+  border: 1px solid rgba(0,0,0,0.2);
+  background: #fffaf0;
+  outline: none;
+  padding: 0 12px;
+  color: #5c3d2e;
+}
+
+.chatInput::placeholder {
+  color: #a0522d;
+}
+
+.mapButton {
+  position: absolute;
+  transform: translate(-50%, -50%);
+  padding: 6px 10px;
+  border-radius: 50%;
+  background: #2563eb;
+  color: white;
+  cursor: pointer;
+}
+
+.gameMap {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 12px;
+}
+
+.connectionIndicator {
+  display: inline-block;
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  margin-left: 6px;
+}
+
+.online {
+  background: radial-gradient(circle at 30% 30%, #6df56d, #2d7a2d);
+  box-shadow: 0 0 6px #3ed93e, 0 0 10px rgba(62, 217, 62, 0.6);
+}
+
+.offline {
+  background: radial-gradient(circle at 30% 30%, #ff6b6b, #7a1f1f);
+  box-shadow: 0 0 6px #e63e3e, 0 0 10px rgba(230, 62, 62, 0.6);
+}
