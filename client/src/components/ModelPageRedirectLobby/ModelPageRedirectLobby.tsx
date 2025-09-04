@@ -7,13 +7,12 @@ interface Props {
   roomId: number;
 }
 
-function ModelPageRedirectLobby({ setIsModalOpen }: Props) {
+function ModelPageRedirectLobby({ setIsModalOpen, roomId }: Props) {
   const navigate = useNavigate();
 
   const handleYes = () => {
-    // navigate(`/lobby/${roomId}`); // redirect to lobby of that room
-    navigate('/login')
-  };
+    setIsModalOpen(false); 
+    navigate(`/lobby/${roomId}`)  };
 
   const handleNo = () => {
     setIsModalOpen(false); 

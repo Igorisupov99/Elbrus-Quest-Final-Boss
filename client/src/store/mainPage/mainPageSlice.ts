@@ -1,43 +1,59 @@
+// mainPageSlice.ts
 import { createSlice, type PayloadAction } from '@reduxjs/toolkit';
-
-export interface MainPageItem {
-  id: number;
-  title: string;
-}
+import type { MainPageItem } from '../../types/mainPage';
+import { fetchRooms, updateRoom, removeRoom, createRoom } from './mainPageThunks';
 
 interface MainPageState {
   items: MainPageItem[];
-  nextId: number; // to generate unique IDs
+  loading: boolean;
+  error: string | null;
 }
 
 const initialState: MainPageState = {
-  items: [
-    { id: 1, title: 'Комната 1' },
-    { id: 2, title: 'Комната 2' },
-    { id: 3, title: 'Комната 3' }
-  ],
-  nextId: 4,
+  items: [],
+  loading: false,
+  error: null,
 };
 
 const mainPageSlice = createSlice({
   name: 'mainPage',
   initialState,
-  reducers: {
-    addRoom: (state, action: PayloadAction<string>) => {
-      state.items.push({ id: state.nextId, title: action.payload });
-      state.nextId += 1;
-    },
-    editRoom: (state, action: PayloadAction<{ id: number; title: string }>) => {
-      const room = state.items.find((item) => item.id === action.payload.id);
-      if (room) {
-        room.title = action.payload.title;
-      }
-    },
-    deleteRoom: (state, action: PayloadAction<number>) => {
-      state.items = state.items.filter((item) => item.id !== action.payload);
-    },
+  reducers: {},
+  extraReducers: (builder) => {
+    // --- GET all rooms ---
+    builder
+      .addCase(fetchRooms.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(fetchRooms.fulfilled, (state, action: PayloadAction<MainPageItem[]>) => {
+        state.loading = false;
+        state.items = action.payload;
+      })
+      .addCase(fetchRooms.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.error.message || 'Ошибка при загрузке комнат';
+      });
+
+    // --- CREATE room ---
+    builder
+      .addCase(createRoom.fulfilled, (state, action: PayloadAction<MainPageItem>) => {
+        state.items.push(action.payload);
+      });
+
+    // --- UPDATE room ---
+    builder
+      .addCase(updateRoom.fulfilled, (state, action: PayloadAction<MainPageItem>) => {
+        const idx = state.items.findIndex((r) => r.id === action.payload.id);
+        if (idx !== -1) state.items[idx] = action.payload;
+      });
+
+    // --- DELETE room ---
+    builder
+      .addCase(removeRoom.fulfilled, (state, action: PayloadAction<number>) => {
+        state.items = state.items.filter((r) => r.id !== action.payload);
+      });
   },
 });
 
-export const { addRoom, editRoom, deleteRoom } = mainPageSlice.actions;
 export default mainPageSlice.reducer;

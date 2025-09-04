@@ -1,8 +1,9 @@
+// ModelPageCreateRoom.tsx
 import { useForm } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
 import * as yup from 'yup';
 import { useAppDispatch } from '../../store/hooks';
-import { addRoom } from '../../store/mainPage/mainPageSlice';
+import { createRoom } from '../../store/mainPage/mainPageThunks';
 
 interface FormInputs {
   roomName: string;
@@ -27,31 +28,18 @@ const schema = yup.object({
     ),
 });
 
-export default function ModelPageCreateRoom({
-  setIsModalOpen,
-}: ModelPageCreateRoomProps) {
+export default function ModelPageCreateRoom({ setIsModalOpen }: ModelPageCreateRoomProps) {
   const dispatch = useAppDispatch();
 
-  const {
-    register,
-    handleSubmit,
-    formState: { errors },
-    reset,
-  } = useForm<FormInputs>({
+  const { register, handleSubmit, formState: { errors }, reset } = useForm<FormInputs>({
     resolver: yupResolver(schema),
   });
 
   const onSubmit = (data: FormInputs) => {
-    // ✅ Add new room to Redux
-    dispatch(addRoom(data.roomName));
+    dispatch(createRoom({ roomName: data.roomName, password: data.password }));
 
-    // Close modal
     setIsModalOpen(false);
-
-    // Clear form
     reset();
-
-    console.log('✅ Room created:', data);
   };
 
   return (
@@ -59,17 +47,13 @@ export default function ModelPageCreateRoom({
       <div>
         <label>Название комнаты</label>
         <input {...register('roomName')} />
-        {errors.roomName && (
-          <p style={{ color: 'red' }}>{errors.roomName.message}</p>
-        )}
+        {errors.roomName && <p style={{ color: 'red' }}>{errors.roomName.message}</p>}
       </div>
 
       <div>
         <label>Введите пароль</label>
         <input type="password" {...register('password')} />
-        {errors.password && (
-          <p style={{ color: 'red' }}>{errors.password.message}</p>
-        )}
+        {errors.password && <p style={{ color: 'red' }}>{errors.password.message}</p>}
       </div>
 
       <button type="submit">Создать комнату</button>
