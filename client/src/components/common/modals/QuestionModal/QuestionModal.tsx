@@ -1,7 +1,7 @@
 import { useState } from "react";
-import axios from "axios";
 import { Button } from "../../Button/Button";
 import styles from "./QuestionModal.module.css";
+import api from "../../../../api/axios";
 
 interface QuestionModalProps {
   isOpen: boolean;
@@ -9,6 +9,11 @@ interface QuestionModalProps {
   topic: string;
   question: string;
   questionId: number | null;
+  lobbyId?: number;
+  onAnswerResult?: (
+    correct: boolean,
+    scores?: { userScore?: number; sessionScore?: number }
+  ) => void;
 }
 
 export function QuestionModal({
@@ -17,32 +22,43 @@ export function QuestionModal({
   topic,
   question,
   questionId,
+  lobbyId,
+  onAnswerResult,
 }: QuestionModalProps) {
   const [answer, setAnswer] = useState("");
-  const [feedback, setFeedback] = useState<string | null>(null);
+  const [loading, setLoading] = useState(false);
+  const [result, setResult] = useState<string | null>(null);
 
   if (!isOpen) return null;
 
-  const handleSendAnswer = async () => {
-    if (!questionId) {
-      console.error("Нет ID вопроса, нельзя проверить ответ");
-      return;
-    }
+  const handleSubmit = async () => {
+    if (!questionId) return;
 
     try {
-      const res = await axios.post("/api/question/answerCheck", {
-        question_id: questionId,
-        answer,
-      });
+      setLoading(true);
+      setResult(null);
+
+      const res = await api.post(
+        "/api/question/answerCheck",
+        { question_id: questionId, answer, lobbyId },
+        { withCredentials: true }
+      );
 
       if (res.data.correct) {
-        setFeedback("✅ Ответ правильный!");
+        setResult("✅ Правильный ответ! (+10 очков)");
+        onAnswerResult?.(true, {
+          userScore: res.data.userScore,
+          sessionScore: res.data.sessionScore,
+        });
       } else {
-        setFeedback("❌ Ответ неверный, попробуйте снова.");
+        setResult("❌ Неправильный ответ!");
+        onAnswerResult?.(false);
       }
     } catch (err) {
-      console.error("Ошибка при проверке ответа:", err);
-      setFeedback("⚠ Ошибка при отправке ответа");
+      console.error("Ошибка при отправке ответа:", err);
+      setResult("⚠ Ошибка при проверке ответа");
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -58,13 +74,16 @@ export function QuestionModal({
           placeholder="Ваш ответ..."
           value={answer}
           onChange={(e) => setAnswer(e.target.value)}
+          disabled={loading}
         />
 
-        {feedback && <p className={styles.feedback}>{feedback}</p>}
+        {result && <p className={styles.result}>{result}</p>}
 
         <div className={styles.actions}>
           <Button onClick={onClose}>Закрыть</Button>
-          <Button onClick={handleSendAnswer}>Отправить</Button>
+          <Button onClick={handleSubmit} disabled={loading || !answer.trim()}>
+            Отправить
+          </Button>
         </div>
       </div>
     </div>

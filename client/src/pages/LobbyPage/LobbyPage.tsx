@@ -11,6 +11,7 @@ import {
 } from "../../socket/socketLobbyPage";
 import { Point } from "../../components/map/Point/Point";
 import { QuestionModal } from "../../components/common/modals/QuestionModal/QuestionModal";
+import api from "../../api/axios";
 
 export function LobbyPage() {
   const { id } = useParams<{ id: string }>();
@@ -29,31 +30,23 @@ export function LobbyPage() {
   const [currentQuestion, setCurrentQuestion] = useState("");
   const [currentQuestionId, setCurrentQuestionId] = useState<number | null>(null);
 
+  // очки
+  const [userScore, setUserScore] = useState<number>(0);
+  const [sessionScore, setSessionScore] = useState<number>(0);
+
   const openModal = async (phaseId: number, topicId: number) => {
     try {
-      console.log("Запрос вопроса:", { phaseId, topicId });
-
-      const res = await axios.get("http://localhost:3000/api/question/textQuestion", {
+      const res = await api.get("/api/question/textQuestion", {
         params: { phase_id: phaseId, topic_id: topicId },
         withCredentials: true,
       });
 
-      console.log("Ответ сервера:", res.data);
-
       setCurrentTopic(res.data.topic_title || "Без названия");
-      setCurrentQuestion(res.data.question_text || "Вопрос отсутствует");
-      setCurrentQuestionId(res.data.question_id || null);
-
+      setCurrentQuestion(res.data.question_text);
+      setCurrentQuestionId(res.data.question_id);
       setIsModalOpen(true);
-    } catch (err: any) {
+    } catch (err) {
       console.error("Ошибка при получении вопроса:", err);
-
-      setCurrentTopic("Ошибка");
-      setCurrentQuestion(
-        err.response?.data?.error || "Не удалось загрузить вопрос"
-      );
-      setCurrentQuestionId(null);
-      setIsModalOpen(true);
     }
   };
 
@@ -156,14 +149,13 @@ export function LobbyPage() {
       <div className={styles.gameArea}>
         <img src="/map.png" alt="Игровая карта" className={styles.gameMap} />
 
-        {/* Примеры с разными фазами и топиками */}
         <Point
           id="1"
           title="Тема 1"
           top={81}
           left={32.3}
           status="available"
-          onClick={() => openModal(1, 1)} // phaseId=1, topicId=1
+          onClick={() => openModal(1, 1)}
         />
 
         <Point
@@ -172,7 +164,7 @@ export function LobbyPage() {
           top={70.5}
           left={32}
           status="available"
-          onClick={() => openModal(1, 2)}
+          onClick={() => openModal(2, 5)}
         />
 
         <Point
@@ -181,7 +173,7 @@ export function LobbyPage() {
           top={65}
           left={26.5}
           status="available"
-          onClick={() => openModal(1, 3)}
+          onClick={() => openModal(3, 7)}
         />
 
         <Point
@@ -190,7 +182,7 @@ export function LobbyPage() {
           top={55}
           left={36}
           status="available"
-          onClick={() => openModal(1, 4)}
+          onClick={() => openModal(4, 10)}
         />
       </div>
 
@@ -199,6 +191,14 @@ export function LobbyPage() {
           Выйти из комнаты
         </Button>
 
+        {/* очки */}
+        <div className={styles.scores}>
+          <h3>Ваши очки</h3>
+          <p>Общий счёт: {userScore}</p>
+          <p>В этой игре: {sessionScore}</p>
+        </div>
+
+        {/* чат */}
         <div className={styles.chat}>
           <h3 className={styles.chatTitle}>
             Чат комнаты{" "}
@@ -270,6 +270,13 @@ export function LobbyPage() {
         topic={currentTopic}
         question={currentQuestion}
         questionId={currentQuestionId}
+        lobbyId={lobbyId}
+        onAnswerResult={(correct, scores) => {
+          if (scores) {
+            setUserScore(scores.userScore || 0);
+            setSessionScore(scores.sessionScore || 0);
+          }
+        }}
       />
     </div>
   );

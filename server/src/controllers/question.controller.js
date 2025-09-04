@@ -1,4 +1,4 @@
-const { Phase, Topic, Question } = require("../../db/models");
+const { Phase, Topic, Question, User, UserSession } = require("../../db/models");
 
 class QuestionController {
   // ОТДАТЬ ТЕКСТ ВОПРОСА
@@ -72,9 +72,14 @@ class QuestionController {
   }
 
   // ПРОВЕРКА КОРРЕКТНОСТИ ОТВЕТА
+  // controllers/question.controller.js
+
+
   async answerCheck(req, res) {
     try {
-      const { question_id, answer } = req.body;
+      const { question_id, answer, lobbyId } = req.body;
+      console.log('-----------------------------------', question_id, answer, lobbyId)
+      const userId = req.user.id; // берём из токена (middleware auth должен класть req.user)
 
       if (!question_id || !answer) {
         return res.status(400).json({ error: "Параметры question_id и answer обязательны" });
@@ -91,14 +96,47 @@ class QuestionController {
       const normalizedClientAnswer = answer.trim().toLowerCase();
       const normalizedCorrectAnswer = question.correct_answer.trim().toLowerCase();
 
+      console.log('Корректный ответ =================>' ,normalizedCorrectAnswer)
+
       const isCorrect = normalizedClientAnswer === normalizedCorrectAnswer;
 
-      return res.json({ correct: isCorrect });
+      let updatedUser = null;
+      let updatedSession = null;
+
+      if (isCorrect) {
+        // +10 очков
+        const points = 10;
+
+        // обновляем общий счёт
+        updatedUser = await User.findByPk(userId);
+        if (updatedUser) {
+          updatedUser.score = Number(updatedUser.score || 0) + points;
+          await updatedUser.save();
+        }
+
+        // обновляем счёт в сессии
+        if (lobbyId) {
+          updatedSession = await UserSession.findOne({
+            where: { user_id: userId, game_session_id: lobbyId },
+          });
+          if (updatedSession) {
+            updatedSession.score = Number(updatedSession.score || 0) + points;
+            await updatedSession.save();
+          }
+        }
+      }
+
+      return res.json({
+        correct: isCorrect,
+        userScore: updatedUser?.score,
+        sessionScore: updatedSession?.score,
+      });
     } catch (error) {
       console.error("Ошибка на сервере:", error);
       return res.status(500).json({ error: "Внутренняя ошибка сервера" });
     }
   }
+
 }
 
 module.exports = new QuestionController();
