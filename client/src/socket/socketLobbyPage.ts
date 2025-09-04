@@ -1,7 +1,7 @@
 import { io, Socket } from "socket.io-client";
 
 const SERVER_URL =
-  import.meta.env.VITE_API_URL?.replace(/\/$/, "") || "http://localhost:3000";
+  import.meta.env.VITE_SERVER_URL?.replace(/\/$/, "") || "http://localhost:3000";
 
 export type ChatHistoryItem = {
   id: number;
