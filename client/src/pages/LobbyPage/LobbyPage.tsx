@@ -1,6 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import axios from "axios";
 import styles from "./LobbyPage.module.css";
 import { Button } from "../../components/common/Button/Button";
 import {
@@ -272,6 +271,7 @@ export function LobbyPage() {
         questionId={currentQuestionId}
         lobbyId={lobbyId}
         onAnswerResult={(correct, scores) => {
+          console.log(correct) //консоль лог не трогать, без него ложится прод!!!
           if (scores) {
             setUserScore(scores.userScore || 0);
             setSessionScore(scores.sessionScore || 0);
