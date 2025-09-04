@@ -71,21 +71,17 @@ class RoomController {
   
 
       const room = await GameSession.findByPk(id);
+
   
       if (!room) {
         return res.status(404).json({ message: "Комната с таким id не найдена" });
       }
+
+ 
   
-      if (room.creator_user_id !== currentUserId) {
+      if (room.room_creator !== currentUserId) {
         return res.status(403).json({ message: "Изменять название комнаты может только её создатель" });
       }
-
-      // const data = await GameSession.update(
-      //   {
-      //     room_name
-      //   },
-      //   { where: { id: +id } }
-      // );
   
       room.room_name = room_name;
       await room.save();
@@ -111,7 +107,7 @@ class RoomController {
       }
 
 
-      if (room.creator_user_id !== currentUserId) {
+      if (room.room_creator !== currentUserId) {
         return res.status(403).json({ message: "Нет прав на удаление этой комнаты" });
       }
 
