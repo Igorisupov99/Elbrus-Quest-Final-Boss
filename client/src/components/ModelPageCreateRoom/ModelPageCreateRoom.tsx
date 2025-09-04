@@ -1,6 +1,8 @@
 import { useForm } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
 import * as yup from 'yup';
+import { useAppDispatch } from '../../store/hooks';
+import { addRoom } from '../../store/mainPage/mainPageSlice';
 
 interface FormInputs {
   roomName: string;
@@ -28,17 +30,28 @@ const schema = yup.object({
 export default function ModelPageCreateRoom({
   setIsModalOpen,
 }: ModelPageCreateRoomProps) {
+  const dispatch = useAppDispatch();
+
   const {
     register,
     handleSubmit,
     formState: { errors },
+    reset,
   } = useForm<FormInputs>({
     resolver: yupResolver(schema),
   });
 
   const onSubmit = (data: FormInputs) => {
-    console.log('✅ Form data:', data);
+    // ✅ Add new room to Redux
+    dispatch(addRoom(data.roomName));
+
+    // Close modal
     setIsModalOpen(false);
+
+    // Clear form
+    reset();
+
+    console.log('✅ Room created:', data);
   };
 
   return (
