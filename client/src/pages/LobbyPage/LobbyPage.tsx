@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
+import axios from "axios";
 import styles from "./LobbyPage.module.css";
 import { Button } from "../../components/common/Button/Button";
 import {
@@ -8,6 +9,8 @@ import {
   type IncomingChatMessage,
   type SystemEvent,
 } from "../../socket/socketLobbyPage";
+import { Point } from "../../components/map/Point/Point";
+import { QuestionModal } from "../../components/common/modals/QuestionModal/QuestionModal";
 
 export function LobbyPage() {
   const { id } = useParams<{ id: string }>();
@@ -19,6 +22,40 @@ export function LobbyPage() {
   const [history, setHistory] = useState<ChatHistoryItem[]>([]);
   const [input, setInput] = useState("");
   const listRef = useRef<HTMLDivElement | null>(null);
+
+  // модалка
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [currentTopic, setCurrentTopic] = useState("");
+  const [currentQuestion, setCurrentQuestion] = useState("");
+  const [currentQuestionId, setCurrentQuestionId] = useState<number | null>(null);
+
+  const openModal = async (phaseId: number, topicId: number) => {
+    try {
+      console.log("Запрос вопроса:", { phaseId, topicId });
+
+      const res = await axios.get("http://localhost:3000/api/question/textQuestion", {
+        params: { phase_id: phaseId, topic_id: topicId },
+        withCredentials: true,
+      });
+
+      console.log("Ответ сервера:", res.data);
+
+      setCurrentTopic(res.data.topic_title || "Без названия");
+      setCurrentQuestion(res.data.question_text || "Вопрос отсутствует");
+      setCurrentQuestionId(res.data.question_id || null);
+
+      setIsModalOpen(true);
+    } catch (err: any) {
+      console.error("Ошибка при получении вопроса:", err);
+
+      setCurrentTopic("Ошибка");
+      setCurrentQuestion(
+        err.response?.data?.error || "Не удалось загрузить вопрос"
+      );
+      setCurrentQuestionId(null);
+      setIsModalOpen(true);
+    }
+  };
 
   useEffect(() => {
     if (!listRef.current) return;
@@ -118,6 +155,43 @@ export function LobbyPage() {
     <div className={styles.lobbyPage}>
       <div className={styles.gameArea}>
         <img src="/map.png" alt="Игровая карта" className={styles.gameMap} />
+
+        {/* Примеры с разными фазами и топиками */}
+        <Point
+          id="1"
+          title="Тема 1"
+          top={81}
+          left={32.3}
+          status="available"
+          onClick={() => openModal(1, 1)} // phaseId=1, topicId=1
+        />
+
+        <Point
+          id="2"
+          title="Тема 2"
+          top={70.5}
+          left={32}
+          status="available"
+          onClick={() => openModal(1, 2)}
+        />
+
+        <Point
+          id="3"
+          title="Тема 3"
+          top={65}
+          left={26.5}
+          status="available"
+          onClick={() => openModal(1, 3)}
+        />
+
+        <Point
+          id="4"
+          title="Тема 4"
+          top={55}
+          left={36}
+          status="available"
+          onClick={() => openModal(1, 4)}
+        />
       </div>
 
       <div className={styles.sidebar}>
@@ -188,6 +262,15 @@ export function LobbyPage() {
           </form>
         </div>
       </div>
+
+      {/* модалка */}
+      <QuestionModal
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+        topic={currentTopic}
+        question={currentQuestion}
+        questionId={currentQuestionId}
+      />
     </div>
   );
 }

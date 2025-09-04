@@ -12,6 +12,7 @@ const db = require('./db/models');
 const authRoutes = require('./src/routes/auth.routes');
 const userRouter = require('./src/routes/user.routes');
 const roomRouter = require('./src/routes/room.routes');
+const questionRouter = require('./src/routes/question.routes');
 
 const initLobbySockets = require('./src/sockets/socketLobbyPage');
 const initMainSockets = require('./src/sockets/socketMainPage');
@@ -36,6 +37,7 @@ app.use(
 app.use('/api/auth', authRoutes);
 app.use('/api/user', userRouter);
 app.use('/api/room', roomRouter);
+app.use('/api/question', questionRouter);
 
 const io = new Server(server, {
   cors: {

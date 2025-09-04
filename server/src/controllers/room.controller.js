@@ -14,48 +14,47 @@ class RoomController {
     }
   }
 // создать новую комнату
-  async createRoom(req, res) {
-    try {
-      const {
-        phase_id,
-        current_topic_id,
-        current_question_id,
-        room_code,
-        is_active,
-        room_name,
-        room_creator
-      } = req.body;
+async createRoom(req, res) {
+  try {
+    const {
+      phase_id,
+      current_topic_id,
+      current_question_id,
+      room_code,
+      is_active,
+      room_name
+    } = req.body;
 
-      if (
-        !phase_id ||
-        !current_topic_id ||
-        !current_question_id ||
-        !room_code ||
-        !is_active ||
-        !room_name ||
-        !room_creator
-      ) {
-        return res
-          .status(400)
-          .send("Не все обязательные поля переданы с клиента");
-      }
-
-      const room = await GameSession.create({
-        phase_id,
-        current_topic_id,
-        current_question_id,
-        room_code,
-        is_active,
-        room_name,
-        room_creator
-      });
-
-      res.status(201).json({ message: "success", data: room });
-    } catch (error) {
-      console.log("Ошибка на сервере:", error);
-      res.status(500).json({ message: "Ошибка сервера", error });
+    if (
+      !phase_id ||
+      !current_topic_id ||
+      !current_question_id ||
+      !room_code ||
+      !is_active ||
+      !room_name
+    ) {
+      return res.status(400).send("Не все обязательные поля переданы с клиента");
     }
+
+    // берем id из авторизации
+    const room_creator = req.user.id;
+
+    const room = await GameSession.create({
+      phase_id,
+      current_topic_id,
+      current_question_id,
+      room_code,
+      is_active,
+      room_name,
+      room_creator,
+    });
+
+    res.status(201).json({ message: "success", data: room });
+  } catch (error) {
+    console.log("Ошибка на сервере:", error);
+    res.status(500).json({ message: "Ошибка сервера", error });
   }
+}
 
   // изменить название комнаты
 
