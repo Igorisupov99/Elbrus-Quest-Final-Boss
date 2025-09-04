@@ -1,9 +1,10 @@
 'use strict';
+const bcrypt = require('bcrypt');
 
 /** @type {import('sequelize-cli').Migration} */
 module.exports = {
   async up(queryInterface, Sequelize) {
-    // 1. Создаем Phases
+    // 1. Phases
     const phases = await queryInterface.bulkInsert('Phases', [
       {
         title: 'Фаза 0: Основы программирования',
@@ -19,7 +20,7 @@ module.exports = {
       }
     ], { returning: true });
 
-    // 2. Создаем Topics
+    // 2. Topics
     const topics = await queryInterface.bulkInsert('Topics', [
       {
         phase_id: 1,
@@ -41,7 +42,7 @@ module.exports = {
       }
     ], { returning: true });
 
-    // 3. Создаем Questions
+    // 3. Questions
     await queryInterface.bulkInsert('Questions', [
       {
         topic_id: 1,
@@ -63,7 +64,9 @@ module.exports = {
       }
     ], {});
 
-    // 4. Создаем Users
+    // 4. Users
+    const passwordHash = await bcrypt.hash('1234Oo', 10);
+
     const users = await queryInterface.bulkInsert('Users', [
       {
         username: 'admin',
@@ -80,10 +83,18 @@ module.exports = {
         role: 'user',
         createdAt: new Date(),
         updatedAt: new Date()
+      },
+      {
+        username: 'testuser',
+        email: 'testuser@example.com',
+        password_hash: '1234Oo',
+        role: 'user',
+        createdAt: new Date(),
+        updatedAt: new Date()
       }
     ], { returning: true });
 
-    // 5. Создаем GameSessions
+    // 5. GameSessions
     const gameSessions = await queryInterface.bulkInsert('GameSessions', [
       {
         phase_id: 1,
@@ -92,10 +103,18 @@ module.exports = {
         is_active: true,
         createdAt: new Date(),
         updatedAt: new Date()
+      },
+      {
+        phase_id: 1,
+        room_code: 'USER123',
+        room_name: 'Комната TestUser',
+        is_active: true,
+        createdAt: new Date(),
+        updatedAt: new Date()
       }
     ], { returning: true });
 
-    // 6. Создаем UserSessions
+    // 6. UserSessions
     await queryInterface.bulkInsert('UserSessions', [
       {
         game_session_id: 1,
@@ -105,12 +124,20 @@ module.exports = {
         is_user_active: true,
         createdAt: new Date(),
         updatedAt: new Date()
+      },
+      {
+        game_session_id: 2,
+        user_id: 3, // testuser
+        player_name: 'Игрок_TestUser',
+        score: 0,
+        is_user_active: true,
+        createdAt: new Date(),
+        updatedAt: new Date()
       }
     ], {});
   },
 
   async down(queryInterface, Sequelize) {
-    // Удаляем в обратном порядке
     await queryInterface.bulkDelete('UserSessions', null, {});
     await queryInterface.bulkDelete('GameSessions', null, {});
     await queryInterface.bulkDelete('Users', null, {});
