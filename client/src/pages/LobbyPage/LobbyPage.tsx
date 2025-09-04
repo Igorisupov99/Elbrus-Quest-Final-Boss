@@ -7,8 +7,9 @@ import {
   type ChatHistoryItem,
   type IncomingChatMessage,
   type SystemEvent,
-} from '../../socket/socketLobbyPage';
-import { Point } from '../../components/map/Point/Point';
+} from "../../socket/socketLobbyPage";
+import { Point } from "../../components/map/Point/Point";
+import { QuestionModal } from "../../components/common/modals/QuestionModal/QuestionModal";
 
 export function LobbyPage() {
   const { id } = useParams<{ id: string }>();
@@ -20,6 +21,17 @@ export function LobbyPage() {
   const [history, setHistory] = useState<ChatHistoryItem[]>([]);
   const [input, setInput] = useState("");
   const listRef = useRef<HTMLDivElement | null>(null);
+
+  // модалка
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [currentTopic, setCurrentTopic] = useState("");
+  const [currentQuestion, setCurrentQuestion] = useState("");
+
+  const openModal = (topic: string, question: string) => {
+    setCurrentTopic(topic);
+    setCurrentQuestion(question);
+    setIsModalOpen(true);
+  };
 
   useEffect(() => {
     if (!listRef.current) return;
@@ -120,61 +132,25 @@ export function LobbyPage() {
       <div className={styles.gameArea}>
         <img src="/map.png" alt="Игровая карта" className={styles.gameMap} />
 
-        {/* Точка интереса */}
+        {/* Примеры с вопросами */}
         <Point
-          id="easy-walk"
-          title="Лёгкая прогулка"
-          top={81}   // проценты от высоты карты
-          left={32.3}  // проценты от ширины карты
+          id="1"
+          title="2"
+          top={81}
+          left={32.3}
           status="available"
+          onClick={() =>
+            openModal("Заголовок", "Вопрос")
+          }
         />
 
         <Point
-          id="easy-walk"
-          title="Лёгкая прогулка"
-          top={70.5}   // проценты от высоты карты
-          left={32}  // проценты от ширины карты
+          id="2"
+          title="2"
+          top={70.5}
+          left={32}
           status="available"
-        />
-
-        <Point
-          id="easy-walk"
-          title="Лёгкая прогулка"
-          top={65}   // проценты от высоты карты
-          left={26.5}  // проценты от ширины карты
-          status="available"
-        />
-
-        <Point
-          id="easy-walk"
-          title="Лёгкая прогулка"
-          top={46}   // проценты от высоты карты
-          left={36}  // проценты от ширины карты
-          status="available"
-        />
-
-        <Point
-          id="easy-walk"
-          title="Лёгкая прогулка"
-          top={55.5}   // проценты от высоты карты
-          left={36}  // проценты от ширины карты
-          status="available"
-        />
-
-        <Point
-          id="easy-walk"
-          title="Лёгкая прогулка"
-          top={59}   // проценты от высоты карты
-          left={30}  // проценты от ширины карты
-          status="available"
-        />
-
-        <Point
-          id="easy-walk"
-          title="Лёгкая прогулка"
-          top={87}   // проценты от высоты карты
-          left={25}  // проценты от ширины карты
-          status="available"
+          onClick={() => openModal("Заголовок", "Вопрос")}
         />
       </div>
 
@@ -246,6 +222,14 @@ export function LobbyPage() {
           </form>
         </div>
       </div>
+
+      {/* модалка */}
+      <QuestionModal
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+        topic={currentTopic}
+        question={currentQuestion}
+      />
     </div>
   );
 }
