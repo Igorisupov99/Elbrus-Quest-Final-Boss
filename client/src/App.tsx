@@ -6,6 +6,8 @@ import { Login } from './pages/Login/Login';
 import { Profile } from './pages/Profile/Profile';
 import { LobbyPage } from './pages/LobbyPage/LobbyPage';
 import { PrivateRoute } from './components/PrivateRoute/PrivateRoute';
+import { useAppSelector } from './store/hooks';
+// import MainPageChat from './components/MainPageChat/MainPageChat';
 
 export function App() {
   const location = useLocation();
@@ -20,6 +22,7 @@ export function App() {
       {!shouldHideHeader && <Header />}
       <Routes>
         <Route path="/" element={<MainPage />} />
+        {/* <Route path="/chat" element={<MainPageChat />} /> */}
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
         <Route

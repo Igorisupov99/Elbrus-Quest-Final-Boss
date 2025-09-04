@@ -1,0 +1,126 @@
+.mainPage {
+  display: grid;
+  grid-template-columns: 7fr 3fr;
+  gap: 20px;
+  background: #f5e9d4;
+  padding: 20px;
+  box-sizing: border-box;
+  height: 91vh;
+  overflow-y: auto;
+  font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+}
+
+.leftColumn {
+  display: flex;
+  flex-direction: column;
+  background: #f9e8c9;
+  border: 2px solid #d4b483;
+  border-radius: 12px;
+  padding: 20px;
+  gap: 20px;
+}
+
+.sectionTitle {
+  font-size: 20px;
+  font-weight: bold;
+  margin-bottom: 12px;
+  text-align: center;
+  color: #4a3b2a;
+}
+
+.roomList {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.roomItem {
+  padding: 14px;
+  background: #fff6e6;
+  border: 2px solid #d4b483;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  text-align: center;
+  font-weight: 500;
+}
+
+.roomItem:hover {
+  background: #f0d9a6;
+  border-color: #b28a52;
+}
+
+.createRoomBtn {
+  padding: 14px;
+  background: linear-gradient(to bottom, #e0b665, #b48438);
+  color: #fff;
+  border: 2px solid #8a5d1b;
+  border-radius: 10px;
+  font-weight: bold;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  align-self: center;
+  width: 100%;
+  max-width: 300px;
+}
+
+.createRoomBtn:hover {
+  background: linear-gradient(to bottom, #f0c67c, #c99642);
+}
+
+.rightColumn {
+  display: flex;
+  flex-direction: column;
+  background: #f9e8c9;
+  border: 2px solid #d4b483;
+  border-radius: 12px;
+  padding: 20px;
+  max-height: calc(100vh - 40px);
+  overflow-y: auto;
+}
+
+.modalOverlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+}
+
+.modalContent {
+  background: #fff6e6;
+  border: 2px solid #d4b483;
+  border-radius: 12px;
+  padding: 20px;
+  max-width: 500px;
+  width: 90%;
+  position: relative;
+}
+
+.closeBtn {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  background: #c94c4c;
+  color: white;
+  border: none;
+  border-radius: 50%;
+  font-size: 18px;
+  cursor: pointer;
+  width: 30px;
+  height: 30px;
+  line-height: 30px;
+  text-align: center;
+}
+
+.closeBtn:hover {
+  background: #a63b3b;
+}

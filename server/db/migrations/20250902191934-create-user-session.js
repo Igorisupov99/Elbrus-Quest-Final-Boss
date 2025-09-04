@@ -34,11 +34,6 @@ module.exports = {
         allowNull: false,
         defaultValue: 0
       },
-      is_current_active: {
-        type: Sequelize.BOOLEAN,
-        allowNull: false,
-        defaultValue: false
-      },
       is_user_active: {
         type: Sequelize.BOOLEAN,
         allowNull: false,
