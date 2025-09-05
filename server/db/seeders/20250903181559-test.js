@@ -30,13 +30,55 @@ module.exports = {
       },
       {
         phase_id: 1,
-        title: 'Условные конструкции',
+        title: 'Условные конструкции и операторы',
+        createdAt: new Date(),
+        updatedAt: new Date()
+      },
+      {
+        phase_id: 1,
+        title: 'Циклы и итерации',
+        createdAt: new Date(),
+        updatedAt: new Date()
+      },
+      {
+        phase_id: 1,
+        title: 'Функции и область видимости',
+        createdAt: new Date(),
+        updatedAt: new Date()
+      },
+      {
+        phase_id: 1,
+        title: 'Массивы и объекты',
         createdAt: new Date(),
         updatedAt: new Date()
       },
       {
         phase_id: 2,
         title: 'HTML и семантическая верстка',
+        createdAt: new Date(),
+        updatedAt: new Date()
+      },
+      {
+        phase_id: 2,
+        title: 'CSS: Flexbox и Grid',
+        createdAt: new Date(),
+        updatedAt: new Date()
+      },
+      {
+        phase_id: 2,
+        title: 'Основы JavaScript',
+        createdAt: new Date(),
+        updatedAt: new Date()
+      },
+      {
+        phase_id: 2,
+        title: 'DOM manipulation',
+        createdAt: new Date(),
+        updatedAt: new Date()
+      },
+      {
+        phase_id: 2,
+        title: 'События и обработчики',
         createdAt: new Date(),
         updatedAt: new Date()
       }
@@ -46,19 +88,291 @@ module.exports = {
     await queryInterface.bulkInsert('Questions', [
       {
         topic_id: 1,
-        question_text: 'Что такое переменная в программировании?',
-        correct_answer: 'Именованная область памяти для хранения данных',
+        question_text: 'Какой тип данных для целых чисел?',
+        correct_answer: 'number',
+        mentor_tip: 'Number используется для целых и дробных чисел',
         question_type: 'тип',
-        mentor_tip: 'Переменная это контейнер для хранения информации',
+        createdAt: new Date(),
+        updatedAt: new Date()
+      },
+      {
+        topic_id: 1,
+        question_text: 'Какой тип для истина/ложь?',
+        correct_answer: 'boolean',
+        mentor_tip: 'Boolean может быть true или false',
+        question_type: 'тип',
+        createdAt: new Date(),
+        updatedAt: new Date()
+      },
+      {
+        topic_id: 1,
+        question_text: 'Какой тип для текста?',
+        correct_answer: 'string',
+        mentor_tip: 'String представляет текстовые данные',
+        question_type: 'тип',
+        createdAt: new Date(),
+        updatedAt: new Date()
+      },
+
+      // 2. Условные конструкции
+      {
+        topic_id: 2,
+        question_text: 'Какой оператор для условия?',
+        correct_answer: 'if',
+        mentor_tip: 'if проверяет условие и выполняет код если true',
+        question_type: 'тип',
         createdAt: new Date(),
         updatedAt: new Date()
       },
       {
         topic_id: 2,
-        question_text: 'Как работает оператор if-else?',
-        correct_answer: 'Выполняет код в блоке if если условие истинно, иначе в блоке else',
+        question_text: 'Какой оператор для альтернативы?',
+        correct_answer: 'else',
+        mentor_tip: 'else выполняется если условие if false',
         question_type: 'тип',
-        mentor_tip: 'if (условие) { код } else { альтернативный код }',
+        createdAt: new Date(),
+        updatedAt: new Date()
+      },
+      {
+        topic_id: 2,
+        question_text: 'Какой оператор для множественного выбора?',
+        correct_answer: 'switch',
+        mentor_tip: 'switch сравнивает значение с несколькими case',
+        question_type: 'тип',
+        createdAt: new Date(),
+        updatedAt: new Date()
+      },
+
+      // 3. Циклы
+      {
+        topic_id: 3,
+        question_text: 'Какой цикл с счетчиком?',
+        correct_answer: 'for',
+        mentor_tip: 'for используется когда известно количество итераций',
+        question_type: 'тип',
+        createdAt: new Date(),
+        updatedAt: new Date()
+      },
+      {
+        topic_id: 3,
+        question_text: 'Какой цикл с условием?',
+        correct_answer: 'while',
+        mentor_tip: 'while выполняется пока условие истинно',
+        question_type: 'тип',
+        createdAt: new Date(),
+        updatedAt: new Date()
+      },
+      {
+        topic_id: 3,
+        question_text: 'Какой цикл с пост-условием?',
+        correct_answer: 'do-while',
+        mentor_tip: 'do-while выполняется хотя бы один раз',
+        question_type: 'тип',
+        createdAt: new Date(),
+        updatedAt: new Date()
+      },
+
+      // 4. Функции
+      {
+        topic_id: 4,
+        question_text: 'Как объявить функцию?',
+        correct_answer: 'function',
+        mentor_tip: 'function имя() { } объявляет функцию',
+        question_type: 'тип',
+        createdAt: new Date(),
+        updatedAt: new Date()
+      },
+      {
+        topic_id: 4,
+        question_text: 'Как вернуть значение?',
+        correct_answer: 'return',
+        mentor_tip: 'return возвращает значение из функции',
+        question_type: 'тип',
+        createdAt: new Date(),
+        updatedAt: new Date()
+      },
+      {
+        topic_id: 4,
+        question_text: 'Какие функции без имени?',
+        correct_answer: 'arrow',
+        mentor_tip: 'Стрелочные функции: () => { }',
+        question_type: 'тип',
+        createdAt: new Date(),
+        updatedAt: new Date()
+      },
+
+      // 5. Массивы и объекты
+      {
+        topic_id: 5,
+        question_text: 'Как создать массив?',
+        correct_answer: '[]',
+        mentor_tip: 'Квадратные скобки создают массив',
+        question_type: 'тип',
+        createdAt: new Date(),
+        updatedAt: new Date()
+      },
+      {
+        topic_id: 5,
+        question_text: 'Как создать объект?',
+        correct_answer: '{}',
+        mentor_tip: 'Фигурные скобки создают объект',
+        question_type: 'тип',
+        createdAt: new Date(),
+        updatedAt: new Date()
+      },
+      {
+        topic_id: 5,
+        question_text: 'Как получить свойство объекта?',
+        correct_answer: 'dot',
+        mentor_tip: 'Через точку: объект.свойство',
+        question_type: 'тип',
+        createdAt: new Date(),
+        updatedAt: new Date()
+      },
+
+      // === ФАЗА 1 ===
+      
+      // 6. HTML
+      {
+        topic_id: 6,
+        question_text: 'Какой тег для заголовка?',
+        correct_answer: 'h1',
+        mentor_tip: 'h1-h6 для заголовков разного уровня',
+        question_type: 'тип',
+        createdAt: new Date(),
+        updatedAt: new Date()
+      },
+      {
+        topic_id: 6,
+        question_text: 'Какой тег для ссылки?',
+        correct_answer: 'a',
+        mentor_tip: 'Тег <a> создает гиперссылки',
+        question_type: 'тип',
+        createdAt: new Date(),
+        updatedAt: new Date()
+      },
+      {
+        topic_id: 6,
+        question_text: 'Какой тег для изображения?',
+        correct_answer: 'img',
+        mentor_tip: 'Тег <img> вставляет изображение',
+        question_type: 'тип',
+        createdAt: new Date(),
+        updatedAt: new Date()
+      },
+
+      // 7. CSS
+      {
+        topic_id: 7,
+        question_text: 'Как изменить цвет?',
+        correct_answer: 'color',
+        mentor_tip: 'Свойство color меняет цвет текста',
+        question_type: 'тип',
+        createdAt: new Date(),
+        updatedAt: new Date()
+      },
+      {
+        topic_id: 7,
+        question_text: 'Как изменить размер?',
+        correct_answer: 'font-size',
+        mentor_tip: 'font-size изменяет размер шрифта',
+        question_type: 'тип',
+        createdAt: new Date(),
+        updatedAt: new Date()
+      },
+      {
+        topic_id: 7,
+        question_text: 'Как выровнять по центру?',
+        correct_answer: 'center',
+        mentor_tip: 'text-align: center выравнивает текст',
+        question_type: 'тип',
+        createdAt: new Date(),
+        updatedAt: new Date()
+      },
+
+      // 8. Основы JavaScript
+      {
+        topic_id: 8,
+        question_text: 'Как объявить переменную?',
+        correct_answer: 'let',
+        mentor_tip: 'let и const для объявления переменных',
+        question_type: 'тип',
+        createdAt: new Date(),
+        updatedAt: new Date()
+      },
+      {
+        topic_id: 8,
+        question_text: 'Как проверить равенство?',
+        correct_answer: '===',
+        mentor_tip: '=== строгое равенство без приведения типов',
+        question_type: 'тип',
+        createdAt: new Date(),
+        updatedAt: new Date()
+      },
+      {
+        topic_id: 8,
+        question_text: 'Как объединить строки?',
+        correct_answer: 'concat',
+        mentor_tip: 'Метод concat или оператор +',
+        question_type: 'тип',
+        createdAt: new Date(),
+        updatedAt: new Date()
+      },
+
+      // 9. DOM manipulation
+      {
+        topic_id: 9,
+        question_text: 'Как найти элемент?',
+        correct_answer: 'querySelector',
+        mentor_tip: 'document.querySelector("селектор")',
+        question_type: 'тип',
+        createdAt: new Date(),
+        updatedAt: new Date()
+      },
+      {
+        topic_id: 9,
+        question_text: 'Как изменить текст?',
+        correct_answer: 'textContent',
+        mentor_tip: 'element.textContent = "новый текст"',
+        question_type: 'тип',
+        createdAt: new Date(),
+        updatedAt: new Date()
+      },
+      {
+        topic_id: 9,
+        question_text: 'Как добавить класс?',
+        correct_answer: 'classList',
+        mentor_tip: 'element.classList.add("класс")',
+        question_type: 'тип',
+        createdAt: new Date(),
+        updatedAt: new Date()
+      },
+
+      // 10. События
+      {
+        topic_id: 10,
+        question_text: 'Событие клика?',
+        correct_answer: 'click',
+        mentor_tip: 'element.addEventListener("click", функция)',
+        question_type: 'тип',
+        createdAt: new Date(),
+        updatedAt: new Date()
+      },
+      {
+        topic_id: 10,
+        question_text: 'Событие загрузки?',
+        correct_answer: 'load',
+        mentor_tip: 'window.addEventListener("load", функция)',
+        question_type: 'тип',
+        createdAt: new Date(),
+        updatedAt: new Date()
+      },
+      {
+        topic_id: 10,
+        question_text: 'Событие ввода?',
+        correct_answer: 'input',
+        mentor_tip: 'input.addEventListener("input", функция)',
+        question_type: 'тип',
         createdAt: new Date(),
         updatedAt: new Date()
       }

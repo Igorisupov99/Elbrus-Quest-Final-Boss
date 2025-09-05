@@ -8,9 +8,19 @@ import {
   type IncomingChatMessage,
   type SystemEvent,
 } from "../../socket/socketLobbyPage";
-import { Point } from "../../components/map/Point/Point";
+import { Point, type POIStatus } from "../../components/map/Point/Point";
 import { QuestionModal } from "../../components/common/modals/QuestionModal/QuestionModal";
 import api from "../../api/axios";
+
+interface PointData {
+  id: string;
+  title: string;
+  top: number;
+  left: number;
+  status: POIStatus;
+  phaseId: number;
+  topicId: number;
+}
 
 export function LobbyPage() {
   const { id } = useParams<{ id: string }>();
@@ -28,25 +38,76 @@ export function LobbyPage() {
   const [currentTopic, setCurrentTopic] = useState("");
   const [currentQuestion, setCurrentQuestion] = useState("");
   const [currentQuestionId, setCurrentQuestionId] = useState<number | null>(null);
+  const [currentPointId, setCurrentPointId] = useState<string | null>(null);
 
   // очки
   const [userScore, setUserScore] = useState<number>(0);
   const [sessionScore, setSessionScore] = useState<number>(0);
 
-  const openModal = async (phaseId: number, topicId: number) => {
+  // состояние точек
+  const [points, setPoints] = useState<PointData[]>([
+    {
+      id: "1",
+      title: "Тема 1",
+      top: 81,
+      left: 32.3,
+      status: "available",
+      phaseId: 1,
+      topicId: 1
+    },
+    {
+      id: "2",
+      title: "Тема 2",
+      top: 70.5,
+      left: 32,
+      status: "available",
+      phaseId: 2,
+      topicId: 5
+    },
+    {
+      id: "3",
+      title: "Тема 3",
+      top: 65,
+      left: 26.5,
+      status: "available",
+      phaseId: 3,
+      topicId: 7
+    },
+    {
+      id: "4",
+      title: "Тема 4",
+      top: 55,
+      left: 36,
+      status: "available",
+      phaseId: 4,
+      topicId: 10
+    }
+  ]);
+
+  const openModal = async (pointId: string) => {
+    const point = points.find(p => p.id === pointId);
+    if (!point || point.status !== "available") return;
+
     try {
       const res = await api.get("/api/question/textQuestion", {
-        params: { phase_id: phaseId, topic_id: topicId },
+        params: { phase_id: point.phaseId, topic_id: point.topicId },
         withCredentials: true,
       });
 
       setCurrentTopic(res.data.topic_title || "Без названия");
       setCurrentQuestion(res.data.question_text);
       setCurrentQuestionId(res.data.question_id);
+      setCurrentPointId(pointId);
       setIsModalOpen(true);
     } catch (err) {
       console.error("Ошибка при получении вопроса:", err);
     }
+  };
+
+  const updatePointStatus = (pointId: string, status: POIStatus) => {
+    setPoints(prev => prev.map(point =>
+      point.id === pointId ? { ...point, status } : point
+    ));
   };
 
   useEffect(() => {
@@ -148,41 +209,17 @@ export function LobbyPage() {
       <div className={styles.gameArea}>
         <img src="/map.png" alt="Игровая карта" className={styles.gameMap} />
 
-        <Point
-          id="1"
-          title="Тема 1"
-          top={81}
-          left={32.3}
-          status="available"
-          onClick={() => openModal(1, 1)}
-        />
-
-        <Point
-          id="2"
-          title="Тема 2"
-          top={70.5}
-          left={32}
-          status="available"
-          onClick={() => openModal(2, 5)}
-        />
-
-        <Point
-          id="3"
-          title="Тема 3"
-          top={65}
-          left={26.5}
-          status="available"
-          onClick={() => openModal(3, 7)}
-        />
-
-        <Point
-          id="4"
-          title="Тема 4"
-          top={55}
-          left={36}
-          status="available"
-          onClick={() => openModal(4, 10)}
-        />
+        {points.map(point => (
+          <Point
+            key={point.id}
+            id={point.id}
+            title={point.title}
+            top={point.top}
+            left={point.left}
+            status={point.status}
+            onClick={openModal}
+          />
+        ))}
       </div>
 
       <div className={styles.sidebar}>
@@ -271,10 +308,19 @@ export function LobbyPage() {
         questionId={currentQuestionId}
         lobbyId={lobbyId}
         onAnswerResult={(correct, scores) => {
-          console.log(correct) //консоль лог не трогать, без него ложится прод!!!
+          
           if (scores) {
             setUserScore(scores.userScore || 0);
             setSessionScore(scores.sessionScore || 0);
+          }
+
+          // обновляем  точку после ответа
+          if (currentPointId) {
+            if (correct) {
+              updatePointStatus(currentPointId, "completed");
+            } else {
+              updatePointStatus(currentPointId, "locked");
+            }
           }
         }}
       />
