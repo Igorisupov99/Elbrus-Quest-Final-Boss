@@ -67,6 +67,7 @@ export const logoutUser = createAsyncThunk<void, void, { rejectValue: string }>(
     try {
       await authApi.logout();
       localStorage.removeItem('accessToken');
+      return
     } catch (err: any) {
       return rejectWithValue(err.message);
     }

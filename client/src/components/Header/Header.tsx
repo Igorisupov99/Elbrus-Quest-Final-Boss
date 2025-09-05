@@ -1,4 +1,4 @@
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import styles from './Header.module.css';
 import { useAppDispatch, useAppSelector } from '../../store/hooks';
 import { logoutUser } from '../../store/authThunks';
@@ -7,6 +7,18 @@ import { logoutUser } from '../../store/authThunks';
 export function Header() {
   const { user, loading } = useAppSelector((state) => state.auth);
   const dispatch = useAppDispatch();
+  const navigate = useNavigate();
+
+  const handleLogout = async () => {
+    try {
+      await dispatch(logoutUser()).unwrap(); 
+    } catch (err) {
+      console.error('Ошибка при выходе:', err);
+    } finally {
+      navigate('/login');
+    }
+  };
+  
 
   return (
     <header className={styles.header}>
@@ -24,7 +36,7 @@ export function Header() {
                 Профиль
               </Link>
               <button
-                onClick={() => dispatch(logoutUser())}
+                onClick={handleLogout}
                 className={styles.logoutBtn}
                 type="button"
               >
