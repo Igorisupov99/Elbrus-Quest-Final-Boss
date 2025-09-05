@@ -23,6 +23,9 @@ export function LobbyPage() {
   const [input, setInput] = useState("");
   const listRef = useRef<HTMLDivElement | null>(null);
 
+  // Состояние для списка пользователей в комнате
+  const [usersInLobby, setUsersInLobby] = useState<{ id: number; username: string }[]>([]);
+
   // модалка
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [currentTopic, setCurrentTopic] = useState("");
@@ -103,6 +106,11 @@ export function LobbyPage() {
     };
     const onError = (payload: any) => console.error("chat error:", payload);
 
+    // Обработчик списка пользователей в комнате
+    const onUsersList = (users: { id: number; username: string }[]) => {
+      setUsersInLobby(users);
+    };
+
     s.on("connect", onConnect);
     s.on("disconnect", onDisconnect);
     s.on("connect_error", onConnectError);
@@ -110,6 +118,7 @@ export function LobbyPage() {
     s.on("chat:message", onChatMessage);
     s.on("system", onSystem);
     s.on("error", onError);
+    s.on("lobby:users", onUsersList);
 
     return () => {
       s.off("connect", onConnect);
@@ -119,6 +128,7 @@ export function LobbyPage() {
       s.off("chat:message", onChatMessage);
       s.off("system", onSystem);
       s.off("error", onError);
+      s.off("lobby:users", onUsersList);
       socketClient.disconnect();
     };
   }, [lobbyId, navigate]);
@@ -189,6 +199,16 @@ export function LobbyPage() {
         <Button className={styles.exitButton} onClick={handleExitLobby}>
           Выйти из комнаты
         </Button>
+
+        {/* Список пользователей в комнате */}
+        <div className={styles.usersList}>
+          <h3>Пользователи в комнате</h3>
+          <ul>
+            {usersInLobby.map((user) => (
+              <li key={user.id}>{user.username}</li>
+            ))}
+          </ul>
+        </div>
 
         {/* очки */}
         <div className={styles.scores}>
@@ -271,7 +291,7 @@ export function LobbyPage() {
         questionId={currentQuestionId}
         lobbyId={lobbyId}
         onAnswerResult={(correct, scores) => {
-          console.log(correct) //консоль лог не трогать, без него ложится прод!!!
+          console.log(correct); // консоль лог не трогать, без него ложится прод!!!
           if (scores) {
             setUserScore(scores.userScore || 0);
             setSessionScore(scores.sessionScore || 0);
