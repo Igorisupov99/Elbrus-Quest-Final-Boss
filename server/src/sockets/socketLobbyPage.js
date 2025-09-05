@@ -1,5 +1,7 @@
 const db = require('../../db/models');
 
+const lobbyUsers = new Map(); // ключ — lobbyId, значение — Set(socket.user)
+
 function initLobbySockets(nsp) {
   nsp.on('connection', (socket) => {
     const { lobbyId } = socket.handshake.auth;
@@ -13,7 +15,24 @@ function initLobbySockets(nsp) {
     const roomKey = `lobby:${lobbyId}`;
     socket.join(roomKey);
 
+    // Добавляем пользователя в список
+    if (!lobbyUsers.has(lobbyId)) {
+      lobbyUsers.set(lobbyId, new Map());
+    }
+    lobbyUsers.get(lobbyId).set(socket.id, {
+      id: socket.user.id,
+      username: socket.user.username,
+    });
+
+    // Отправляем обновленный список пользователей в комнате всем участникам
+    function emitUsersList() {
+      const users = Array.from(lobbyUsers.get(lobbyId).values());
+      nsp.to(roomKey).emit('lobby:users', users);
+    }
+
     console.log(`✅ User connected to lobby ${lobbyId}: ${socket.user.username}`);
+
+    emitUsersList();
 
     (async () => {
       const lastMessages = await db.ChatGameSession.findAll({
@@ -68,6 +87,11 @@ function initLobbySockets(nsp) {
 
     socket.on('leaveLobby', () => {
       socket.leave(roomKey);
+      // Удаляем пользователя из списка
+      if (lobbyUsers.has(lobbyId)) {
+        lobbyUsers.get(lobbyId).delete(socket.id);
+        emitUsersList();
+      }
       nsp.to(roomKey).emit('system', {
         type: 'leave',
         userId: socket.user.id,
@@ -77,6 +101,10 @@ function initLobbySockets(nsp) {
 
     socket.on('disconnect', (reason) => {
       console.log(`❌ Lobby socket disconnected: ${socket.id}, reason=${reason}`);
+      if (lobbyUsers.has(lobbyId)) {
+        lobbyUsers.get(lobbyId).delete(socket.id);
+        emitUsersList();
+      }
     });
   });
 }
