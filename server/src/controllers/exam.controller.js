@@ -1,4 +1,4 @@
-const { Topic, Question } = require("../../db/models");
+const { Topic, Question, Phase } = require("../../db/models");
 
 class ExamController {
   async getExamQuestions(req, res) {
@@ -73,6 +73,64 @@ for (const topic of mixTopics) {
       return res.status(500).json({ error: "Внутренняя ошибка сервера" });
     }
   }
+
+  // ПРОВЕРКА ПРАВИЛЬНОСТИ ОТВЕТА
+
+  async examAnswerCheck(req, res) {
+    try {
+      const { phase_id, topic_id, question_id, answer } = req.body;
+
+      // Проверяем наличие всех параметров
+      if (
+        !phase_id || !topic_id || !question_id ||
+        typeof answer !== 'string' || answer.trim() === ''
+      ) {
+        return res.status(400).json({ error: "Отсутствуют необходимые параметры или ответ пустой" });
+      }
+
+      // Проверяем, что фаза существует
+      const phase = await Phase.findByPk(phase_id);
+      if (!phase) {
+        return res.status(404).json({ error: "Фаза не найдена" });
+      }
+
+      // Проверяем, что топик существует и принадлежит фазе
+      const topic = await Topic.findOne({
+        where: { id: topic_id, phase_id }
+      });
+      if (!topic) {
+        return res.status(404).json({ error: "Топик не найден или не принадлежит указанной фазе" });
+      }
+
+      // Проверяем, что вопрос существует и принадлежит топику
+      const question = await Question.findOne({
+        where: { id: question_id, topic_id }
+      });
+      if (!question) {
+        return res.status(404).json({ error: "Вопрос не найден или не принадлежит указанному топику" });
+      }
+
+      // Сравниваем ответ пользователя с правильным ответом
+      // Можно сделать сравнение с игнорированием регистра и пробелов
+      const correctAnswer = question.correct_answer.trim().toLowerCase();
+      const userAnswer = answer.trim().toLowerCase();
+
+      const isCorrect = correctAnswer === userAnswer;
+
+      return res.json({
+        question_id,
+        topic_id,
+        phase_id,
+        correct: isCorrect,
+        correct_answer: question.correct_answer, // можно убрать, если не хотите отдавать правильный ответ
+      });
+
+    } catch (error) {
+      console.error("Ошибка на сервере:", error);
+      return res.status(500).json({ error: "Внутренняя ошибка сервера" });
+    }
+  }
+
 }
 
 module.exports = new ExamController();
