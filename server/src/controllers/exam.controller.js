@@ -24,7 +24,7 @@ class ExamController {
         return res.status(404).json({ error: "Топики для данной фазы не найдены" });
       }
 
-      // Функция для перемешивания массива (Fisher-Yates shuffle)
+      // Функция для перемешивания массива 
       function mixArray(array) {
         for (let i = array.length - 1; i > 0; i--) {
           const j = Math.floor(Math.random() * (i + 1));
@@ -51,7 +51,7 @@ for (const topic of mixTopics) {
     // Сколько вопросов нужно взять из этого топика
     const needed = count - selectedQuestions.length;
   
-    // Добавляем нужное количество вопросов, сохраняя topic_id
+    // Добавляем нужное количество вопросов
     const questionsToAdd = mixQuestions.slice(0, needed).map(q => ({
       id: q.id,
       question_text: q.question_text,
@@ -66,7 +66,8 @@ for (const topic of mixTopics) {
   }
   
   // Возвращаем вопросы с id, текстом и id топика
-  return res.json(selectedQuestions);
+  
+  return res.json({ questions: selectedQuestions });
 
     } catch (error) {
       console.error("Ошибка на сервере:", error);
@@ -111,7 +112,7 @@ for (const topic of mixTopics) {
       }
 
       // Сравниваем ответ пользователя с правильным ответом
-      // Можно сделать сравнение с игнорированием регистра и пробелов
+    
       const correctAnswer = question.correct_answer.trim().toLowerCase();
       const userAnswer = answer.trim().toLowerCase();
 
@@ -122,7 +123,7 @@ for (const topic of mixTopics) {
         topic_id,
         phase_id,
         correct: isCorrect,
-        correct_answer: question.correct_answer, // можно убрать, если не хотите отдавать правильный ответ
+        correct_answer: question.correct_answer
       });
 
     } catch (error) {
