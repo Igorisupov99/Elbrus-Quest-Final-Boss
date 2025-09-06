@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "../../Button/Button";
 import styles from "./QuestionModal.module.css";
 import api from "../../../../api/axios";
@@ -10,6 +10,9 @@ interface QuestionModalProps {
   question: string;
   questionId: number | null;
   lobbyId?: number;
+  currentUserId: number;          // 👈 id текущего игрока
+  activePlayerId: number | null;  // 👈 id активного игрока
+  activePlayerName: string;       // 👈 имя активного игрока
   onAnswerResult?: (
     correct: boolean,
     scores?: { userScore?: number; sessionScore?: number }
@@ -23,11 +26,19 @@ export function QuestionModal({
   question,
   questionId,
   lobbyId,
+  currentUserId,
+  activePlayerId,
+  activePlayerName,
   onAnswerResult,
 }: QuestionModalProps) {
   const [answer, setAnswer] = useState("");
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState<string | null>(null);
+
+  useEffect(() => {
+    setAnswer('');
+    setResult(null);
+  }, [questionId]);
 
   if (!isOpen) return null;
 
@@ -62,29 +73,48 @@ export function QuestionModal({
     }
   };
 
+  const handleClose = () => {
+    setAnswer('');
+    setResult(null);
+    onClose();
+  };
+
   return (
     <div className={styles.backdrop}>
       <div className={styles.modal}>
         <h2 className={styles.title}>{topic}</h2>
         <p className={styles.question}>{question}</p>
 
-        <input
-          type="text"
-          className={styles.input}
-          placeholder="Ваш ответ..."
-          value={answer}
-          onChange={(e) => setAnswer(e.target.value)}
-          disabled={loading}
-        />
+        {currentUserId === activePlayerId ? (
+          <>
+            <input
+              type="text"
+              className={styles.input}
+              placeholder="Ваш ответ..."
+              value={answer}
+              onChange={(e) => setAnswer(e.target.value)}
+              disabled={loading}
+            />
 
-        {result && <p className={styles.result}>{result}</p>}
+            {result && <p className={styles.result}>{result}</p>}
 
-        <div className={styles.actions}>
-          <Button onClick={onClose}>Закрыть</Button>
-          <Button onClick={handleSubmit} disabled={loading || !answer.trim()}>
-            Отправить
-          </Button>
-        </div>
+            <div className={styles.actions}>
+              <Button onClick={onClose}>Закрыть</Button>
+              <Button onClick={handleSubmit} disabled={loading || !answer.trim()}>
+                Отправить
+              </Button>
+            </div>
+          </>
+        ) : (
+          <div className={styles.waitingBlock}>
+            <p className={styles.waiting}>
+              Сейчас отвечает <strong>{activePlayerName}</strong>
+            </p>
+            <div className={styles.actions}>
+              <Button onClick={handleClose}>Закрыть</Button>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );
