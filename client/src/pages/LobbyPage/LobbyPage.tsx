@@ -151,6 +151,12 @@ export function LobbyPage() {
         withCredentials: true,
       });
 
+      if (!res.data.questions || res.data.questions.length === 0) {
+        console.error("Не удалось загрузить вопросы для экзамена");
+        // Можно показать сообщение пользователю
+        return;
+      }
+
       if (res.data.questions && res.data.questions.length > 0) {
         setExamQuestions(res.data.questions);
         setCurrentExamQuestionIndex(0);
