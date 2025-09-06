@@ -24,6 +24,7 @@ export const loginUser = createAsyncThunk<AuthResponse, LoginCredentials, { reje
       const { user, accessToken } = await authApi.login(credentials);
       localStorage.setItem('accessToken', accessToken);
       return { user, accessToken };
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (err: any) {
       const message =
         err.response?.data?.message ||
@@ -42,6 +43,7 @@ export const registerUser = createAsyncThunk<AuthResponse, RegisterData, { rejec
       const { user, accessToken } = await authApi.register(data);
       localStorage.setItem('accessToken', accessToken);
       return { user, accessToken };
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (err: any) {
       return rejectWithValue(err.message);
     }
@@ -54,6 +56,7 @@ export const fetchProfile = createAsyncThunk<User, void, { rejectValue: string }
   async (_, { rejectWithValue }) => {
     try {
       return await authApi.getCurrentUser();
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (err: any) {
       return rejectWithValue(err.message);
     }
@@ -68,6 +71,7 @@ export const logoutUser = createAsyncThunk<void, void, { rejectValue: string }>(
       await authApi.logout();
       localStorage.removeItem('accessToken');
       return
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (err: any) {
       return rejectWithValue(err.message);
     }

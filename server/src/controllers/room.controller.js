@@ -78,11 +78,9 @@ class RoomController {
       }
 
       if (room.room_creator !== currentUserId) {
-        return res
-          .status(403)
-          .json({
-            message: 'Изменять название комнаты может только её создатель',
-          });
+        return res.status(403).json({
+          message: 'Изменять название комнаты может только её создатель',
+        });
       }
 
       room.room_name = room_name;
@@ -147,37 +145,81 @@ class RoomController {
         .json({ success: false, message: 'Ошибка сервера' });
     }
   }
-    // 2) (на потом) Проверить введённый пароль
-    async verifyRoomCode(req, res) {
-      try {
-        const { id } = req.params;
-        const { code } = req.body; // { code: '...' }
-  
-        const room = await GameSession.findByPk(id, {
-          attributes: ["id", "room_code"],
-        });
-  
-        if (!room) {
-          return res.status(404).json({ success: false, message: "Комната не найдена" });
-        }
-  
-        // Если пароль не задан — вход свободный
-        if (!room.room_code) {
-          return res.status(200).json({ success: true, message: "Пароль не требуется" });
-        }
-  
-        // Если у тебя пароли хешируются, замени на bcrypt.compare(code, room.room_code)
-        if (String(code) === String(room.room_code)) {
-          return res.status(200).json({ success: true, message: "Пароль верный" });
-        }
-  
-        return res.status(403).json({ success: false, message: "Неверный пароль" });
-      } catch (error) {
-        console.error("Ошибка verifyRoomCode:", error);
-        return res.status(500).json({ success: false, message: "Ошибка сервера" });
+  // 2) (на потом) Проверить введённый пароль
+  async verifyRoomCode(req, res) {
+    try {
+      const { id } = req.params;
+      const { code } = req.body; // { code: '...' }
+
+      const room = await GameSession.findByPk(id, {
+        attributes: ['id', 'room_code'],
+      });
+
+      if (!room) {
+        return res
+          .status(404)
+          .json({ success: false, message: 'Комната не найдена' });
       }
+
+      if (!room.room_code) {
+        return res
+          .status(200)
+          .json({ success: true, message: 'Пароль не требуется' });
+      }
+
+      if (String(code) === String(room.room_code)) {
+        return res
+          .status(200)
+          .json({ success: true, message: 'Пароль верный' });
+      }
+
+      return res
+        .status(403)
+        .json({ success: false, message: 'Неверный пароль' });
+    } catch (error) {
+      console.error('Ошибка verifyRoomCode:', error);
+      return res
+        .status(500)
+        .json({ success: false, message: 'Ошибка сервера' });
     }
-  
+  }
+
+  // Проверить, является ли текущий пользователь создателем комнаты
+  async checkCreator(req, res) {
+    try {
+      const { id } = req.params;
+      const currentUserId = req.user.id; 
+
+      const room = await GameSession.findByPk(id, {
+        attributes: ['id', 'room_creator', 'room_name'],
+      });
+
+      if (!room) {
+        return res.status(404).json({
+          success: false,
+          message: 'Комната не найдена',
+        });
+      }
+
+      const isCreator = room.room_creator === currentUserId;
+
+      return res.status(200).json({
+        success: true,
+        data: {
+          roomId: room.id,
+          roomName: room.room_name,
+          roomCreator: room.room_creator,
+          isCreator,
+        },
+      });
+    } catch (error) {
+      console.error('Ошибка checkCreator:', error);
+      return res.status(500).json({
+        success: false,
+        message: 'Ошибка сервера',
+      });
+    }
+  }
 }
 
 module.exports = new RoomController();

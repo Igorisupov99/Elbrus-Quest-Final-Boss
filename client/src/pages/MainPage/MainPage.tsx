@@ -12,7 +12,11 @@ import ModelPageEnterPassword from '../../components/ModelPageEnterPassword/Mode
 import styles from './MainPage.module.css';
 import api from '../../lib/axios';
 import { getAccessToken } from '../../lib/tokenStorage';
-import { fetchRooms, updateRoom, removeRoom } from '../../store/mainPage/mainPageThunks';
+import {
+  fetchRooms,
+  updateRoom,
+  removeRoom,
+} from '../../store/mainPage/mainPageThunks';
 
 type ModalKind = 'confirm' | 'password' | null;
 
@@ -64,30 +68,69 @@ export function MainPage(): JSX.Element {
     <>
       <MainPageChat />
 
-      <h2 >Доступные комнаты:</h2>
+      <h2>Доступные комнаты:</h2>
       {loading && <p>Загрузка комнат...</p>}
       {error && <p className={styles.error}>Ошибка: {error}</p>}
 
       <ul className={styles.rooms}>
         {items.map((item) => (
-          <li key={item.id} className={styles.roomRow}>
-            <span className={styles.roomItem} onClick={() => handleRoomClick(item.id)}>
-              {item.title}
-            </span>
+          <li
+            key={item.id}
+            className={styles.roomRow}
+            onClick={() => handleRoomClick(item.id)}
+            role="button"
+            tabIndex={0}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter' || e.key === ' ') {
+                e.preventDefault();
+                handleRoomClick(item.id);
+              }
+            }}
+          >
+            <span className={styles.roomItem}>{item.title}</span>
+
             <div className={styles.actions}>
-              <button onClick={() => handleEdit(item.id)}>✏️</button>
-              <button onClick={() => handleDelete(item.id)}>❌</button>
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  handleEdit(item.id);
+                }}
+              >
+                ✏️
+              </button>
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  handleDelete(item.id);
+                }}
+              >
+                ❌
+              </button>
             </div>
           </li>
         ))}
       </ul>
 
-      <button className={styles.createBtn} onClick={() => setIsCreateModalOpen(true)}>Создать комнату</button>
+      <button
+        className={styles.createBtn}
+        onClick={() => setIsCreateModalOpen(true)}
+      >
+        Создать комнату
+      </button>
 
       {isCreateModalOpen && (
-        <div className={styles.modalOverlay} onClick={() => setIsCreateModalOpen(false)}>
-          <div className={styles.modalContent} onClick={(e) => e.stopPropagation()}>
-            <button className={styles.closeBtn} onClick={() => setIsCreateModalOpen(false)}>
+        <div
+          className={styles.modalOverlay}
+          onClick={() => setIsCreateModalOpen(false)}
+        >
+          <div
+            className={styles.modalContent}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <button
+              className={styles.closeBtn}
+              onClick={() => setIsCreateModalOpen(false)}
+            >
               ×
             </button>
             <ModelPageCreateRoom setIsModalOpen={setIsCreateModalOpen} />
@@ -96,9 +139,18 @@ export function MainPage(): JSX.Element {
       )}
 
       {isAccessModalOpen && selectedRoomId !== null && (
-        <div className={styles.modalOverlay} onClick={() => setIsAccessModalOpen(false)}>
-          <div className={styles.modalContent} onClick={(e) => e.stopPropagation()}>
-            <button className={styles.closeBtn} onClick={() => setIsAccessModalOpen(false)}>
+        <div
+          className={styles.modalOverlay}
+          onClick={() => setIsAccessModalOpen(false)}
+        >
+          <div
+            className={styles.modalContent}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <button
+              className={styles.closeBtn}
+              onClick={() => setIsAccessModalOpen(false)}
+            >
               ×
             </button>
 

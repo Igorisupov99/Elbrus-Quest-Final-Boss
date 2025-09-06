@@ -122,3 +122,10 @@
 }
 .closeBtn:hover{ background:#352214; border-color:var(--rpg-gold-2); transform:scale(1.03); }
 .closeBtn:active{ transform:scale(1); }
+
+.roomRow { cursor: pointer; }
+.roomRow:focus-visible {
+  outline: 2px solid var(--rpg-gold);
+  outline-offset: 2px;
+}
+.actions button { cursor: pointer; }

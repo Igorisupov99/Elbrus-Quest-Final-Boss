@@ -10,10 +10,12 @@ export const fetchRooms = createAsyncThunk<MainPageItem[]>(
   async (_, thunkAPI) => {
     try {
       const response = await api.get('/api/room/all');
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       return response.data.data.map((room: any) => ({
         id: room.id,
         title: room.room_name,
       }));
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (err: any) {
       return thunkAPI.rejectWithValue(err.message);
     }
@@ -48,6 +50,7 @@ export const createRoom = createAsyncThunk<
         title: room.room_name,
         room_creator: room.room_creator,
       };
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (err: any) {
       return thunkAPI.rejectWithValue(err.message);
     }
@@ -65,6 +68,7 @@ export const updateRoom = createAsyncThunk<MainPageItem, { id: number; room_name
         id: response.data.data.id,
         title: response.data.data.room_name,
       };
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (err: any) {
       return thunkAPI.rejectWithValue(err.message);
     }
@@ -78,6 +82,7 @@ export const removeRoom = createAsyncThunk<number, number>(
     try {
       await api.delete(`/api/room/${id}`);
       return id;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (err: any) {
       return thunkAPI.rejectWithValue(err.message);
     }
