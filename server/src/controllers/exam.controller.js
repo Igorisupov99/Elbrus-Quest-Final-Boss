@@ -56,6 +56,7 @@ for (const topic of mixTopics) {
       id: q.id,
       question_text: q.question_text,
       topic_id: topic.id,  // добавляем id топика
+      topic_title: topic.title
     }));
   
     selectedQuestions.push(...questionsToAdd);
@@ -66,7 +67,7 @@ for (const topic of mixTopics) {
   }
   
   // Возвращаем вопросы с id, текстом и id топика
-  return res.json(selectedQuestions);
+  return res.json({ questions: selectedQuestions });
 
     } catch (error) {
       console.error("Ошибка на сервере:", error);
