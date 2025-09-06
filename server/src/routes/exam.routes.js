@@ -4,6 +4,6 @@ const examController = require('../controllers/exam.controller');
 
 examRouter.get("/examQuestion", examController.getExamQuestions)  // отдать вопросы для экзамена
 
-// examRouter.post("/examAnswerCheck", examController.examAnswerCheck)  // провкрить правильность ответа
+examRouter.post("/examAnswerCheck", examController.examAnswerCheck)  // проверить правильность ответа
 
 module.exports = examRouter;

@@ -1,4 +1,4 @@
-const { Topic, Question } = require("../../db/models");
+const { Topic, Question, Phase } = require("../../db/models");
 
 class ExamController {
   async getExamQuestions(req, res) {
@@ -24,7 +24,7 @@ class ExamController {
         return res.status(404).json({ error: "Топики для данной фазы не найдены" });
       }
 
-      // Функция для перемешивания массива (Fisher-Yates shuffle)
+      // Функция для перемешивания массива 
       function mixArray(array) {
         for (let i = array.length - 1; i > 0; i--) {
           const j = Math.floor(Math.random() * (i + 1));
@@ -51,7 +51,7 @@ for (const topic of mixTopics) {
     // Сколько вопросов нужно взять из этого топика
     const needed = count - selectedQuestions.length;
   
-    // Добавляем нужное количество вопросов, сохраняя topic_id
+    // Добавляем нужное количество вопросов
     const questionsToAdd = mixQuestions.slice(0, needed).map(q => ({
       id: q.id,
       question_text: q.question_text,
@@ -67,6 +67,7 @@ for (const topic of mixTopics) {
   }
   
   // Возвращаем вопросы с id, текстом и id топика
+  
   return res.json({ questions: selectedQuestions });
 
     } catch (error) {
@@ -74,6 +75,64 @@ for (const topic of mixTopics) {
       return res.status(500).json({ error: "Внутренняя ошибка сервера" });
     }
   }
+
+  // ПРОВЕРКА ПРАВИЛЬНОСТИ ОТВЕТА
+
+  async examAnswerCheck(req, res) {
+    try {
+      const { phase_id, topic_id, question_id, answer } = req.body;
+
+      // Проверяем наличие всех параметров
+      if (
+        !phase_id || !topic_id || !question_id ||
+        typeof answer !== 'string' || answer.trim() === ''
+      ) {
+        return res.status(400).json({ error: "Отсутствуют необходимые параметры или ответ пустой" });
+      }
+
+      // Проверяем, что фаза существует
+      const phase = await Phase.findByPk(phase_id);
+      if (!phase) {
+        return res.status(404).json({ error: "Фаза не найдена" });
+      }
+
+      // Проверяем, что топик существует и принадлежит фазе
+      const topic = await Topic.findOne({
+        where: { id: topic_id, phase_id }
+      });
+      if (!topic) {
+        return res.status(404).json({ error: "Топик не найден или не принадлежит указанной фазе" });
+      }
+
+      // Проверяем, что вопрос существует и принадлежит топику
+      const question = await Question.findOne({
+        where: { id: question_id, topic_id }
+      });
+      if (!question) {
+        return res.status(404).json({ error: "Вопрос не найден или не принадлежит указанному топику" });
+      }
+
+      // Сравниваем ответ пользователя с правильным ответом
+    
+      const correctAnswer = question.correct_answer.trim().toLowerCase();
+      const userAnswer = answer.trim().toLowerCase();
+
+      const isCorrect = correctAnswer === userAnswer;
+
+      return res.json({
+        question_id,
+        topic_id,
+        phase_id,
+        correct: isCorrect,
+        correct_answer: question.correct_answer
+      });
+
+    } catch (error) {
+      console.error("Ошибка на сервере:", error);
+      return res.status(500).json({ error: "Внутренняя ошибка сервера" });
+    }
+  }
+
 }
 
 module.exports = new ExamController();
