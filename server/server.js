@@ -13,6 +13,7 @@ const authRoutes = require('./src/routes/auth.routes');
 const userRouter = require('./src/routes/user.routes');
 const roomRouter = require('./src/routes/room.routes');
 const questionRouter = require('./src/routes/question.routes');
+const examRouter = require('./src/routes/exam.routes');
 
 const initLobbySockets = require('./src/sockets/socketLobbyPage');
 const initMainSockets = require('./src/sockets/socketMainPage');
@@ -38,6 +39,7 @@ app.use('/api/auth', authRoutes);
 app.use('/api/user', userRouter);
 app.use('/api/room', roomRouter);
 app.use('/api/question', questionRouter);
+app.use('/api/exam', examRouter);
 
 const io = new Server(server, {
   cors: {
