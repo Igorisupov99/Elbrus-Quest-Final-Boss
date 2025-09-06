@@ -20,9 +20,19 @@ export type SystemEvent = {
 
 class SocketClient {
   private _socket: Socket | null = null;
+  private _userId: number | null = null;
 
   connectWithToken(token: string, lobbyId: number) {
     if (this._socket && this._socket.connected) return;
+
+    // Извлекаем userId из токена
+    try {
+      const payload = JSON.parse(atob(token.split('.')[1]));
+      this._userId = payload.id ?? null;
+    } catch (e) {
+      console.warn("Не удалось извлечь userId из токена");
+      this._userId = null;
+    }
 
     this._socket = io(`${SERVER_URL}/lobby`, {
       withCredentials: true,
@@ -36,6 +46,7 @@ class SocketClient {
       this._socket.disconnect();
       this._socket = null;
     }
+    this._userId = null;
   }
 
   get socket() {
@@ -43,6 +54,10 @@ class SocketClient {
       throw new Error("LobbyPage socket не подключен");
     }
     return this._socket;
+  }
+
+  get userId() {
+    return this._userId;
   }
 }
 

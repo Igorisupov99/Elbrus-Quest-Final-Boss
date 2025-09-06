@@ -356,14 +356,17 @@ export function LobbyPage() {
         question={currentQuestion}
         questionId={currentQuestionId}
         lobbyId={lobbyId}
+        currentUserId={socketClient.userId ?? -1} // 👈 безопасная замена
+        activePlayerId={activePlayerId}
+        activePlayerName={
+          usersInLobby.find((u) => u.id === activePlayerId)?.username || "неизвестный"
+        }
         onAnswerResult={(correct, scores) => {
-          
           if (scores) {
             setUserScore(scores.userScore || 0);
             setSessionScore(scores.sessionScore || 0);
           }
 
-          // обновляем  точку после ответа
           if (currentPointId) {
             socketClient.socket.emit("lobby:answer", {
               lobbyId,

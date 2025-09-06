@@ -35,22 +35,18 @@ function initLobbySockets(nsp) {
     async function emitUsersList() {
       try {
         const users = Array.from(lobbyUsers.get(lobbyId).values());
-        
-        // Получаем активного игрока из БД
+
         const activeUserSession = await db.UserSession.findOne({
-          where: { 
+          where: {
             game_session_id: lobbyId,
-            is_user_active: true 
+            is_user_active: true,
           },
-          include: [{ model: db.User, as: 'user' }]
+          include: [{ model: db.User, as: 'user' }],
         });
-        
+
         const activePlayerId = activeUserSession ? activeUserSession.user.id : null;
-        
-        nsp.to(roomKey).emit('lobby:users', { 
-          users, 
-          activePlayerId 
-        });
+
+        nsp.to(roomKey).emit('lobby:users', { users, activePlayerId });
       } catch (err) {
         console.error('Ошибка при получении активного игрока:', err);
         const users = Array.from(lobbyUsers.get(lobbyId).values());
@@ -62,116 +58,88 @@ function initLobbySockets(nsp) {
     // Функция для передачи хода следующему игроку
     async function passTurnToNextPlayer() {
       try {
-        // Получаем текущего активного игрока
         const currentActivePlayer = await db.UserSession.findOne({
-          where: {
-            game_session_id: lobbyId,
-            is_user_active: true
-          }
+          where: { game_session_id: lobbyId, is_user_active: true },
         });
 
         if (!currentActivePlayer) return;
 
-        // Получаем всех игроков в лобби
         const allPlayers = await db.UserSession.findAll({
-          where: {
-            game_session_id: lobbyId
-          },
+          where: { game_session_id: lobbyId },
           order: [['createdAt', 'ASC']],
-          include: [{ model: db.User, as: 'user' }]
+          include: [{ model: db.User, as: 'user' }],
         });
 
-        if (allPlayers.length <= 1) return; // Если только один игрок
+        if (allPlayers.length <= 1) return;
 
-        // Находим индекс текущего активного игрока
-        const currentIndex = allPlayers.findIndex(player => 
-          player.id === currentActivePlayer.id
+        const currentIndex = allPlayers.findIndex(
+          (player) => player.id === currentActivePlayer.id
         );
-
-        // Вычисляем индекс следующего игрока
         const nextIndex = (currentIndex + 1) % allPlayers.length;
         const nextPlayer = allPlayers[nextIndex];
 
-        // Обновляем активного игрока в БД
         await db.UserSession.update(
           { is_user_active: false },
           { where: { id: currentActivePlayer.id } }
         );
-
         await db.UserSession.update(
           { is_user_active: true },
           { where: { id: nextPlayer.id } }
         );
 
-        console.log(`🎮 Ход передан от ${currentActivePlayer.player_name} к ${nextPlayer.player_name}`);
+        console.log(
+          `🎮 Ход передан от ${currentActivePlayer.player_name} к ${nextPlayer.player_name}`
+        );
 
-        // Отправляем обновление всем клиентам
         await emitUsersList();
-
       } catch (err) {
         console.error('Ошибка при передаче хода:', err);
       }
     }
 
-    console.log(`Пользователь подключился  ${lobbyId}: ${socket.user.username}`);
+    console.log(`Пользователь подключился ${lobbyId}: ${socket.user.username}`);
 
-    // Проверяем и создаем запись UserSession если нужно
+    // --- создание / получение UserSession ---
     try {
-      const userSession = await db.UserSession.findOne({
-        where: {
-          game_session_id: lobbyId,
-          user_id: socket.user.id
-        }
+      let userSession = await db.UserSession.findOne({
+        where: { game_session_id: lobbyId, user_id: socket.user.id },
       });
-      
+
       if (!userSession) {
-        await db.UserSession.create({
+        userSession = await db.UserSession.create({
           game_session_id: lobbyId,
           user_id: socket.user.id,
           score: 0,
           is_user_active: false,
-          player_name: socket.user.username
+          player_name: socket.user.username,
         });
       }
-    } catch (err) {
-      console.error('Ошибка создания :', err);
-    }
 
-    // Инициализация активного игрока
-    try {
-      // Проверяем, есть ли уже активный игрок в этой сессии
+      // назначаем активного только если его ещё нет
       const existingActivePlayer = await db.UserSession.findOne({
-        where: { 
-          game_session_id: lobbyId,
-          is_user_active: true 
-        }
+        where: { game_session_id: lobbyId, is_user_active: true },
       });
-      
-      // Если активного игрока нет, делаем первого подключившегося активным
+
       if (!existingActivePlayer) {
-        await db.UserSession.update(
-          { is_user_active: true },
-          { 
-            where: { 
-              game_session_id: lobbyId,
-              user_id: socket.user.id 
-            }
-          }
+        await userSession.update({ is_user_active: true });
+        console.log(
+          `🎮 Первый активный игрок в лобби ${lobbyId}: ${socket.user.username}`
         );
       }
     } catch (err) {
-      console.error('Ошибка инициализации активного игрока:', err);
+      console.error('Ошибка инициализации UserSession:', err);
     }
 
-    // Отправляем список пользователей
     await emitUsersList();
 
-    // Загрузка истории сообщений
+    // загрузка истории чата
     (async () => {
       try {
         const lastMessages = await db.ChatGameSession.findAll({
           where: { game_session_id: lobbyId },
-          include: [{ model: db.User, as: 'user', attributes: ['id', 'username'] }],
+          include: [
+            { model: db.User, as: 'user', attributes: ['id', 'username'] },
+          ],
           order: [['createdAt', 'ASC']],
           limit: 20,
         });
@@ -189,25 +157,25 @@ function initLobbySockets(nsp) {
       }
     })();
 
-    // Инициализация точек
+    // инициализация точек
     if (!lobbyPoints.has(lobbyId)) {
       lobbyPoints.set(lobbyId, [
-        { id: "1", status: "available" },
-        { id: "2", status: "available" },
-        { id: "3", status: "available" },
-        { id: "4", status: "available" },
+        { id: '1', status: 'available' },
+        { id: '2', status: 'available' },
+        { id: '3', status: 'available' },
+        { id: '4', status: 'available' },
       ]);
     }
-    socket.emit("lobby:initPoints", lobbyPoints.get(lobbyId));
+    socket.emit('lobby:initPoints', lobbyPoints.get(lobbyId));
 
-    // Системное событие о подключении
+    // системное событие о подключении
     nsp.to(roomKey).emit('system', {
       type: 'join',
       userId: socket.user.id,
       username: socket.user.username,
     });
 
-    // Обработчик сообщений чата
+    // --- обработчики ---
     socket.on('chat:message', async ({ text }) => {
       try {
         if (!text?.trim()) {
@@ -235,40 +203,35 @@ function initLobbySockets(nsp) {
       }
     });
 
-    // Обработчик выхода из лобби
     socket.on('leaveLobby', async () => {
       try {
-        // Проверяем, был ли это активный игрок
         const wasActive = await db.UserSession.findOne({
           where: {
             game_session_id: lobbyId,
             user_id: socket.user.id,
-            is_user_active: true
-          }
+            is_user_active: true,
+          },
         });
-        
+
         if (wasActive) {
-          // Находим следующего игрока
           const nextPlayer = await db.UserSession.findOne({
             where: {
               game_session_id: lobbyId,
-              user_id: { [db.Sequelize.Op.ne]: socket.user.id }
+              user_id: { [db.Sequelize.Op.ne]: socket.user.id },
             },
-            order: [['createdAt', 'ASC']]
+            order: [['createdAt', 'ASC']],
           });
-          
+
           if (nextPlayer) {
-            // Делаем следующего игрока активным
             await db.UserSession.update(
               { is_user_active: true },
               { where: { id: nextPlayer.id } }
             );
-            
-            // Сбрасываем предыдущего активного
             await db.UserSession.update(
               { is_user_active: false },
               { where: { id: wasActive.id } }
             );
+            await emitUsersList();
           }
         }
       } catch (err) {
@@ -276,13 +239,12 @@ function initLobbySockets(nsp) {
       }
 
       socket.leave(roomKey);
-      
-      // Удаляем пользователя из списка
+
       if (lobbyUsers.has(lobbyId)) {
         lobbyUsers.get(lobbyId).delete(socket.id);
         await emitUsersList();
       }
-      
+
       nsp.to(roomKey).emit('system', {
         type: 'leave',
         userId: socket.user.id,
@@ -290,84 +252,47 @@ function initLobbySockets(nsp) {
       });
     });
 
-    // Обработчик ответа на вопрос
     socket.on('lobby:answer', async ({ pointId, correct }) => {
-      const status = correct ? 'completed' : 'locked';
+      try {
+        const activeUserSession = await db.UserSession.findOne({
+          where: { game_session_id: lobbyId, is_user_active: true },
+        });
 
-      // Обновляем состояние точки
-      const points = lobbyPoints.get(lobbyId);
-      if (points) {
-        const point = points.find(p => p.id === pointId);
-        if (point) point.status = status;
-      }
+        if (!activeUserSession || activeUserSession.user_id !== socket.user.id) {
+          socket.emit('error', { message: 'Сейчас отвечает другой игрок' });
+          return;
+        }
 
-      // Отправляем обновление состояния точки
-      nsp.to(roomKey).emit('lobby:updatePointStatus', { pointId, status });
+        const status = correct ? 'completed' : 'locked';
+        const points = lobbyPoints.get(lobbyId);
+        if (points) {
+          const point = points.find((p) => p.id === pointId);
+          if (point) point.status = status;
+        }
 
-      // Если ответ правильный - передаем ход следующему игроку
-      if (correct) {
+        nsp.to(roomKey).emit('lobby:updatePointStatus', { pointId, status });
         await passTurnToNextPlayer();
+      } catch (err) {
+        console.error('Ошибка в обработке ответа:', err);
       }
     });
 
     // Обработчик отключения
     socket.on('disconnect', async (reason) => {
       console.log(`Сокет отключён: ${socket.id}, reason=${reason}`);
-      
-      try {
-        // Проверяем, был ли это активный игрок
-        const wasActive = await db.UserSession.findOne({
-          where: {
-            game_session_id: lobbyId,
-            user_id: socket.user.id,
-            is_user_active: true
-          }
-        });
-        
-        if (wasActive) {
-          // Находим следующего игрока
-          const nextPlayer = await db.UserSession.findOne({
-            where: {
-              game_session_id: lobbyId,
-              user_id: { [db.Sequelize.Op.ne]: socket.user.id }
-            },
-            order: [['createdAt', 'ASC']]
-          });
-          
-          if (nextPlayer) {
-            // Делаем следующего игрока активным
-            await db.UserSession.update(
-              { is_user_active: true },
-              { where: { id: nextPlayer.id } }
-            );
-            
-            // Сбрасываем предыдущего активного
-            await db.UserSession.update(
-              { is_user_active: false },
-              { where: { id: wasActive.id } }
-            );
 
-            // Отправляем обновление
-            await emitUsersList();
-          }
-        }
-      } catch (err) {
-        console.error('Ошибка при обработке отключения активного игрока:', err);
-      }
-      
-      // Удаляем пользователя из списка
+      // Удаляем пользователя из памяти
       if (lobbyUsers.has(lobbyId)) {
         lobbyUsers.get(lobbyId).delete(socket.id);
         await emitUsersList();
       }
 
-      // Устанавливаем таймаут на очистку точек если лобби пустое
+      // Если лобби пустое — ставим таймер на удаление данных
       if (lobbyUsers.has(lobbyId) && lobbyUsers.get(lobbyId).size === 0) {
         const timeoutId = setTimeout(() => {
           lobbyPoints.delete(lobbyId);
           lobbyTimeouts.delete(lobbyId);
         }, 5 * 60 * 1000);
-
         lobbyTimeouts.set(lobbyId, timeoutId);
       }
     });
