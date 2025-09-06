@@ -65,8 +65,8 @@ export function LobbyPage() {
       top: 70.5,
       left: 32,
       status: "available",
-      phaseId: 2,
-      topicId: 5
+      phaseId: 1,
+      topicId: 2
     },
     {
       id: "3",
@@ -74,8 +74,8 @@ export function LobbyPage() {
       top: 65,
       left: 26.5,
       status: "available",
-      phaseId: 3,
-      topicId: 7
+      phaseId: 1,
+      topicId: 3
     },
     {
       id: "4",
@@ -83,8 +83,8 @@ export function LobbyPage() {
       top: 55,
       left: 36,
       status: "available",
-      phaseId: 4,
-      topicId: 10
+      phaseId: 1,
+      topicId: 4
     }
   ]);
 
@@ -194,7 +194,7 @@ export function LobbyPage() {
     s.on("lobby:updatePointStatus", onUpdatePointStatus);
     s.on("lobby:initPoints", (points) => {
       setPoints(prev => prev.map(p => {
-        const serverPoint = points.find(sp => sp.id === p.id);
+        const serverPoint = points.find((sp: PointData) => sp.id === p.id);
         return serverPoint ? {...p, status: serverPoint.status } : p;
       }));
     });
