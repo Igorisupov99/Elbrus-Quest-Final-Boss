@@ -26,6 +26,7 @@ export const Point = memo(function Point({
       className={`${styles.poi} ${styles[status]}`}
       style={{ top: `${top}%`, left: `${left}%` }}
       onClick={() => onClick?.(id)}
+      data-point-id={id}
       aria-label={title}
       disabled={status === 'locked'}
     >

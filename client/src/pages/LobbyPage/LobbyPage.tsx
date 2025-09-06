@@ -22,6 +22,12 @@ interface PointData {
   topicId: number;
 }
 
+interface ExamQuestion {
+  id: number;
+  question_text: string;
+  topic_title: string;
+}
+
 export function LobbyPage() {
   const { id } = useParams<{ id: string }>();
   const lobbyId = useMemo(() => Number(id), [id]);
@@ -85,26 +91,80 @@ export function LobbyPage() {
       status: "available",
       phaseId: 1,
       topicId: 4
+    },
+    {
+      id: "exam",
+      title: "Экзамен",
+      top: 90,
+      left: 24,
+      status: "locked",
+      phaseId: 1,
+      topicId: 0
     }
   ]);
 
+  // состояние для экзамена
+  const [examQuestions, setExamQuestions] = useState<ExamQuestion[]>([]);
+  const [currentExamQuestionIndex, setCurrentExamQuestionIndex] = useState(0);
+  const [incorrectAnswersCount, setIncorrectAnswersCount] = useState(0);
+
   const openModal = async (pointId: string) => {
     const point = points.find(p => p.id === pointId);
-    if (!point || point.status !== "available") return;
+    if (!point) return;
+
+    // Для экзамена проверяем, что он доступен
+    if (pointId === "exam" && point.status !== "available") return;
+
+    // Для обычных точек проверяем доступность
+    if (pointId !== "exam" && point.status !== "available") return;
 
     try {
-      const res = await api.get("/api/question/textQuestion", {
-        params: { phase_id: point.phaseId, topic_id: point.topicId },
+      // Для обычных точек
+      if (pointId !== "exam") {
+        const res = await api.get("/api/question/textQuestion", {
+          params: { phase_id: point.phaseId, topic_id: point.topicId },
+          withCredentials: true,
+        });
+
+        setCurrentTopic(res.data.topic_title || "Без названия");
+        setCurrentQuestion(res.data.question_text);
+        setCurrentQuestionId(res.data.question_id);
+        setCurrentPointId(pointId);
+        setIsModalOpen(true);
+      } else {
+
+        await loadExamQuestions();
+      }
+    } catch (err) {
+      console.error("Ошибка при получении вопроса:", err);
+    }
+  };
+
+  const loadExamQuestions = async () => {
+    try {
+      // Получаем случайные вопросы из фазы 0
+      const res = await api.get("/api/question/examQuestions", {
+        params: { 
+          phase_id: 0,
+          count: 2 + incorrectAnswersCount  // Базовые 2 + за неправильные ответы
+        },
         withCredentials: true,
       });
 
-      setCurrentTopic(res.data.topic_title || "Без названия");
-      setCurrentQuestion(res.data.question_text);
-      setCurrentQuestionId(res.data.question_id);
-      setCurrentPointId(pointId);
-      setIsModalOpen(true);
+      if (res.data.questions && res.data.questions.length > 0) {
+        setExamQuestions(res.data.questions);
+        setCurrentExamQuestionIndex(0);
+        
+        // Показываем первый вопрос экзамена
+        const question = res.data.questions[0];
+        setCurrentTopic(question.topic_title || "Экзамен");
+        setCurrentQuestion(question.question_text);
+        setCurrentQuestionId(question.id);
+        setCurrentPointId("exam");
+        setIsModalOpen(true);
+      }
     } catch (err) {
-      console.error("Ошибка при получении вопроса:", err);
+      console.error("Ошибка при загрузке вопросов для экзамена:", err);
     }
   };
 
@@ -113,6 +173,24 @@ export function LobbyPage() {
       point.id === pointId ? { ...point, status } : point
     ));
   };
+
+  useEffect(() => {
+    const allRegularPointsCompleted = points
+      .filter(point => point.id !== "exam")
+      .every(point => point.status === "completed");
+    
+    
+    const examPoint = points.find(point => point.id === "exam");
+    const shouldBeAvailable = allRegularPointsCompleted && examPoint?.status !== "available";
+    const shouldBeLocked = !allRegularPointsCompleted && examPoint?.status !== "locked";
+    
+    if (shouldBeAvailable) {
+      updatePointStatus("exam", "available");
+      console.log("Экзамен разблокирован! Все обычные точки пройдены.");
+    } else if (shouldBeLocked) {
+      updatePointStatus("exam", "locked");
+    }
+  }, [points]);
 
   useEffect(() => {
     if (!listRef.current) return;
@@ -192,9 +270,9 @@ export function LobbyPage() {
     s.on("error", onError);
     s.on("lobby:users", onUsersList);
     s.on("lobby:updatePointStatus", onUpdatePointStatus);
-    s.on("lobby:initPoints", (points) => {
+    s.on("lobby:initPoints", (points: PointData[]) => {
       setPoints(prev => prev.map(p => {
-        const serverPoint = points.find((sp: PointData) => sp.id === p.id);
+        const serverPoint = points.find(sp => sp.id === p.id);
         return serverPoint ? {...p, status: serverPoint.status } : p;
       }));
     });
@@ -231,6 +309,63 @@ export function LobbyPage() {
       socketClient.disconnect();
     }
     navigate("/");
+  };
+
+  const handleExamAnswer = (correct: boolean) => {
+    if (currentPointId === "exam") {
+      // Обработка ответа на экзаменационный вопрос
+      if (currentExamQuestionIndex + 1 < examQuestions.length) {
+        // Переходим к следующему вопросу
+        setCurrentExamQuestionIndex(prev => prev + 1);
+        const nextQuestion = examQuestions[currentExamQuestionIndex + 1];
+        setCurrentTopic(nextQuestion.topic_title);
+        setCurrentQuestion(nextQuestion.question_text);
+        setCurrentQuestionId(nextQuestion.id);
+      } else {
+        // Экзамен завершен
+        setIsModalOpen(false);
+        // Обновляем статус экзаменационной точки
+        updatePointStatus("exam", "completed");
+        
+        // Отправляем результаты на сервер
+        socketClient.socket.emit("lobby:examComplete", {
+          lobbyId,
+          correctAnswers: examQuestions.filter((_, index) => index <= currentExamQuestionIndex).length - (correct ? 0 : 1),
+          totalQuestions: examQuestions.length
+        });
+      }
+    }
+  };
+
+  const handleAnswerResult = (correct: boolean, scores: any) => {
+    if (scores) {
+      setUserScore(scores.userScore || 0);
+      setSessionScore(scores.sessionScore || 0);
+    }
+
+    // Увеличиваем счетчик неправильных ответов (только для обычных вопросов)
+    if (!correct && currentPointId !== "exam") {
+      setIncorrectAnswersCount(prev => prev + 1);
+    }
+
+    if (currentPointId === "exam") {
+      // Обработка ответа на экзаменационный вопрос
+      handleExamAnswer(correct);
+    } else {
+      
+      if (correct && currentPointId) {
+        updatePointStatus(currentPointId, "completed");
+        
+        
+        socketClient.socket.emit("lobby:answer", {
+          lobbyId,
+          pointId: currentPointId,
+          correct: true,
+        });
+      } else if (!correct) {
+        console.log("Неправильный ответ, точка остается доступной");
+      }
+    }
   };
 
   return (
@@ -281,6 +416,7 @@ export function LobbyPage() {
           <h3>Ваши очки</h3>
           <p>Общий счёт: {userScore}</p>
           <p>В этой игре: {sessionScore}</p>
+          <p>Неправильных ответов: {incorrectAnswersCount}</p>
         </div>
 
         {/* чат */}
@@ -351,27 +487,14 @@ export function LobbyPage() {
       {/* модалка */}
       <QuestionModal
         isOpen={isModalOpen}
-        onClose={() => setIsModalOpen(false)}
+        onClose={() => {
+          setIsModalOpen(false);
+        }}
         topic={currentTopic}
         question={currentQuestion}
         questionId={currentQuestionId}
         lobbyId={lobbyId}
-        onAnswerResult={(correct, scores) => {
-          
-          if (scores) {
-            setUserScore(scores.userScore || 0);
-            setSessionScore(scores.sessionScore || 0);
-          }
-
-          // обновляем  точку после ответа
-          if (currentPointId) {
-            socketClient.socket.emit("lobby:answer", {
-              lobbyId,
-              pointId: currentPointId,
-              correct,
-            });
-          }
-        }}
+        onAnswerResult={handleAnswerResult}
       />
     </div>
   );
