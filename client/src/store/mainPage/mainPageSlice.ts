@@ -53,6 +53,7 @@ const mainPageSlice = createSlice({
       .addCase(removeRoom.fulfilled, (state, action: PayloadAction<number>) => {
         state.items = state.items.filter((r) => r.id !== action.payload);
       });
+
   },
 });
 

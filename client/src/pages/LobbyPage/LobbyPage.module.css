@@ -174,3 +174,12 @@ html, body {
   background: radial-gradient(circle at 30% 30%, #ff6b6b, #7a1f1f);
   box-shadow: 0 0 6px #e63e3e, 0 0 10px rgba(230, 62, 62, 0.6);
 }
+
+.activePlayer {
+  color: #4caf50;
+  font-weight: bold;
+}
+
+.userItem {
+  padding: 4px 0;
+}

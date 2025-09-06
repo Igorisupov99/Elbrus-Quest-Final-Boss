@@ -8,9 +8,19 @@ import {
   type IncomingChatMessage,
   type SystemEvent,
 } from "../../socket/socketLobbyPage";
-import { Point } from "../../components/map/Point/Point";
+import { Point, type POIStatus } from "../../components/map/Point/Point";
 import { QuestionModal } from "../../components/common/modals/QuestionModal/QuestionModal";
 import api from "../../api/axios";
+
+interface PointData {
+  id: string;
+  title: string;
+  top: number;
+  left: number;
+  status: POIStatus;
+  phaseId: number;
+  topicId: number;
+}
 
 export function LobbyPage() {
   const { id } = useParams<{ id: string }>();
@@ -21,32 +31,87 @@ export function LobbyPage() {
   const [connecting, setConnecting] = useState(true);
   const [history, setHistory] = useState<ChatHistoryItem[]>([]);
   const [input, setInput] = useState("");
+  const [activePlayerId, setActivePlayerId] = useState<number | null>(null);
   const listRef = useRef<HTMLDivElement | null>(null);
+
+  // Состояние для списка пользователей в комнате
+  const [usersInLobby, setUsersInLobby] = useState<{ id: number; username: string }[]>([]);
 
   // модалка
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [currentTopic, setCurrentTopic] = useState("");
   const [currentQuestion, setCurrentQuestion] = useState("");
   const [currentQuestionId, setCurrentQuestionId] = useState<number | null>(null);
+  const [currentPointId, setCurrentPointId] = useState<string | null>(null);
 
   // очки
   const [userScore, setUserScore] = useState<number>(0);
   const [sessionScore, setSessionScore] = useState<number>(0);
 
-  const openModal = async (phaseId: number, topicId: number) => {
+  // состояние точек
+  const [points, setPoints] = useState<PointData[]>([
+    {
+      id: "1",
+      title: "Тема 1",
+      top: 81,
+      left: 32.3,
+      status: "available",
+      phaseId: 1,
+      topicId: 1
+    },
+    {
+      id: "2",
+      title: "Тема 2",
+      top: 70.5,
+      left: 32,
+      status: "available",
+      phaseId: 1,
+      topicId: 2
+    },
+    {
+      id: "3",
+      title: "Тема 3",
+      top: 65,
+      left: 26.5,
+      status: "available",
+      phaseId: 1,
+      topicId: 3
+    },
+    {
+      id: "4",
+      title: "Тема 4",
+      top: 55,
+      left: 36,
+      status: "available",
+      phaseId: 1,
+      topicId: 4
+    }
+  ]);
+
+  const openModal = async (pointId: string) => {
+    const point = points.find(p => p.id === pointId);
+    if (!point || point.status !== "available") return;
+
     try {
       const res = await api.get("/api/question/textQuestion", {
-        params: { phase_id: phaseId, topic_id: topicId },
+        params: { phase_id: point.phaseId, topic_id: point.topicId },
         withCredentials: true,
       });
 
       setCurrentTopic(res.data.topic_title || "Без названия");
       setCurrentQuestion(res.data.question_text);
       setCurrentQuestionId(res.data.question_id);
+      setCurrentPointId(pointId);
       setIsModalOpen(true);
     } catch (err) {
       console.error("Ошибка при получении вопроса:", err);
     }
+  };
+
+  const updatePointStatus = (pointId: string, status: POIStatus) => {
+    setPoints(prev => prev.map(point =>
+      point.id === pointId ? { ...point, status } : point
+    ));
   };
 
   useEffect(() => {
@@ -103,6 +168,21 @@ export function LobbyPage() {
     };
     const onError = (payload: any) => console.error("chat error:", payload);
 
+    // Обработчик списка пользователей в комнате
+    const onUsersList = (data: { 
+      users: { id: number; username: string }[]; 
+      activePlayerId?: number 
+    }) => {
+      setUsersInLobby(data.users);
+      if (data.activePlayerId !== undefined) {
+        setActivePlayerId(data.activePlayerId);
+      }
+    };
+
+    const onUpdatePointStatus = ({ pointId, status }: { pointId: string; status: POIStatus }) => {
+      updatePointStatus(pointId, status);
+    };
+
     s.on("connect", onConnect);
     s.on("disconnect", onDisconnect);
     s.on("connect_error", onConnectError);
@@ -110,6 +190,14 @@ export function LobbyPage() {
     s.on("chat:message", onChatMessage);
     s.on("system", onSystem);
     s.on("error", onError);
+    s.on("lobby:users", onUsersList);
+    s.on("lobby:updatePointStatus", onUpdatePointStatus);
+    s.on("lobby:initPoints", (points) => {
+      setPoints(prev => prev.map(p => {
+        const serverPoint = points.find((sp: PointData) => sp.id === p.id);
+        return serverPoint ? {...p, status: serverPoint.status } : p;
+      }));
+    });
 
     return () => {
       s.off("connect", onConnect);
@@ -119,6 +207,8 @@ export function LobbyPage() {
       s.off("chat:message", onChatMessage);
       s.off("system", onSystem);
       s.off("error", onError);
+      s.off("lobby:users", onUsersList);
+      s.off("lobby:updatePointStatus", onUpdatePointStatus);
       socketClient.disconnect();
     };
   }, [lobbyId, navigate]);
@@ -148,47 +238,43 @@ export function LobbyPage() {
       <div className={styles.gameArea}>
         <img src="/map.png" alt="Игровая карта" className={styles.gameMap} />
 
-        <Point
-          id="1"
-          title="Тема 1"
-          top={81}
-          left={32.3}
-          status="available"
-          onClick={() => openModal(1, 1)}
-        />
-
-        <Point
-          id="2"
-          title="Тема 2"
-          top={70.5}
-          left={32}
-          status="available"
-          onClick={() => openModal(2, 5)}
-        />
-
-        <Point
-          id="3"
-          title="Тема 3"
-          top={65}
-          left={26.5}
-          status="available"
-          onClick={() => openModal(3, 7)}
-        />
-
-        <Point
-          id="4"
-          title="Тема 4"
-          top={55}
-          left={36}
-          status="available"
-          onClick={() => openModal(4, 10)}
-        />
+        {points.map(point => (
+          <Point
+            key={point.id}
+            id={point.id}
+            title={point.title}
+            top={point.top}
+            left={point.left}
+            status={point.status}
+            onClick={openModal}
+          />
+        ))}
       </div>
 
       <div className={styles.sidebar}>
         <Button className={styles.exitButton} onClick={handleExitLobby}>
           Выйти из комнаты
         </Button>
+
+        {/* Список пользователей в комнате */}
+        <div className={styles.usersList}>
+          <h3>Пользователи в комнате</h3>
+          <ul>
+            {usersInLobby.map((user) => (
+              <li 
+                key={user.id} 
+                className={styles.userItem}
+                style={{ 
+                  color: user.id === activePlayerId ? '#4caf50' : 'inherit',
+                  fontWeight: user.id === activePlayerId ? 'bold' : 'normal'
+                }}
+              >
+                {user.username}
+                {user.id === activePlayerId && ' (активный)'}
+              </li>
+            ))}
+          </ul>
+        </div>
 
         {/* очки */}
         <div className={styles.scores}>
@@ -271,10 +357,19 @@ export function LobbyPage() {
         questionId={currentQuestionId}
         lobbyId={lobbyId}
         onAnswerResult={(correct, scores) => {
-          console.log('correct: ', correct);
+          
           if (scores) {
             setUserScore(scores.userScore || 0);
             setSessionScore(scores.sessionScore || 0);
+          }
+
+          // обновляем  точку после ответа
+          if (currentPointId) {
+            socketClient.socket.emit("lobby:answer", {
+              lobbyId,
+              pointId: currentPointId,
+              correct,
+            });
           }
         }}
       />

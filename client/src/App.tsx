@@ -6,13 +6,20 @@ import { Login } from './pages/Login/Login';
 import { Profile } from './pages/Profile/Profile';
 import { LobbyPage } from './pages/LobbyPage/LobbyPage';
 import { PrivateRoute } from './components/PrivateRoute/PrivateRoute';
+import { useEffect } from 'react';
+import { initAuth } from './store/authThunks';
+import { useAppDispatch } from './store/hooks';
 // import MainPageChat from './components/MainPageChat/MainPageChat';
 
 export function App() {
   const location = useLocation();
+  const dispatch = useAppDispatch();
+  useEffect(() => {
+    dispatch(initAuth());
+  }, [dispatch]);
 
   const hideHeaderRoutes = ['/lobby'];
-  const shouldHideHeader = hideHeaderRoutes.some(route =>
+  const shouldHideHeader = hideHeaderRoutes.some((route) =>
     location.pathname.startsWith(route)
   );
 
@@ -20,8 +27,14 @@ export function App() {
     <>
       {!shouldHideHeader && <Header />}
       <Routes>
-        <Route path="/" element={<MainPage />} />
-        {/* <Route path="/chat" element={<MainPageChat />} /> */}
+        <Route
+          path="/"
+          element={
+            <PrivateRoute>
+              <MainPage />
+            </PrivateRoute>
+          }
+        />
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
         <Route
