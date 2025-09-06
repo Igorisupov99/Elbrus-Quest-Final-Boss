@@ -20,18 +20,18 @@ const schema = yup.object({
     .required('Название комнаты обязательно')
     .min(5, 'Минимум 5 символов'),
   password: yup
-    .string()
-    .required()
-    .matches(
-      /^(?=.*[A-Za-z]{5,})(?=.*\d)[A-Za-z\d]+$/,
-      'Пароль должен содержать минимум 5 букв (только латиница) и 1 цифру'
-    ),
+  .string()
+  .nullable()
+  .notRequired()
+  .min(5, 'Минимум 5 символов')
+  .transform((value) => (value === '' ? null : value)), 
 });
 
 export default function ModelPageCreateRoom({ setIsModalOpen }: ModelPageCreateRoomProps) {
   const dispatch = useAppDispatch();
 
   const { register, handleSubmit, formState: { errors }, reset } = useForm<FormInputs>({
+    // @ts-expect-error: temporarily ignore resolver typing mismatch
     resolver: yupResolver(schema),
   });
 
@@ -43,6 +43,7 @@ export default function ModelPageCreateRoom({ setIsModalOpen }: ModelPageCreateR
   };
 
   return (
+    // @ts-expect-error: temporarily ignore resolver typing mismatch
     <form onSubmit={handleSubmit(onSubmit)}>
       <div>
         <label>Название комнаты</label>

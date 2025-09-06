@@ -1,120 +1,120 @@
+// src/pages/MainPage/MainPage.tsx
 import type { JSX } from 'react';
 import { useState, useEffect } from 'react';
 import { useAppSelector, useAppDispatch } from '../../store/hooks';
-import MainPageChat from '../../components/MainPageChat/MainPageChat';
-import styles from './MainPage.module.css';
-import ModelPageCreateRoom from '../../components/ModelPageCreateRoom/ModelPageCreateRoom';
-import ModelPageRedirectLobby from '../../components/ModelPageRedirectLobby/ModelPageRedirectLobby';
-import {
-  fetchRooms,
-  updateRoom,
-  removeRoom,
-} from '../../store/mainPage/mainPageThunks';
-import { getAccessToken } from '../../lib/tokenStorage';
 import { useNavigate } from 'react-router-dom';
 
+import MainPageChat from '../../components/MainPageChat/MainPageChat';
+import ModelPageCreateRoom from '../../components/ModelPageCreateRoom/ModelPageCreateRoom';
+import ModelPageRedirectLobby from '../../components/ModelPageRedirectLobby/ModelPageRedirectLobby';
+import ModelPageEnterPassword from '../../components/ModelPageEnterPassword/ModelPageEnterPassword';
+
+import styles from './MainPage.module.css';
+import api from '../../lib/axios';
+import { getAccessToken } from '../../lib/tokenStorage';
+import { fetchRooms, updateRoom, removeRoom } from '../../store/mainPage/mainPageThunks';
+
+type ModalKind = 'confirm' | 'password' | null;
+
 export function MainPage(): JSX.Element {
-  const { items, loading, error } = useAppSelector((state) => state.mainPage);
+  const { items, loading, error } = useAppSelector((s) => s.mainPage);
   const dispatch = useAppDispatch();
   const navigate = useNavigate();
 
-  const [isModalOpen, setIsModalOpen] = useState(false);
-  const [isRedirectModalOpen, setIsRedirectModalOpen] = useState(false);
+  const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
+  const [isAccessModalOpen, setIsAccessModalOpen] = useState(false);
   const [selectedRoomId, setSelectedRoomId] = useState<number | null>(null);
+  const [modalKind, setModalKind] = useState<ModalKind>(null);
 
-  // --- check auth token (runs on mount and when token changes) ---
   useEffect(() => {
     const token = getAccessToken();
-    if (!token) {
-      navigate('/login');
-    }
+    if (!token) navigate('/login');
   }, [navigate]);
 
-  // --- fetch rooms on mount ---
   useEffect(() => {
     dispatch(fetchRooms());
   }, [dispatch]);
 
   const handleEdit = (id: number) => {
     const newTitle = prompt('Введите новое название комнаты:');
-    if (newTitle) {
-      dispatch(updateRoom({ id, room_name: newTitle }));
-    }
+    if (newTitle) dispatch(updateRoom({ id, room_name: newTitle }));
   };
 
   const handleDelete = (id: number) => {
-    if (confirm('Удалить эту комнату?')) {
-      dispatch(removeRoom(id));
-    }
+    if (confirm('Удалить эту комнату?')) dispatch(removeRoom(id));
   };
+
+  async function handleRoomClick(id: number) {
+    setSelectedRoomId(id);
+    try {
+      const { data } = await api.get(`/api/room/${id}/check-access`);
+      if (data?.success && data?.data?.requiresPassword) {
+        setModalKind('password');
+      } else {
+        setModalKind('confirm');
+      }
+      setIsAccessModalOpen(true);
+    } catch {
+      setIsAccessModalOpen(false);
+      setModalKind(null);
+    }
+  }
 
   return (
     <>
       <MainPageChat />
-      <h2>Доступные комнаты:</h2>
 
+      <h2 >Доступные комнаты:</h2>
       {loading && <p>Загрузка комнат...</p>}
       {error && <p className={styles.error}>Ошибка: {error}</p>}
 
-      {items.map((item) => (
-        <ul key={item.id} className={styles.roomList}>
-          <li
-            className={styles.roomItem}
-            onClick={() => {
-              setSelectedRoomId(item.id);
-              setIsRedirectModalOpen(true);
-            }}
-          >
-            {item.title}
+      <ul className={styles.rooms}>
+        {items.map((item) => (
+          <li key={item.id} className={styles.roomRow}>
+            <span className={styles.roomItem} onClick={() => handleRoomClick(item.id)}>
+              {item.title}
+            </span>
+            <div className={styles.actions}>
+              <button onClick={() => handleEdit(item.id)}>✏️</button>
+              <button onClick={() => handleDelete(item.id)}>❌</button>
+            </div>
           </li>
-          <button onClick={() => handleEdit(item.id)}>✏️</button>
-          <button onClick={() => handleDelete(item.id)}>❌</button>
-        </ul>
-      ))}
+        ))}
+      </ul>
 
-      <button onClick={() => setIsModalOpen(true)}>Создать комнату</button>
+      <button className={styles.createBtn} onClick={() => setIsCreateModalOpen(true)}>Создать комнату</button>
 
-      {/* Modal for creating a room */}
-      {isModalOpen && (
-        <div
-          className={styles.modalOverlay}
-          onClick={() => setIsModalOpen(false)}
-        >
-          <div
-            className={styles.modalContent}
-            onClick={(e) => e.stopPropagation()}
-          >
-            <button
-              className={styles.closeBtn}
-              onClick={() => setIsModalOpen(false)}
-            >
+      {isCreateModalOpen && (
+        <div className={styles.modalOverlay} onClick={() => setIsCreateModalOpen(false)}>
+          <div className={styles.modalContent} onClick={(e) => e.stopPropagation()}>
+            <button className={styles.closeBtn} onClick={() => setIsCreateModalOpen(false)}>
               ×
             </button>
-            <ModelPageCreateRoom setIsModalOpen={setIsModalOpen} />
+            <ModelPageCreateRoom setIsModalOpen={setIsCreateModalOpen} />
           </div>
         </div>
       )}
 
-      {/* Modal for redirecting to lobby */}
-      {isRedirectModalOpen && selectedRoomId !== null && (
-        <div
-          className={styles.modalOverlay}
-          onClick={() => setIsRedirectModalOpen(false)}
-        >
-          <div
-            className={styles.modalContent}
-            onClick={(e) => e.stopPropagation()}
-          >
-            <button
-              className={styles.closeBtn}
-              onClick={() => setIsRedirectModalOpen(false)}
-            >
+      {isAccessModalOpen && selectedRoomId !== null && (
+        <div className={styles.modalOverlay} onClick={() => setIsAccessModalOpen(false)}>
+          <div className={styles.modalContent} onClick={(e) => e.stopPropagation()}>
+            <button className={styles.closeBtn} onClick={() => setIsAccessModalOpen(false)}>
               ×
             </button>
-            <ModelPageRedirectLobby
-              setIsModalOpen={setIsRedirectModalOpen}
-              roomId={selectedRoomId}
-            />
+
+            {modalKind === 'confirm' && (
+              <ModelPageRedirectLobby
+                setIsModalOpen={setIsAccessModalOpen}
+                roomId={selectedRoomId}
+              />
+            )}
+
+            {modalKind === 'password' && (
+              <ModelPageEnterPassword
+                setIsModalOpen={setIsAccessModalOpen}
+                roomId={selectedRoomId}
+              />
+            )}
           </div>
         </div>
       )}

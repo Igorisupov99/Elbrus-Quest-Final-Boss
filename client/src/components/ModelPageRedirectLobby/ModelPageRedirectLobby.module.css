@@ -1,0 +1,37 @@
+.container { /* same as .modalBox to keep parity */
+  min-width: 320px;
+  max-width: 420px;
+  color: var(--rpg-text);
+}
+.title {
+  margin: 2px 0 14px;
+  font-size: 18px;
+  font-weight: 800;
+}
+.buttons {
+  display: flex;
+  gap: 10px;
+  justify-content: flex-end;
+}
+.btn {
+  appearance: none;
+  border-radius: 10px;
+  padding: 9px 14px;
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: transform 80ms ease, box-shadow 120ms ease, border-color 120ms ease, filter 120ms ease;
+  border: 1px solid var(--rpg-border);
+}
+.btnPrimary {
+  background: linear-gradient(180deg, var(--rpg-gold), var(--rpg-gold-2));
+  color: #1c130b;
+  border-color: #8a6b1e;
+  box-shadow: 0 4px 10px rgba(212,175,55,.28);
+}
+.btnPrimary:hover { transform: translateY(-1px); box-shadow: 0 7px 16px rgba(212,175,55,.34); }
+.btnSecondary {
+  background: #2a1b10;
+  color: var(--rpg-muted);
+}
+.btnSecondary:hover { background: #332114; color: var(--rpg-text); border-color: var(--rpg-gold-2); }

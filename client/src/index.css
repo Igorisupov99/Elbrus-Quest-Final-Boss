@@ -6,6 +6,9 @@
 
 html, body, #root {
   height: 100%;
+  margin: 0;
+  overflow-y: auto; 
+  overflow-x: hidden; 
 }
 
 body {
@@ -15,7 +18,6 @@ body {
   line-height: 1.5;
 }
 
-/* ===== Оповещения ===== */
 .toast-success {
   background-color: #28a745;
   color: white;

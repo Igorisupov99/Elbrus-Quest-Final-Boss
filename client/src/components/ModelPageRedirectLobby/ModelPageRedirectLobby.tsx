@@ -19,14 +19,17 @@ function ModelPageRedirectLobby({ setIsModalOpen, roomId }: Props) {
   };
 
   return (
-    <div className={styles.modalBox}>
-      <h3>Войти в комнату?</h3>
+    <div className={styles.container}>
+      <h3 className={styles.title}>Войти в комнату?</h3>
       <div className={styles.buttons}>
-        <button onClick={handleYes}>Да</button>
-        <button onClick={handleNo}>Нет</button>
+        <button className={`${styles.btn} ${styles.btnPrimary}`} onClick={handleYes}>Да</button>
+        <button className={`${styles.btn} ${styles.btnSecondary}`} onClick={handleNo}>Нет</button>
       </div>
     </div>
   );
 }
 
 export default ModelPageRedirectLobby;
+
+
+

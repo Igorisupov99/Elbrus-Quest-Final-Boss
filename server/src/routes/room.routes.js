@@ -7,6 +7,8 @@ roomRouter.get("/all", roomController.getAllRooms)  // отдать перече
 roomRouter.post("/new", authMiddleware, roomController.createRoom)  // создать новую комнату
 roomRouter.put("/change/:id",authMiddleware, roomController.changeRoomName); //изменить название комнаты
 roomRouter.delete('/:id',authMiddleware, roomController.deleteRoom)  // удалить комнату
+roomRouter.get("/:id/check-access", roomController.checkAccess); // новый GET для открытия модалки на клиенте
+roomRouter.post("/:id/verify", roomController.verifyRoomCode); // (на потом) POST для проверки пароля из модалки
 
 
 module.exports = roomRouter;
