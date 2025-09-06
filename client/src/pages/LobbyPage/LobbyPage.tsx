@@ -31,6 +31,7 @@ export function LobbyPage() {
   const [connecting, setConnecting] = useState(true);
   const [history, setHistory] = useState<ChatHistoryItem[]>([]);
   const [input, setInput] = useState("");
+  const [activePlayerId, setActivePlayerId] = useState<number | null>(null);
   const listRef = useRef<HTMLDivElement | null>(null);
 
   // Состояние для списка пользователей в комнате
@@ -168,8 +169,18 @@ export function LobbyPage() {
     const onError = (payload: any) => console.error("chat error:", payload);
 
     // Обработчик списка пользователей в комнате
-    const onUsersList = (users: { id: number; username: string }[]) => {
-      setUsersInLobby(users);
+    const onUsersList = (data: { 
+      users: { id: number; username: string }[]; 
+      activePlayerId?: number 
+    }) => {
+      setUsersInLobby(data.users);
+      if (data.activePlayerId !== undefined) {
+        setActivePlayerId(data.activePlayerId);
+      }
+    };
+
+    const onUpdatePointStatus = ({ pointId, status }: { pointId: string; status: POIStatus }) => {
+      updatePointStatus(pointId, status);
     };
 
     s.on("connect", onConnect);
@@ -180,6 +191,13 @@ export function LobbyPage() {
     s.on("system", onSystem);
     s.on("error", onError);
     s.on("lobby:users", onUsersList);
+    s.on("lobby:updatePointStatus", onUpdatePointStatus);
+    s.on("lobby:initPoints", (points) => {
+      setPoints(prev => prev.map(p => {
+        const serverPoint = points.find(sp => sp.id === p.id);
+        return serverPoint ? {...p, status: serverPoint.status } : p;
+      }));
+    });
 
     return () => {
       s.off("connect", onConnect);
@@ -190,6 +208,7 @@ export function LobbyPage() {
       s.off("system", onSystem);
       s.off("error", onError);
       s.off("lobby:users", onUsersList);
+      s.off("lobby:updatePointStatus", onUpdatePointStatus);
       socketClient.disconnect();
     };
   }, [lobbyId, navigate]);
@@ -242,7 +261,17 @@ export function LobbyPage() {
           <h3>Пользователи в комнате</h3>
           <ul>
             {usersInLobby.map((user) => (
-              <li key={user.id}>{user.username}</li>
+              <li 
+                key={user.id} 
+                className={styles.userItem}
+                style={{ 
+                  color: user.id === activePlayerId ? '#4caf50' : 'inherit',
+                  fontWeight: user.id === activePlayerId ? 'bold' : 'normal'
+                }}
+              >
+                {user.username}
+                {user.id === activePlayerId && ' (активный)'}
+              </li>
             ))}
           </ul>
         </div>
@@ -336,11 +365,11 @@ export function LobbyPage() {
 
           // обновляем  точку после ответа
           if (currentPointId) {
-            if (correct) {
-              updatePointStatus(currentPointId, "completed");
-            } else {
-              updatePointStatus(currentPointId, "locked");
-            }
+            socketClient.socket.emit("lobby:answer", {
+              lobbyId,
+              pointId: currentPointId,
+              correct,
+            });
           }
         }}
       />
