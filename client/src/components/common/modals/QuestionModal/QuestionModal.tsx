@@ -85,7 +85,7 @@ export function QuestionModal({
         <h2 className={styles.title}>{topic}</h2>
         <p className={styles.question}>{question}</p>
 
-        {currentUserId === activePlayerId ? (
+        {Number(currentUserId) === Number(activePlayerId) ? (
           <>
             <input
               type="text"

@@ -160,11 +160,12 @@ function initLobbySockets(nsp) {
     // инициализация точек
     if (!lobbyPoints.has(lobbyId)) {
       lobbyPoints.set(lobbyId, [
-        { id: '1', status: 'available' },
-        { id: '2', status: 'available' },
-        { id: '3', status: 'available' },
-        { id: '4', status: 'available' },
-      ]);
+      { id: '1', status: 'available', phase_id: 1, topic_id: 1 },
+      { id: '2', status: 'available', phase_id: 1, topic_id: 2 },
+      { id: '3', status: 'available', phase_id: 1, topic_id: 3 },
+      { id: '4', status: 'available', phase_id: 1, topic_id: 4 },
+      { id: 'exam', status: 'available', phase_id: 1, topic_id: 4 },
+    ]);
     }
     socket.emit('lobby:initPoints', lobbyPoints.get(lobbyId));
 
