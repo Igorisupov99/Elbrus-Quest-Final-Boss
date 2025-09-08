@@ -2,11 +2,12 @@ import { useEffect, useState } from "react";
 import { useAppDispatch, useAppSelector } from "../store/hooks";
 import type { RootState } from "../store/store";
 import { type ChatHistoryItem, type IncomingChatMessage, socketClient, type SystemEvent } from "../socket/socketLobbyPage";
-import { initialState } from "../store/lobbyPage/lobbySlice";
+import { initialState, setScores } from "../store/lobbyPage/lobbySlice";
 import {
   setUsers,
   setPoints,
   updatePointStatus,
+  incrementIncorrectAnswers,
 } from "../store/lobbyPage/lobbySlice";
 
 export function useLobbySocket(lobbyId: number) {
@@ -23,6 +24,8 @@ export function useLobbySocket(lobbyId: number) {
     socketClient.connectWithToken(token, lobbyId);
 
     const socket = socketClient.socket;
+
+    console.log('🔌 [SOCKET] Регистрирую обработчики для комнаты:', lobbyId);
 
     const onConnect = () => {
       setConnected(true);
@@ -53,7 +56,30 @@ export function useLobbySocket(lobbyId: number) {
     const onInitPoints = (points: any) => dispatch(setPoints(points));
     const onPointStatus = ({ pointId, status}: any) => dispatch(updatePointStatus({ pointId, status }));
 
-    socket.on("connect", onConnect);
+    const onScores = (payload: any) => {
+      console.log("ON lobby:scores", payload);
+      dispatch(setScores({
+        userScore: payload.userScore,
+        sessionScore: payload.sessionScore,
+        incorrectAnswers: payload.incorrectAnswers ?? 0,
+      }));
+    };
+
+    const onIncorrectAnswer = (payload: any) => {
+      console.log('🎯 [CLIENT] Получил lobby:incorrectAnswer:', payload);
+      console.log('🔍 [DEBUG] Структура payload:', payload);
+      console.log('🔍 [DEBUG] incorrectAnswers value:', payload.incorrectAnswers);
+      console.log('🔍 [DEBUG] Тип incorrectAnswers:', typeof payload.incorrectAnswers);
+      dispatch(incrementIncorrectAnswers());
+
+      console.log('✅ [CLIENT] Redux обновлен');
+    };
+;
+    socket.on("connect", () => {
+      console.log('✅ [SOCKET] Подключен к комнате lobby:', lobbyId);
+      setConnected(true);
+      setConnecting(false);
+    });
     socket.on("disconnect", onDisconnect);
     socket.on("connect_error", onConnectError);
     socket.on("chat:history", onHistory);
@@ -62,7 +88,7 @@ export function useLobbySocket(lobbyId: number) {
     socket.on("error", onError);
     socket.on("lobby:users", onUsers);
     socket.on("lobby:initPoints", (serverPoints) => {
-      const mapped = serverPoints.map(p => {
+      const mapped = serverPoints.map((p: any) => {    // исправить any
         const clientPoint = initialState.points.find(cp => cp.id === String(p.id));
         return {
           id: String(p.id),
@@ -77,6 +103,11 @@ export function useLobbySocket(lobbyId: number) {
       dispatch(setPoints(mapped));
     });
     socket.on("lobby:updatePointStatus", onPointStatus);
+    socket.on("lobby:initScores", onScores);
+    socket.on("lobby:scores", onScores);
+    socket.on("lobby:incorrectAnswer", onIncorrectAnswer);
+    
+    console.log('✅ [SOCKET] Обработчик lobby:incorrectAnswer зарегистрирован');
 
     return () => {
       socket.emit("leaveLobby");
@@ -90,6 +121,9 @@ export function useLobbySocket(lobbyId: number) {
       socket.off("lobby:users", onUsers);
       socket.off("lobby:initPoints", onInitPoints);
       socket.off("lobby:updatePointStatus", onPointStatus);
+      socket.off("lobby:initScores", onScores);
+      socket.off("lobby:scores", onScores);
+      socket.off("lobby:incorrectAnswer", onIncorrectAnswer);
       socket.disconnect();
     };
   }, [dispatch, lobbyId, token]);

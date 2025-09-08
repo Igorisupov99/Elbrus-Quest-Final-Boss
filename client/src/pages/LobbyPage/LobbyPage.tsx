@@ -7,7 +7,7 @@ import { QuestionModal } from "../../components/common/modals/QuestionModal/Ques
 import api from "../../api/axios";
 import { useLobbySocket } from "../../hooks/useLobbySocket";
 import { useAppDispatch, useAppSelector } from "../../store/hooks";
-import { updatePointStatus } from "../../store/lobbyPage/lobbySlice";
+import { updatePointStatus, setScores } from "../../store/lobbyPage/lobbySlice";
 
 interface ExamQuestion {
   id: number;
@@ -25,7 +25,7 @@ export function LobbyPage() {
   const activePlayerId = useAppSelector(s => s.lobbyPage.activePlayerId);
   const points = useAppSelector(s => s.lobbyPage.points);
   const { user } = useAppSelector(s => s.auth)
-
+  const { userScore, sessionScore, incorrectAnswers } = useAppSelector(s => s.lobbyPage.scores);
   const {
     history,
     connected,
@@ -45,14 +45,10 @@ export function LobbyPage() {
   const [currentQuestionId, setCurrentQuestionId] = useState<number | null>(null);
   const [currentPointId, setCurrentPointId] = useState<string | null>(null);
 
-  // очки
-  const [userScore, setUserScore] = useState<number>(0);
-  const [sessionScore, setSessionScore] = useState<number>(0);
-
   // состояние для экзамена
   const [examQuestions, setExamQuestions] = useState<ExamQuestion[]>([]);
   const [currentExamQuestionIndex, setCurrentExamQuestionIndex] = useState(0);
-  const [incorrectAnswersCount, setIncorrectAnswersCount] = useState(0);
+  // УДАЛИТЬ: const [incorrectAnswersCount, setIncorrectAnswersCount] = useState(0);
 
   const openModal = async (pointId: string) => {
     const point = points.find(p => p.id === pointId);
@@ -87,7 +83,7 @@ export function LobbyPage() {
   const loadExamQuestions = async () => {
     try {
       const res = await api.get("/api/exam/examQuestion", {
-        params: { phase_id: 1, count: 2 + incorrectAnswersCount },
+        params: { phase_id: 1, count: 2 + incorrectAnswers }, // Используем из Redux
         withCredentials: true,
       });
       if (!res.data.questions || res.data.questions.length === 0) return;
@@ -156,11 +152,14 @@ export function LobbyPage() {
   };
 
   const handleAnswerResult = (correct: boolean, scores: any) => {
-    if (scores) {
-      setUserScore(scores.userScore ?? 0);
-      setSessionScore(scores.sessionScore ?? 0);
+    if (scores?.scores) {
+      const { userScore, sessionScore, incorrectAnswers: wrong } = scores.scores;
+      dispatch(setScores({
+        userScore: userScore ?? 0,
+        sessionScore: sessionScore ?? 0,
+        incorrectAnswers: wrong ?? incorrectAnswers
+      }));
     }
-    if (!correct && currentPointId !== "exam") setIncorrectAnswersCount(prev => prev + 1);
 
     if (currentPointId === "exam") {
       handleExamAnswer(correct);
@@ -217,7 +216,7 @@ export function LobbyPage() {
           <h3>Ваши очки</h3>
           <p>Общий счёт: {userScore}</p>
           <p>В этой игре: {sessionScore}</p>
-          <p>Неправильных ответов: {incorrectAnswersCount}</p>
+          <p>Неправильных ответов: {incorrectAnswers}</p> {/* Используем из Redux */}
         </div>
 
         <div className={styles.chat}>

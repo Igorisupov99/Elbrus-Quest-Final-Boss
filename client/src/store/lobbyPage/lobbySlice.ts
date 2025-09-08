@@ -29,6 +29,11 @@ interface LobbyState {
   activePlayerId: number | null;
   points: LobbyPoint[];
   modal: LobbyModal;
+  scores: {
+    userScore: number;
+    sessionScore: number;
+    incorrectAnswers: number;
+  };
 }
 
 export const initialState: LobbyState = {
@@ -87,6 +92,7 @@ export const initialState: LobbyState = {
     topic: "",
     question: "",
   },
+  scores: { userScore: 0, sessionScore: 0, incorrectAnswers: 0},
 };
 
 const lobbyPageReducer = createSlice({
@@ -119,10 +125,22 @@ const lobbyPageReducer = createSlice({
     closeModal(state) {
       state.modal = { isOpen: false, questionId: null, topic: "", question: "" };
     },
+    setScores(
+      state,
+      action: PayloadAction<{ userScore: number; sessionScore: number; incorrectAnswers: number }>
+    ) {
+      state.scores = action.payload;
+    },
+    incrementIncorrectAnswers(state) {
+      state.scores.incorrectAnswers += 1;
+    },
+    setIncorrectAnswers(state, action: PayloadAction<number>) {
+      state.scores.incorrectAnswers = action.payload;
+    }
   },
 });
 
-export const { setUsers, setPoints, updatePointStatus, openModal, closeModal } =
+export const { setUsers, setPoints, updatePointStatus, openModal, closeModal, setScores, incrementIncorrectAnswers, setIncorrectAnswers } =
   lobbyPageReducer.actions;
 
 export default lobbyPageReducer.reducer;

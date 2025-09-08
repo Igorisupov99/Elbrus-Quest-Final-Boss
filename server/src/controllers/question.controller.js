@@ -1,5 +1,8 @@
 const { Phase, Topic, Question, User, UserSession } = require("../../db/models");
 
+// 👇 теперь ключ = lobbyId, а не userId_lobbyId
+const incorrectAnswersMap = new Map();
+
 class QuestionController {
   // ОТДАТЬ ТЕКСТ ВОПРОСА
   async getQuestion(req, res) {
@@ -18,13 +21,11 @@ class QuestionController {
         return res.status(400).json({ error: "Параметры должны быть положительными целыми числами" });
       }
 
-      // Проверяем существование фазы
       const phase = await Phase.findByPk(phaseId, { attributes: ["id"] });
       if (!phase) {
         return res.status(404).json({ error: "Фаза не найдена" });
       }
 
-      // Проверяем топик и принадлежность фазе
       const topic = await Topic.findOne({
         where: { id: topicId },
         attributes: ["id", "phase_id", "title"],
@@ -38,16 +39,12 @@ class QuestionController {
         return res.status(400).json({ error: "Топик не принадлежит указанной фазе" });
       }
 
-      // Считаем количество вопросов
       const questionsCount = await Question.count({ where: { topic_id: topicId } });
-
       if (questionsCount === 0) {
         return res.status(404).json({ error: "В данном топике нет вопросов" });
       }
 
-      // Выбираем случайный вопрос
       const randomOffset = Math.floor(Math.random() * questionsCount);
-
       const randomQuestion = await Question.findOne({
         where: { topic_id: topicId },
         attributes: ["question_text", "id"],
@@ -72,14 +69,11 @@ class QuestionController {
   }
 
   // ПРОВЕРКА КОРРЕКТНОСТИ ОТВЕТА
-  // controllers/question.controller.js
-
-
   async answerCheck(req, res) {
     try {
-      const { question_id, answer, lobbyId } = req.body;
-      console.log('-----------------------------------', question_id, answer, lobbyId)
-      const userId = req.user.id; // берём из токена (middleware auth должен класть req.user)
+      const { question_id, answer, lobby_id } = req.body;
+      const userId = req.user.id;
+      const io = req.io;
 
       if (!question_id || !answer) {
         return res.status(400).json({ error: "Параметры question_id и answer обязательны" });
@@ -95,48 +89,88 @@ class QuestionController {
 
       const normalizedClientAnswer = answer.trim().toLowerCase();
       const normalizedCorrectAnswer = question.correct_answer.trim().toLowerCase();
-
-      console.log('Корректный ответ =================>' ,normalizedCorrectAnswer)
-
       const isCorrect = normalizedClientAnswer === normalizedCorrectAnswer;
 
       let updatedUser = null;
       let updatedSession = null;
+      let incorrectAnswersCount = 0;
 
       if (isCorrect) {
-        // +10 очков
         const points = 10;
 
-        // обновляем общий счёт
         updatedUser = await User.findByPk(userId);
         if (updatedUser) {
           updatedUser.score = Number(updatedUser.score || 0) + points;
           await updatedUser.save();
         }
 
-        // обновляем счёт в сессии
-        if (lobbyId) {
+        if (lobby_id) {
           updatedSession = await UserSession.findOne({
-            where: { user_id: userId, game_session_id: lobbyId },
+            where: { user_id: userId, game_session_id: lobby_id },
           });
           if (updatedSession) {
             updatedSession.score = Number(updatedSession.score || 0) + points;
             await updatedSession.save();
           }
         }
+
+        
+      } else if (lobby_id) {
+        // 👇 увеличиваем общий счётчик ошибок лобби
+        const current = incorrectAnswersMap.get(lobby_id) || 0;
+        incorrectAnswersCount = current + 1;
+        incorrectAnswersMap.set(lobby_id, incorrectAnswersCount);
+      }
+
+      if (lobby_id) {
+        const roomName = `lobby:${lobby_id}`;
+
+        if (updatedUser && updatedSession) {
+          io.to(roomName).emit("lobby:scores", {
+            userId,
+            userScore: updatedUser.score,
+            sessionScore: updatedSession.score,
+          });
+          console.log("EMIT lobby:scores", {
+            userId,
+            userScore: updatedUser.score,
+            sessionScore: updatedSession.score,
+          });
+        }
+
+        if (!isCorrect) {
+          const currentUser = await User.findByPk(userId);
+          const currentSession = await UserSession.findOne({
+            where: { user_id: userId, game_session_id: lobby_id },
+          });
+
+          io.of("/lobby").to(roomName).emit("lobby:incorrectAnswer", {
+            userId,
+            userScore: currentUser?.score || 0,
+            sessionScore: currentSession?.score || 0,
+            incorrectAnswers: incorrectAnswersCount, // общий счётчик по лобби
+          });
+        }
       }
 
       return res.json({
         correct: isCorrect,
-        userScore: updatedUser?.score,
-        sessionScore: updatedSession?.score,
+        scores: {
+          userScore: updatedUser?.score || 0,
+          sessionScore: updatedSession?.score || 0,
+          incorrectAnswers: incorrectAnswersCount,
+        },
       });
     } catch (error) {
       console.error("Ошибка на сервере:", error);
       return res.status(500).json({ error: "Внутренняя ошибка сервера" });
     }
   }
-
 }
 
-module.exports = new QuestionController();
+const questionController = new QuestionController();
+
+module.exports = {
+  questionController,
+  incorrectAnswersMap,
+};

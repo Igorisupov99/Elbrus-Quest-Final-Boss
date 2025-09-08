@@ -51,20 +51,21 @@ export function QuestionModal({
 
       const res = await api.post(
         "/api/question/answerCheck",
-        { question_id: questionId, answer, lobbyId },
+        { question_id: questionId, answer, lobby_id: lobbyId },
         { withCredentials: true }
       );
 
       if (res.data.correct) {
         setResult("✅ Правильный ответ! (+10 очков)");
         onAnswerResult?.(true, {
-          userScore: res.data.userScore,
-          sessionScore: res.data.sessionScore,
+          userScore: res.data.scores,
+          sessionScore: res.data.scores,
         });
       } else {
         setResult("❌ Неправильный ответ!");
         onAnswerResult?.(false);
       }
+      
     } catch (err) {
       console.error("Ошибка при отправке ответа:", err);
       setResult("⚠ Ошибка при проверке ответа");
