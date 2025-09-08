@@ -11,6 +11,10 @@ module.exports = (sequelize, DataTypes) => {
         foreignKey: 'phase_id',
         as: 'game_sessions'
       });
+      Phase.hasMany(models.EkzamenQuestion, {
+        foreignKey: 'phase_id',
+        as: 'exam_questions'
+      });
     }
   }
   Phase.init({

@@ -7,6 +7,10 @@ module.exports = (sequelize, DataTypes) => {
         foreignKey: 'topic_id',
         as: 'topic'
       });
+      Question.hasMany(models.EkzamenQuestion, {
+        foreignKey: 'question_id',
+        as: 'exam_records'
+      });
     }
   }
   Question.init({
