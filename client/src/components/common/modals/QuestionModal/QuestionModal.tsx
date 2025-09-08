@@ -15,7 +15,7 @@ interface QuestionModalProps {
   activePlayerName: string;       // 👈 имя активного игрока
   onAnswerResult?: (
     correct: boolean,
-    scores?: { userScore?: number; sessionScore?: number }
+    scores?: { userScore?: number; sessionScore?: number; incorrectAnswers?: number }
   ) => void;
 }
 
@@ -57,9 +57,11 @@ export function QuestionModal({
 
       if (res.data.correct) {
         setResult("✅ Правильный ответ! (+10 очков)");
+        const s = res.data?.scores ?? {};
         onAnswerResult?.(true, {
-          userScore: res.data.scores,
-          sessionScore: res.data.scores,
+          userScore: s.userScore ?? s.user_score ?? s.total ?? s.value,
+          sessionScore: s.sessionScore ?? s.session_score ?? s.session ?? s.value,
+          incorrectAnswers: s.incorrectAnswers ?? s.incorrect_answers,
         });
       } else {
         setResult("❌ Неправильный ответ!");

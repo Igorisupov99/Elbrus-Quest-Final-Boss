@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { useAppDispatch, useAppSelector } from "../store/hooks";
 import type { RootState } from "../store/store";
 import { type ChatHistoryItem, type IncomingChatMessage, socketClient, type SystemEvent } from "../socket/socketLobbyPage";
-import { initialState, setScores } from "../store/lobbyPage/lobbySlice";
+import { initialState, setScores, mergeScores } from "../store/lobbyPage/lobbySlice";
 import {
   setUsers,
   setPoints,
@@ -14,6 +14,8 @@ export function useLobbySocket(lobbyId: number) {
   const dispatch = useAppDispatch();
   const token = localStorage.getItem("accessToken");
   const { user } = useAppSelector((state: RootState) => state.auth);
+  // Не используем селектор для incorrectAnswers внутри обработчика,
+  // чтобы не ловить значение из замыкания. Будем читать из store.getState() в момент события.
 
   const [history, setHistory] = useState<ChatHistoryItem[]>([]);
   const [connected, setConnected] = useState(false);
@@ -56,12 +58,21 @@ export function useLobbySocket(lobbyId: number) {
     const onInitPoints = (points: any) => dispatch(setPoints(points));
     const onPointStatus = ({ pointId, status}: any) => dispatch(updatePointStatus({ pointId, status }));
 
+    const onInitScores = (payload: any) => {
+      console.log("ON lobby:initScores", payload);
+      const nextIncorrect = payload?.incorrectAnswers ?? payload?.incorrect_answers ?? 0;
+      dispatch(setScores({
+        userScore: payload.userScore ?? 0,
+        sessionScore: payload.sessionScore ?? 0,
+        incorrectAnswers: nextIncorrect,
+      }));
+    };
+
     const onScores = (payload: any) => {
       console.log("ON lobby:scores", payload);
-      dispatch(setScores({
+      dispatch(mergeScores({
         userScore: payload.userScore,
         sessionScore: payload.sessionScore,
-        incorrectAnswers: payload.incorrectAnswers ?? 0,
       }));
     };
 
@@ -103,7 +114,7 @@ export function useLobbySocket(lobbyId: number) {
       dispatch(setPoints(mapped));
     });
     socket.on("lobby:updatePointStatus", onPointStatus);
-    socket.on("lobby:initScores", onScores);
+    socket.on("lobby:initScores", onInitScores);
     socket.on("lobby:scores", onScores);
     socket.on("lobby:incorrectAnswer", onIncorrectAnswer);
     
@@ -121,7 +132,7 @@ export function useLobbySocket(lobbyId: number) {
       socket.off("lobby:users", onUsers);
       socket.off("lobby:initPoints", onInitPoints);
       socket.off("lobby:updatePointStatus", onPointStatus);
-      socket.off("lobby:initScores", onScores);
+      socket.off("lobby:initScores", onInitScores);
       socket.off("lobby:scores", onScores);
       socket.off("lobby:incorrectAnswer", onIncorrectAnswer);
       socket.disconnect();

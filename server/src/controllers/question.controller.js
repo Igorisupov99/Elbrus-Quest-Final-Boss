@@ -105,6 +105,9 @@ class QuestionController {
         }
 
         if (lobby_id) {
+          // Вернём актуальное значение счётчика неправильных ответов для этого лобби,
+          // чтобы клиент не получал 0 и не сбрасывал локальное состояние
+          incorrectAnswersCount = incorrectAnswersMap.get(lobby_id) || 0;
           updatedSession = await UserSession.findOne({
             where: { user_id: userId, game_session_id: lobby_id },
           });

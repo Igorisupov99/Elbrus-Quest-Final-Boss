@@ -131,6 +131,15 @@ const lobbyPageReducer = createSlice({
     ) {
       state.scores = action.payload;
     },
+    mergeScores(
+      state,
+      action: PayloadAction<Partial<{ userScore: number; sessionScore: number; incorrectAnswers: number }>>
+    ) {
+      state.scores = {
+        ...state.scores,
+        ...action.payload,
+      };
+    },
     incrementIncorrectAnswers(state) {
       state.scores.incorrectAnswers += 1;
     },
@@ -140,7 +149,7 @@ const lobbyPageReducer = createSlice({
   },
 });
 
-export const { setUsers, setPoints, updatePointStatus, openModal, closeModal, setScores, incrementIncorrectAnswers, setIncorrectAnswers } =
+export const { setUsers, setPoints, updatePointStatus, openModal, closeModal, setScores, mergeScores, incrementIncorrectAnswers, setIncorrectAnswers } =
   lobbyPageReducer.actions;
 
 export default lobbyPageReducer.reducer;

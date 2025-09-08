@@ -7,7 +7,7 @@ import { QuestionModal } from "../../components/common/modals/QuestionModal/Ques
 import api from "../../api/axios";
 import { useLobbySocket } from "../../hooks/useLobbySocket";
 import { useAppDispatch, useAppSelector } from "../../store/hooks";
-import { updatePointStatus, setScores } from "../../store/lobbyPage/lobbySlice";
+import { updatePointStatus, mergeScores } from "../../store/lobbyPage/lobbySlice";
 
 interface ExamQuestion {
   id: number; 
@@ -152,15 +152,39 @@ export function LobbyPage() {
   };
 
   const handleAnswerResult = (correct: boolean, scores: any) => {
-    if (scores) {
-      const { userScore, sessionScore, incorrectAnswers: wrong } = scores;
-      dispatch(setScores({
-        userScore: userScore ?? 0,
-        sessionScore: sessionScore ?? 0,
-        incorrectAnswers: wrong ?? incorrectAnswers
-      }));
+    // Если сервер ничего не прислал про очки, не трогаем текущие значения
+    if (!scores) {
+      if (currentPointId === "exam") {
+        handleExamAnswer(correct);
+      }
+      return;
     }
 
+    // Допускаем разные форматы payload
+    const nested = (scores as any)?.scores;
+    const isNumber = typeof scores === 'number';
+    const flat = !nested && !isNumber ? scores : undefined;
+
+    const nextUserScore = isNumber
+      ? scores
+      : nested
+      ? (nested.userScore ?? nested.user_score ?? userScore)
+      : (flat?.userScore ?? flat?.user_score ?? userScore);
+
+    const nextSessionScore = isNumber
+      ? scores
+      : nested
+      ? (nested.sessionScore ?? nested.session_score ?? sessionScore)
+      : (flat?.sessionScore ?? flat?.session_score ?? sessionScore);
+
+    const nextIncorrect = (nested?.incorrectAnswers ?? flat?.incorrectAnswers ?? incorrectAnswers);
+
+    dispatch(mergeScores({
+      userScore: Number(nextUserScore),
+      sessionScore: Number(nextSessionScore),
+      incorrectAnswers: Number(nextIncorrect),
+    }));
+    
     if (currentPointId === "exam") {
       handleExamAnswer(correct);
     } else if (correct && currentPointId) {
