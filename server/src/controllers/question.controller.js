@@ -93,6 +93,7 @@ class QuestionController {
 
       let updatedUser = null;
       let updatedSession = null;
+      let lobbyTotalScore = 0;
       let incorrectAnswersCount = 0;
 
       if (isCorrect) {
@@ -115,6 +116,9 @@ class QuestionController {
             updatedSession.score = Number(updatedSession.score || 0) + points;
             await updatedSession.save();
           }
+          // Пересчитываем общий счёт лобби
+          const allSessions = await UserSession.findAll({ where: { game_session_id: lobby_id } });
+          lobbyTotalScore = allSessions.reduce((sum, s) => sum + Number(s.score || 0), 0);
         }
 
         
@@ -129,28 +133,27 @@ class QuestionController {
         const roomName = `lobby:${lobby_id}`;
 
         if (updatedUser && updatedSession) {
-          io.to(roomName).emit("lobby:scores", {
+          io.of("/lobby").to(roomName).emit("lobby:scores", {
             userId,
             userScore: updatedUser.score,
-            sessionScore: updatedSession.score,
+            sessionScore: lobbyTotalScore,
           });
           console.log("EMIT lobby:scores", {
             userId,
             userScore: updatedUser.score,
-            sessionScore: updatedSession.score,
+            sessionScore: lobbyTotalScore,
           });
         }
 
         if (!isCorrect) {
           const currentUser = await User.findByPk(userId);
-          const currentSession = await UserSession.findOne({
-            where: { user_id: userId, game_session_id: lobby_id },
-          });
+          const allSessions = await UserSession.findAll({ where: { game_session_id: lobby_id } });
+          lobbyTotalScore = allSessions.reduce((sum, s) => sum + Number(s.score || 0), 0);
 
           io.of("/lobby").to(roomName).emit("lobby:incorrectAnswer", {
             userId,
             userScore: currentUser?.score || 0,
-            sessionScore: currentSession?.score || 0,
+            sessionScore: lobbyTotalScore,
             incorrectAnswers: incorrectAnswersCount, // общий счётчик по лобби
           });
         }
@@ -160,7 +163,7 @@ class QuestionController {
         correct: isCorrect,
         scores: {
           userScore: updatedUser?.score || 0,
-          sessionScore: updatedSession?.score || 0,
+          sessionScore: lobbyTotalScore,
           incorrectAnswers: incorrectAnswersCount,
         },
       });
