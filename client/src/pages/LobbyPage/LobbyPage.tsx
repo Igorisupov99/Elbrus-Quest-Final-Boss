@@ -10,7 +10,7 @@ import { useAppDispatch, useAppSelector } from "../../store/hooks";
 import { updatePointStatus, setScores } from "../../store/lobbyPage/lobbySlice";
 
 interface ExamQuestion {
-  id: number;
+  id: number; 
   question_text: string;
   topic_title: string;
 }
@@ -152,8 +152,8 @@ export function LobbyPage() {
   };
 
   const handleAnswerResult = (correct: boolean, scores: any) => {
-    if (scores?.scores) {
-      const { userScore, sessionScore, incorrectAnswers: wrong } = scores.scores;
+    if (scores) {
+      const { userScore, sessionScore, incorrectAnswers: wrong } = scores;
       dispatch(setScores({
         userScore: userScore ?? 0,
         sessionScore: sessionScore ?? 0,
