@@ -21,7 +21,7 @@ type ModalKind = 'confirm' | 'password' | null;
 
 export function MainPage(): JSX.Element {
   const { items, loading, error } = useAppSelector((s) => s.mainPage);
-  const userId = useAppSelector((s) => s.auth.user?.id); // ✅ get userId from Redux
+  const userId = useAppSelector((s) => s.auth.user?.id);
 
   const dispatch = useAppDispatch();
   const navigate = useNavigate();
