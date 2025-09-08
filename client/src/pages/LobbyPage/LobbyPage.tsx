@@ -46,6 +46,7 @@ export function LobbyPage() {
   const [currentQuestionId, setCurrentQuestionId] = useState<number | null>(null);
   const [currentPointId, setCurrentPointId] = useState<string | null>(null);
   const modal = useAppSelector(s => s.lobbyPage.modal);
+  const modalResult = useAppSelector(s => s.lobbyPage.modalResult);
 
   // Вычисляемые значения модалки: если в Redux есть открытая модалка — используем её
   const effectiveIsOpen = isModalOpen || modal.isOpen;
@@ -205,6 +206,11 @@ export function LobbyPage() {
     } else if (correct && currentPointId) {
       dispatch(updatePointStatus({ pointId: currentPointId, status: "completed" }));
       sendAnswer(currentPointId, true);
+      // Закрываем модалку локально для отвечающего игрока через 3 секунды
+      setTimeout(() => {
+        setIsModalOpen(false);
+        dispatch(closeModalAction());
+      }, 3000);
     } else {
       console.log("Неправильный ответ, точка остается доступной");
     }
@@ -336,6 +342,7 @@ export function LobbyPage() {
         activePlayerName={
           usersInLobby.find(u => u.id === activePlayerId)?.username ?? ''
         }
+        sharedResult={modalResult}
       />
     </div>
   );

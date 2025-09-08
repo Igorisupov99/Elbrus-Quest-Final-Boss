@@ -17,6 +17,7 @@ interface QuestionModalProps {
     correct: boolean,
     scores?: { userScore?: number; sessionScore?: number; incorrectAnswers?: number }
   ) => void;
+  sharedResult?: string | null;
 }
 
 export function QuestionModal({
@@ -30,6 +31,7 @@ export function QuestionModal({
   activePlayerId,
   activePlayerName,
   onAnswerResult,
+  sharedResult,
 }: QuestionModalProps) {
   const [answer, setAnswer] = useState("");
   const [loading, setLoading] = useState(false);
@@ -56,7 +58,8 @@ export function QuestionModal({
       );
 
       if (res.data.correct) {
-        setResult("✅ Правильный ответ! (+10 очков)");
+        // Локально не показываем текст, он придёт по сокету как общее сообщение
+        setResult(null);
         const s = res.data?.scores ?? {};
         onAnswerResult?.(true, {
           userScore: s.userScore ?? s.user_score ?? s.total ?? s.value,
@@ -64,7 +67,8 @@ export function QuestionModal({
           incorrectAnswers: s.incorrectAnswers ?? s.incorrect_answers,
         });
       } else {
-        setResult("❌ Вы ответили неправильно, попробуйте ещё раз!");
+        // Не показываем локальное сообщение при неправильном ответе.
+        // Глобальное уведомление приходит через sharedResult и скрывается через 3 сек.
         onAnswerResult?.(false);
       }
       
@@ -82,41 +86,49 @@ export function QuestionModal({
     onClose();
   };
 
+  const isCorrectMessage = Boolean(sharedResult && sharedResult.includes('Правильный ответ'));
+
   return (
     <div className={styles.backdrop}>
       <div className={styles.modal}>
-        <h2 className={styles.title}>{topic}</h2>
-        <p className={styles.question}>{question}</p>
+        {(sharedResult || result) && (
+          <p className={styles.result}>{sharedResult ?? result}</p>
+        )}
 
-        {Number(currentUserId) === Number(activePlayerId) ? (
+        {!isCorrectMessage && (
           <>
-            <input
-              type="text"
-              className={styles.input}
-              placeholder="Ваш ответ..."
-              value={answer}
-              onChange={(e) => setAnswer(e.target.value)}
-              disabled={loading}
-            />
+            <h2 className={styles.title}>{topic}</h2>
+            <p className={styles.question}>{question}</p>
 
-            {result && <p className={styles.result}>{result}</p>}
+            {Number(currentUserId) === Number(activePlayerId) ? (
+              <>
+                <input
+                  type="text"
+                  className={styles.input}
+                  placeholder="Ваш ответ..."
+                  value={answer}
+                  onChange={(e) => setAnswer(e.target.value)}
+                  disabled={loading}
+                />
 
-            <div className={styles.actions}>
-              <Button onClick={onClose}>Закрыть</Button>
-              <Button onClick={handleSubmit} disabled={loading || !answer.trim()}>
-                Отправить
-              </Button>
-            </div>
+                <div className={styles.actions}>
+                  <Button onClick={onClose}>Закрыть</Button>
+                  <Button onClick={handleSubmit} disabled={loading || !answer.trim()}>
+                    Отправить
+                  </Button>
+                </div>
+              </>
+            ) : (
+              <div className={styles.waitingBlock}>
+                <p className={styles.waiting}>
+                  Сейчас отвечает <strong>{activePlayerName}</strong>
+                </p>
+                <div className={styles.actions}>
+                  <Button onClick={handleClose}>Закрыть</Button>
+                </div>
+              </div>
+            )}
           </>
-        ) : (
-          <div className={styles.waitingBlock}>
-            <p className={styles.waiting}>
-              Сейчас отвечает <strong>{activePlayerName}</strong>
-            </p>
-            <div className={styles.actions}>
-              <Button onClick={handleClose}>Закрыть</Button>
-            </div>
-          </div>
         )}
       </div>
     </div>

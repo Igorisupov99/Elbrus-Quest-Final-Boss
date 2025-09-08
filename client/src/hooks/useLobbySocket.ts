@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { useAppDispatch, useAppSelector } from "../store/hooks";
 import type { RootState } from "../store/store";
 import { type ChatHistoryItem, type IncomingChatMessage, socketClient, type SystemEvent } from "../socket/socketLobbyPage";
-import { initialState, setScores, mergeScores, openModal } from "../store/lobbyPage/lobbySlice";
+import { initialState, setScores, mergeScores, openModal, setModalResult, closeModal } from "../store/lobbyPage/lobbySlice";
 import {
   setUsers,
   setPoints,
@@ -80,8 +80,19 @@ export function useLobbySocket(lobbyId: number) {
       console.log('🔍 [DEBUG] incorrectAnswers value:', payload.incorrectAnswers);
       console.log('🔍 [DEBUG] Тип incorrectAnswers:', typeof payload.incorrectAnswers);
       dispatch(incrementIncorrectAnswers());
+      dispatch(setModalResult('❌ Неправильный ответ!'));
+      setTimeout(() => dispatch(setModalResult(null)), 3000);
 
       console.log('✅ [CLIENT] Redux обновлен');
+    };
+
+    const onCorrectAnswer = (payload: any) => {
+      console.log('🎯 [CLIENT] Получил lobby:correctAnswer:', payload);
+      dispatch(setModalResult('✅ Правильный ответ! (+10 очков)'));
+      setTimeout(() => {
+        dispatch(setModalResult(null));
+        dispatch(closeModal());
+      }, 3000);
     };
     
     const onOpenModal = (payload: { questionId: number; topic: string; question: string }) => {
@@ -119,6 +130,7 @@ export function useLobbySocket(lobbyId: number) {
     socket.on("lobby:initScores", onInitScores);
     socket.on("lobby:scores", onScores);
     socket.on("lobby:incorrectAnswer", onIncorrectAnswer);
+    socket.on("lobby:correctAnswer", onCorrectAnswer);
     socket.on("lobby:openModal", onOpenModal);
     
     console.log('✅ [SOCKET] Обработчик lobby:incorrectAnswer зарегистрирован');
@@ -138,6 +150,7 @@ export function useLobbySocket(lobbyId: number) {
       socket.off("lobby:initScores", onInitScores);
       socket.off("lobby:scores", onScores);
       socket.off("lobby:incorrectAnswer", onIncorrectAnswer);
+      socket.off("lobby:correctAnswer", onCorrectAnswer);
       socket.off("lobby:openModal", onOpenModal);
       socket.disconnect();
     };

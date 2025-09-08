@@ -138,6 +138,11 @@ class QuestionController {
             userScore: updatedUser.score,
             sessionScore: lobbyTotalScore,
           });
+          // Широковещательное уведомление о правильном ответе для всех клиентов
+          io.of("/lobby").to(roomName).emit("lobby:correctAnswer", {
+            userId,
+            message: "✅ Правильный ответ! (+10 очков)",
+          });
           console.log("EMIT lobby:scores", {
             userId,
             userScore: updatedUser.score,
