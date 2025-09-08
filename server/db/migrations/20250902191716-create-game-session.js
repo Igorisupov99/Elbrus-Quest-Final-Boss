@@ -41,8 +41,7 @@ module.exports = {
       },
       room_code: {
         type: Sequelize.TEXT,
-        allowNull: true,
-        unique: true
+        allowNull: true
       },
       is_active: {
         type: Sequelize.BOOLEAN,
@@ -51,7 +50,8 @@ module.exports = {
       },
       room_name: {
         type: Sequelize.TEXT,
-        allowNull: true
+        allowNull: true,
+        unique: true
       },
       room_creator:{
         type: Sequelize.TEXT,
