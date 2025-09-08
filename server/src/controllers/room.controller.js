@@ -185,35 +185,22 @@ class RoomController {
   }
 
   // Проверить, является ли текущий пользователь создателем комнаты
+
   async checkCreator(req, res) {
     try {
-      const { id } = req.params;
-      const currentUserId = req.user.id; 
+      const currentUserId = req.user.id;
 
-      const room = await GameSession.findByPk(id, {
-        attributes: ['id', 'room_creator', 'room_name'],
+      const rooms = await GameSession.findAll({
+        where: { room_creator: currentUserId },
+        attributes: ['id', 'room_name', 'room_creator'],
       });
-
-      if (!room) {
-        return res.status(404).json({
-          success: false,
-          message: 'Комната не найдена',
-        });
-      }
-
-      const isCreator = room.room_creator === currentUserId;
 
       return res.status(200).json({
         success: true,
-        data: {
-          roomId: room.id,
-          roomName: room.room_name,
-          roomCreator: room.room_creator,
-          isCreator,
-        },
+        data: rooms,
       });
     } catch (error) {
-      console.error('Ошибка checkCreator:', error);
+      console.error('Ошибка getUserRooms:', error);
       return res.status(500).json({
         success: false,
         message: 'Ошибка сервера',

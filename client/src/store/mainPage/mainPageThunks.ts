@@ -14,6 +14,7 @@ export const fetchRooms = createAsyncThunk<MainPageItem[]>(
       return response.data.data.map((room: any) => ({
         id: room.id,
         title: room.room_name,
+        room_creator: room.room_creator,
       }));
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (err: any) {
@@ -88,3 +89,5 @@ export const removeRoom = createAsyncThunk<number, number>(
     }
   }
 );
+
+

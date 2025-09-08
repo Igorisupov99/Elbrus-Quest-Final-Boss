@@ -11,7 +11,6 @@ import ModelPageEnterPassword from '../../components/ModelPageEnterPassword/Mode
 
 import styles from './MainPage.module.css';
 import api from '../../lib/axios';
-import { getAccessToken } from '../../lib/tokenStorage';
 import {
   fetchRooms,
   updateRoom,
@@ -22,6 +21,8 @@ type ModalKind = 'confirm' | 'password' | null;
 
 export function MainPage(): JSX.Element {
   const { items, loading, error } = useAppSelector((s) => s.mainPage);
+  const userId = useAppSelector((s) => s.auth.user?.id); // ✅ get userId from Redux
+
   const dispatch = useAppDispatch();
   const navigate = useNavigate();
 
@@ -31,13 +32,14 @@ export function MainPage(): JSX.Element {
   const [modalKind, setModalKind] = useState<ModalKind>(null);
 
   useEffect(() => {
-    const token = getAccessToken();
-    if (!token) navigate('/login');
-  }, [navigate]);
+    // if no user in state, redirect to login
+    if (!userId) {
+      navigate('/login');
+      return;
+    }
 
-  useEffect(() => {
     dispatch(fetchRooms());
-  }, [dispatch]);
+  }, [dispatch, navigate, userId]);
 
   const handleEdit = (id: number) => {
     const newTitle = prompt('Введите новое название комнаты:');
@@ -89,24 +91,26 @@ export function MainPage(): JSX.Element {
           >
             <span className={styles.roomItem}>{item.title}</span>
 
-            <div className={styles.actions}>
-              <button
-                onClick={(e) => {
-                  e.stopPropagation();
-                  handleEdit(item.id);
-                }}
-              >
-                ✏️
-              </button>
-              <button
-                onClick={(e) => {
-                  e.stopPropagation();
-                  handleDelete(item.id);
-                }}
-              >
-                ❌
-              </button>
-            </div>
+            {userId !== null && item.room_creator === userId && (
+              <div className={styles.actions}>
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    handleEdit(item.id);
+                  }}
+                >
+                  ✏️
+                </button>
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    handleDelete(item.id);
+                  }}
+                >
+                  ❌
+                </button>
+              </div>
+            )}
           </li>
         ))}
       </ul>

@@ -9,7 +9,7 @@ roomRouter.put("/change/:id",authMiddleware, roomController.changeRoomName); //�
 roomRouter.delete('/:id',authMiddleware, roomController.deleteRoom)  // удалить комнату
 roomRouter.get("/:id/check-access", roomController.checkAccess); // новый GET для открытия модалки на клиенте
 roomRouter.post("/:id/verify", roomController.verifyRoomCode); // (на потом) POST для проверки пароля из модалки
-roomRouter.get('/:id/creator-check', authMiddleware, roomController.checkCreator);// 
+roomRouter.get('/creator-check', authMiddleware, roomController.checkCreator);// Проверить, является ли текущий пользователь создателем комнаты
 
 
 
