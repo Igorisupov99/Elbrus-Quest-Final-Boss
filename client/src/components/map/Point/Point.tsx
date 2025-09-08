@@ -1,15 +1,19 @@
 import { memo } from 'react';
 import styles from './Point.module.css';
 
+import StarGray from '../../../svg/StarGray.svg';
+import StarYellow from '../../../svg/StarYellow.svg';
+import StarGreen from '../../../svg/StarGreen.svg';
+
 export type POIStatus = 'available' | 'locked' | 'completed';
 
 interface PointProps {
-  id: string ;
+  id: string;
   title: string;
   top: number;
   left: number;
   status?: POIStatus;
-  onClick?: (id: string ) => void;
+  onClick?: (id: string) => void;
 }
 
 export const Point = memo(function Point({
@@ -20,6 +24,22 @@ export const Point = memo(function Point({
   status = 'available',
   onClick,
 }: PointProps) {
+  const isExam = id === "exam";
+
+  const getStarIcon = () => {
+    switch (status) {
+      case 'available':
+        return StarYellow;
+      case 'completed':
+        return StarGreen;
+      case 'locked':
+      default:
+        return StarGray;
+    }
+  };
+
+  const starIconSrc = isExam ? getStarIcon() : null;
+
   return (
     <button
       type="button"
@@ -30,8 +50,14 @@ export const Point = memo(function Point({
       aria-label={title}
       disabled={status === 'locked'}
     >
+      {isExam && starIconSrc ? (
+        <div className={styles.marker}>
+          <img src={starIconSrc} alt={title} className={styles.starIcon} />
+        </div>
+      ) : (
+        <span className={styles.marker} />
+      )}
       
-      <span className={styles.marker} />
       {status === 'locked' && (
         <span className={styles.lockIcon}>🔒</span>
       )}

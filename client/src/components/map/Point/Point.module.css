@@ -14,6 +14,7 @@
   z-index: 2;
 }
 
+/* Стиль для обычных точек (кружки) */
 .marker {
   width: clamp(28px, 1.6vw, 32px);
   height: clamp(28px, 1.6vw, 32px);
@@ -35,18 +36,20 @@
   background: transparent;
   box-shadow: none;
   position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
-.poi[data-point-id="exam"] .marker::before {
-  content: "⭐";
-  font-size: clamp(32px, 2vw, 40px);
+.starIcon {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
   filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.3));
-  display: block;
-  line-height: 1;
 }
 
 /* Анимация пульсации для доступной экзаменационной точки */
-.poi[data-point-id="exam"].available .marker::before {
+.poi[data-point-id="exam"].available .starIcon {
   animation: starPulse 2s ease-in-out infinite;
 }
 
@@ -66,14 +69,12 @@
 }
 
 /* Завершенная экзаменационная точка */
-.poi[data-point-id="exam"].completed .marker::before {
-  content: "🌟"; /* Более яркая звезда */
+.poi[data-point-id="exam"].completed .starIcon {
   filter: drop-shadow(0 2px 6px rgba(76, 175, 80, 0.4));
 }
 
 /* Заблокированная экзаменационная точка */
-.poi[data-point-id="exam"].locked .marker::before {
-  content: "⭐";
+.poi[data-point-id="exam"].locked .starIcon {
   opacity: 0.5;
   filter: grayscale(0.7) drop-shadow(0 2px 3px rgba(0, 0, 0, 0.2));
 }
