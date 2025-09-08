@@ -64,7 +64,7 @@ export function QuestionModal({
           incorrectAnswers: s.incorrectAnswers ?? s.incorrect_answers,
         });
       } else {
-        setResult("❌ Неправильный ответ!");
+        setResult("❌ Вы ответили неправильно, попробуйте ещё раз!");
         onAnswerResult?.(false);
       }
       
