@@ -11,6 +11,10 @@ module.exports = (sequelize, DataTypes) => {
         foreignKey: 'topic_id',
         as: 'questions'
       });
+      Topic.hasMany(models.EkzamenQuestion, {
+        foreignKey: 'topic_id',
+        as: 'exam_questions'
+      });
     }
   }
   Topic.init({

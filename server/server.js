@@ -8,6 +8,15 @@ const cookieParser = require('cookie-parser');
 const { Server } = require('socket.io');
 
 const db = require('./db/models');
+const app = express();
+const server = http.createServer(app);
+
+const io = new Server(server, {
+  cors: {
+    origin: process.env.CLIENT_URL || 'http://localhost:5173',
+    credentials: true,
+  },
+});
 
 const authRoutes = require('./src/routes/auth.routes');
 const userRouter = require('./src/routes/user.routes');
@@ -19,8 +28,6 @@ const initLobbySockets = require('./src/sockets/socketLobbyPage');
 const initMainSockets = require('./src/sockets/socketMainPage');
 const withAuth = require('./src/sockets/withAuth');
 
-const app = express();
-const server = http.createServer(app);
 const PORT = process.env.PORT || 3000;
 
 app.use(express.json());
@@ -34,6 +41,10 @@ app.use(
     allowedHeaders: ['Content-Type', 'Authorization'],
   })
 );
+app.use((req, res, next) => {
+  req.io = io;
+  next();
+});
 
 app.use('/api/auth', authRoutes);
 app.use('/api/user', userRouter);
@@ -41,12 +52,7 @@ app.use('/api/room', roomRouter);
 app.use('/api/question', questionRouter);
 app.use('/api/exam', examRouter);
 
-const io = new Server(server, {
-  cors: {
-    origin: process.env.CLIENT_URL || 'http://localhost:5173',
-    credentials: true,
-  },
-});
+
 
 const mainNsp = io.of('/'); 
 withAuth(mainNsp);

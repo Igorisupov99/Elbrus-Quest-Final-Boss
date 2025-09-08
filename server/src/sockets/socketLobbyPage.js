@@ -1,4 +1,5 @@
 const db = require('../../db/models');
+const { incorrectAnswersMap } = require("../controllers/question.controller");
 
 const lobbyUsers = new Map();
 const lobbyPoints = new Map();
@@ -30,6 +31,22 @@ function initLobbySockets(nsp) {
       id: socket.user.id,
       username: socket.user.username,
     });
+
+    // Обновление очков
+    const user = await db.User.findByPk(socket.user.id);
+    const session = await db.UserSession.findOne({
+      where: { user_id: socket.user.id, game_session_id: lobbyId },
+    });
+
+    const incorrectAnswers = incorrectAnswersMap.get(lobbyId) || 0;
+
+    socket.emit("lobby:initScores", {
+      userId: socket.user.id,
+      userScore: user?.score ?? 0,
+      sessionScore: session?.score ?? 0,
+      incorrectAnswers, // общее значение для всей комнаты
+    });
+    
 
     // Функция для отправки списка пользователей и активного игрока
     async function emitUsersList() {
@@ -160,11 +177,12 @@ function initLobbySockets(nsp) {
     // инициализация точек
     if (!lobbyPoints.has(lobbyId)) {
       lobbyPoints.set(lobbyId, [
-        { id: '1', status: 'available' },
-        { id: '2', status: 'available' },
-        { id: '3', status: 'available' },
-        { id: '4', status: 'available' },
-      ]);
+      { id: '1', status: 'available', phase_id: 1, topic_id: 1 },
+      { id: '2', status: 'available', phase_id: 1, topic_id: 2 },
+      { id: '3', status: 'available', phase_id: 1, topic_id: 3 },
+      { id: '4', status: 'available', phase_id: 1, topic_id: 4 },
+      { id: 'exam', status: 'available', phase_id: 1, topic_id: 4 },
+    ]);
     }
     socket.emit('lobby:initPoints', lobbyPoints.get(lobbyId));
 
@@ -276,6 +294,19 @@ function initLobbySockets(nsp) {
         console.error('Ошибка в обработке ответа:', err);
       }
     });
+
+    socket.on('lobby:incorrectAnswer', (payload) => {
+      console.log('📡 [SOCKET] Получено lobby:incorrectAnswer, пересылаю:', payload);
+      console.log('📡 [SOCKET] Комната:', roomKey);
+      
+      // Проверьте есть ли комната и клиенты в ней
+      const room = nsp.adapter.rooms.get(roomKey);
+      console.log('📡 [SOCKET] Участники комнаты:', room ? Array.from(room) : 'Комната не существует');
+      
+      nsp.to(roomKey).emit('lobby:incorrectAnswer', payload);
+      console.log('📡 [SOCKET] Событие переслано в комнату:', roomKey);
+    });
+
 
     // Обработчик отключения
     socket.on('disconnect', async (reason) => {

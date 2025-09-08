@@ -23,6 +23,10 @@ module.exports = (sequelize, DataTypes) => {
         foreignKey: 'game_session_id',
         as: 'chat_messages'
       });
+      GameSession.hasMany(models.EkzamenQuestion, {
+        foreignKey: 'game_session_id',
+        as: 'exam_questions'
+      });
     }
   }
   GameSession.init({

@@ -15,7 +15,7 @@ interface QuestionModalProps {
   activePlayerName: string;       // 👈 имя активного игрока
   onAnswerResult?: (
     correct: boolean,
-    scores?: { userScore?: number; sessionScore?: number }
+    scores?: { userScore?: number; sessionScore?: number; incorrectAnswers?: number }
   ) => void;
 }
 
@@ -51,20 +51,23 @@ export function QuestionModal({
 
       const res = await api.post(
         "/api/question/answerCheck",
-        { question_id: questionId, answer, lobbyId },
+        { question_id: questionId, answer, lobby_id: lobbyId },
         { withCredentials: true }
       );
 
       if (res.data.correct) {
         setResult("✅ Правильный ответ! (+10 очков)");
+        const s = res.data?.scores ?? {};
         onAnswerResult?.(true, {
-          userScore: res.data.userScore,
-          sessionScore: res.data.sessionScore,
+          userScore: s.userScore ?? s.user_score ?? s.total ?? s.value,
+          sessionScore: s.sessionScore ?? s.session_score ?? s.session ?? s.value,
+          incorrectAnswers: s.incorrectAnswers ?? s.incorrect_answers,
         });
       } else {
         setResult("❌ Неправильный ответ!");
         onAnswerResult?.(false);
       }
+      
     } catch (err) {
       console.error("Ошибка при отправке ответа:", err);
       setResult("⚠ Ошибка при проверке ответа");
@@ -85,7 +88,7 @@ export function QuestionModal({
         <h2 className={styles.title}>{topic}</h2>
         <p className={styles.question}>{question}</p>
 
-        {currentUserId === activePlayerId ? (
+        {Number(currentUserId) === Number(activePlayerId) ? (
           <>
             <input
               type="text"

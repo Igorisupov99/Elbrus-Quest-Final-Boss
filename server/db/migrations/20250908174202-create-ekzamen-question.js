@@ -2,12 +2,22 @@
 /** @type {import('sequelize-cli').Migration} */
 module.exports = {
   async up(queryInterface, Sequelize) {
-    await queryInterface.createTable('GameSessions', {
+    await queryInterface.createTable('EkzamenQuestions', {
       id: {
         allowNull: false,
         autoIncrement: true,
         primaryKey: true,
         type: Sequelize.BIGINT
+      },
+      game_session_id: {
+        type: Sequelize.BIGINT,
+        allowNull: false,
+        references: {
+          model: 'GameSessions',
+          key: 'id'
+        },
+        onUpdate: 'CASCADE',
+        onDelete: 'CASCADE'
       },
       phase_id: {
         type: Sequelize.BIGINT,
@@ -19,9 +29,9 @@ module.exports = {
         onUpdate: 'CASCADE',
         onDelete: 'CASCADE'
       },
-      current_topic_id: {
+      topic_id: {
         type: Sequelize.BIGINT,
-        allowNull: true,
+        allowNull: false,
         references: {
           model: 'Topics',
           key: 'id'
@@ -29,9 +39,9 @@ module.exports = {
         onUpdate: 'CASCADE',
         onDelete: 'CASCADE'
       },
-      current_question_id: {
+      question_id: {
         type: Sequelize.BIGINT,
-        allowNull: true,
+        allowNull: false,
         references: {
           model: 'Questions',
           key: 'id'
@@ -39,21 +49,12 @@ module.exports = {
         onUpdate: 'CASCADE',
         onDelete: 'CASCADE'
       },
-      room_code: {
-        type: Sequelize.TEXT,
+      is_correct: {
+        type: Sequelize.BOOLEAN,
+        defaultValue: null,
         allowNull: true
       },
-      is_active: {
-        type: Sequelize.BOOLEAN,
-        allowNull: false,
-        defaultValue: true
-      },
-      room_name: {
-        type: Sequelize.TEXT,
-        allowNull: true,
-        unique: true
-      },
-      room_creator:{
+      user_answer: {
         type: Sequelize.TEXT,
         allowNull: true
       },
@@ -69,6 +70,6 @@ module.exports = {
   },
 
   async down(queryInterface, Sequelize) {
-    await queryInterface.dropTable('GameSessions');
+    await queryInterface.dropTable('EkzamenQuestions');
   }
 };
