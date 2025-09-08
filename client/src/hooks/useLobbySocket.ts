@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { useAppDispatch, useAppSelector } from "../store/hooks";
 import type { RootState } from "../store/store";
 import { type ChatHistoryItem, type IncomingChatMessage, socketClient, type SystemEvent } from "../socket/socketLobbyPage";
-import { initialState, setScores, mergeScores } from "../store/lobbyPage/lobbySlice";
+import { initialState, setScores, mergeScores, openModal } from "../store/lobbyPage/lobbySlice";
 import {
   setUsers,
   setPoints,
@@ -14,8 +14,6 @@ export function useLobbySocket(lobbyId: number) {
   const dispatch = useAppDispatch();
   const token = localStorage.getItem("accessToken");
   const { user } = useAppSelector((state: RootState) => state.auth);
-  // Не используем селектор для incorrectAnswers внутри обработчика,
-  // чтобы не ловить значение из замыкания. Будем читать из store.getState() в момент события.
 
   const [history, setHistory] = useState<ChatHistoryItem[]>([]);
   const [connected, setConnected] = useState(false);
@@ -85,6 +83,10 @@ export function useLobbySocket(lobbyId: number) {
 
       console.log('✅ [CLIENT] Redux обновлен');
     };
+    
+    const onOpenModal = (payload: { questionId: number; topic: string; question: string }) => {
+      dispatch(openModal(payload));
+    };
 ;
     socket.on("connect", () => {
       console.log('✅ [SOCKET] Подключен к комнате lobby:', lobbyId);
@@ -117,6 +119,7 @@ export function useLobbySocket(lobbyId: number) {
     socket.on("lobby:initScores", onInitScores);
     socket.on("lobby:scores", onScores);
     socket.on("lobby:incorrectAnswer", onIncorrectAnswer);
+    socket.on("lobby:openModal", onOpenModal);
     
     console.log('✅ [SOCKET] Обработчик lobby:incorrectAnswer зарегистрирован');
 
@@ -135,6 +138,7 @@ export function useLobbySocket(lobbyId: number) {
       socket.off("lobby:initScores", onInitScores);
       socket.off("lobby:scores", onScores);
       socket.off("lobby:incorrectAnswer", onIncorrectAnswer);
+      socket.off("lobby:openModal", onOpenModal);
       socket.disconnect();
     };
   }, [dispatch, lobbyId, token]);
@@ -151,6 +155,10 @@ export function useLobbySocket(lobbyId: number) {
   const sendExamComplete = (correctAnswers: number, totalQuestions: number) => {
     socketClient.socket.emit("lobby:examComplete", { lobbyId, correctAnswers, totalQuestions});
   };
+  
+  const sendOpenModal = (payload: { questionId: number; topic: string; question: string }) => {
+    socketClient.socket.emit("lobby:openModal", payload);
+  };
 
   return {
     history,
@@ -160,5 +168,6 @@ export function useLobbySocket(lobbyId: number) {
     sendChatMessage,
     sendAnswer,
     sendExamComplete,
+    sendOpenModal,
   };
 };

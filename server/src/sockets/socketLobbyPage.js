@@ -307,6 +307,16 @@ function initLobbySockets(nsp) {
       console.log('📡 [SOCKET] Событие переслано в комнату:', roomKey);
     });
 
+    // Синхронное открытие модалки всем в лобби
+    socket.on('lobby:openModal', (payload) => {
+      try {
+        if (!payload?.questionId || !payload?.question) return;
+        nsp.to(roomKey).emit('lobby:openModal', payload);
+      } catch (err) {
+        console.error('Ошибка в lobby:openModal:', err);
+      }
+    });
+
 
     // Обработчик отключения
     socket.on('disconnect', async (reason) => {

@@ -3,6 +3,7 @@ import { configureStore } from '@reduxjs/toolkit';
 import authReducer from './authSlice';
 import mainPageReducer from './mainPage/mainPageSlice';
 import mainPageConditionalRenderingReducer from './mainPageConditionalRenderingSlice/mainPageConditionalRenderingSlice';
+import lobbyPageReducer from './lobbyPage/lobbySlice';
 
 
 export const store = configureStore({
@@ -10,6 +11,7 @@ export const store = configureStore({
     auth: authReducer,
     mainPage: mainPageReducer,
     mainPageConditionalRendering: mainPageConditionalRenderingReducer,
+    lobbyPage: lobbyPageReducer,
   },
 });
 

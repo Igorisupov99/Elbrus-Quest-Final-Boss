@@ -7,7 +7,7 @@ import { QuestionModal } from "../../components/common/modals/QuestionModal/Ques
 import api from "../../api/axios";
 import { useLobbySocket } from "../../hooks/useLobbySocket";
 import { useAppDispatch, useAppSelector } from "../../store/hooks";
-import { updatePointStatus, mergeScores } from "../../store/lobbyPage/lobbySlice";
+import { updatePointStatus, mergeScores, openModal as openModalAction, closeModal as closeModalAction } from "../../store/lobbyPage/lobbySlice";
 
 interface ExamQuestion {
   id: number; 
@@ -33,17 +33,25 @@ export function LobbyPage() {
     sendChatMessage,
     sendAnswer,
     sendExamComplete,
+    sendOpenModal,
   } = useLobbySocket(lobbyId);
 
   const [input, setInput] = useState("");
   const listRef = useRef<HTMLDivElement | null>(null);
 
-  // модалка
+  // локальная модалка (для обратной совместимости). Также используем redux.modal для синхронизации через сокет
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [currentTopic, setCurrentTopic] = useState("");
   const [currentQuestion, setCurrentQuestion] = useState("");
   const [currentQuestionId, setCurrentQuestionId] = useState<number | null>(null);
   const [currentPointId, setCurrentPointId] = useState<string | null>(null);
+  const modal = useAppSelector(s => s.lobbyPage.modal);
+
+  // Вычисляемые значения модалки: если в Redux есть открытая модалка — используем её
+  const effectiveIsOpen = isModalOpen || modal.isOpen;
+  const effectiveTopic = modal.isOpen ? modal.topic : currentTopic;
+  const effectiveQuestion = modal.isOpen ? modal.question : currentQuestion;
+  const effectiveQuestionId = modal.isOpen ? modal.questionId : currentQuestionId;
 
   // состояние для экзамена
   const [examQuestions, setExamQuestions] = useState<ExamQuestion[]>([]);
@@ -72,6 +80,9 @@ export function LobbyPage() {
         setCurrentQuestionId(res.data.question_id);
         setCurrentPointId(pointId);
         setIsModalOpen(true);
+        const payload = { questionId: res.data.question_id, topic: res.data.topic_title || "Без названия", question: res.data.question_text };
+        dispatch(openModalAction(payload));
+        sendOpenModal(payload);
       } else {
         await loadExamQuestions();
       }
@@ -95,6 +106,9 @@ export function LobbyPage() {
       setCurrentQuestionId(question.id);
       setCurrentPointId("exam");
       setIsModalOpen(true);
+      const payload = { questionId: question.id, topic: question.topic_title || "Экзамен", question: question.question_text };
+      dispatch(openModalAction(payload));
+      sendOpenModal(payload);
     } catch (err) {
       console.error("Ошибка при загрузке вопросов для экзамена:", err);
     }
@@ -144,6 +158,7 @@ export function LobbyPage() {
       setCurrentQuestionId(next.id);
     } else {
       setIsModalOpen(false);
+      dispatch(closeModalAction());
       dispatch(updatePointStatus({ pointId: "exam", status: "completed" }));
       const correctAnswers = examQuestions.filter((_, i) => i <= currentExamQuestionIndex).length - (correct ? 0 : 1);
       const totalQuestions = examQuestions.length;
@@ -309,11 +324,11 @@ export function LobbyPage() {
       </div>
 
       <QuestionModal
-        isOpen={isModalOpen}
-        onClose={() => setIsModalOpen(false)}
-        topic={currentTopic}
-        question={currentQuestion}
-        questionId={currentQuestionId}
+        isOpen={effectiveIsOpen}
+        onClose={() => { setIsModalOpen(false); dispatch(closeModalAction()); }}
+        topic={effectiveTopic}
+        question={effectiveQuestion}
+        questionId={effectiveQuestionId}
         lobbyId={lobbyId}
         onAnswerResult={handleAnswerResult}
         currentUserId={user?.id ?? 0}
