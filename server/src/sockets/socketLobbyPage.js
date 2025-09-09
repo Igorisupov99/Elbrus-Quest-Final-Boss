@@ -312,8 +312,19 @@ function initLobbySockets(nsp) {
     });
 
     // Уведомление о истечении времени
-    socket.on('lobby:timeout', (payload) => {
+    socket.on('lobby:timeout', async (payload) => {
       console.log('📡 [SOCKET] Получено lobby:timeout, пересылаю:', payload);
+      
+      // Проверяем, что timeout отправляет активный игрок
+      const activeUserSession = await db.UserSession.findOne({
+        where: { game_session_id: lobbyId, is_user_active: true },
+      });
+
+      if (activeUserSession && activeUserSession.user_id === socket.user.id) {
+        console.log('⏰ [SOCKET] Timeout от активного игрока, передаем ход следующему');
+        await passTurnToNextPlayer();
+      }
+      
       nsp.to(roomKey).emit('lobby:timeout', payload);
       console.log('📡 [SOCKET] Событие timeout переслано в комнату:', roomKey);
     });
