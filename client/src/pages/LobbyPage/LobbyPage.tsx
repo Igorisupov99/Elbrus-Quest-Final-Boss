@@ -29,6 +29,7 @@ export function LobbyPage() {
     connecting,
     sendChatMessage,
     sendAnswer,
+    sendTimeout,
     sendExamComplete,
     sendOpenModal,
     sendOpenExam,
@@ -179,9 +180,43 @@ export function LobbyPage() {
         setIsModalOpen(false);
         dispatch(closeModalAction());
       }, 3000);
-    } else {
-      console.log("Неправильный ответ, точка остается доступной");
+    } else if (currentPointId) {
+      // При неправильном ответе меняем роль, точка остается доступной для других игроков
+      console.log("Неправильный ответ, меняем роль, точка остается доступной");
+      sendAnswer(currentPointId, false);
+      // Закрываем модалку локально для отвечающего игрока через 3 секунды
+      setTimeout(() => {
+        setIsModalOpen(false);
+        dispatch(closeModalAction());
+      }, 3000);
     }
+  };
+
+  // Локальная обработка неправильного ответа без запроса к серверу
+  const handleLocalIncorrectAnswer = () => {
+    if (!currentPointId) return;
+    
+    console.log("Локальная обработка неправильного ответа (пустой ответ или закрытие модалки)");
+    
+    // Увеличиваем счетчик неправильных ответов локально
+    dispatch(mergeScores({
+      userScore: userScore,
+      sessionScore: sessionScore,
+      incorrectAnswers: incorrectAnswers + 1,
+    }));
+    
+    // Меняем роль, точка остается доступной для других игроков
+    sendAnswer(currentPointId, false);
+    setTimeout(() => {
+      setIsModalOpen(false);
+      dispatch(closeModalAction());
+    }, 1000); // Быстрее закрываем при локальной обработке
+  };
+
+  // Обработка timeout - отправка события всем игрокам
+  const handleTimeout = (pointId: string) => {
+    console.log("⏰ Отправляем timeout событие для точки:", pointId);
+    sendTimeout(pointId);
   };
 
   return (
@@ -303,8 +338,11 @@ export function LobbyPage() {
         topic={effectiveTopic}
         question={effectiveQuestion}
         questionId={effectiveQuestionId}
+        pointId={currentPointId || undefined}
         lobbyId={lobbyId}
         onAnswerResult={handleAnswerResult}
+        onLocalIncorrectAnswer={handleLocalIncorrectAnswer}
+        onTimeout={handleTimeout}
         currentUserId={user?.id ?? 0}
         activePlayerId={activePlayerId}
         activePlayerName={
@@ -322,8 +360,9 @@ export function LobbyPage() {
         activePlayerName={
           usersInLobby.find(u => u.id === activePlayerId)?.username ?? ''
         }
-        incorrectAnswers={incorrectAnswers}
         onExamComplete={handleExamComplete}
+        onLocalIncorrectAnswer={handleLocalIncorrectAnswer}
+        onTimeout={handleTimeout}
         sharedResult={modalResult}
         questions={useAppSelector(s => s.lobbyPage.examQuestions)}
         onAdvance={() => {

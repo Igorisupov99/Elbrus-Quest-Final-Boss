@@ -285,7 +285,7 @@ function initLobbySockets(nsp) {
           return;
         }
 
-        const status = correct ? 'completed' : 'locked';
+        const status = correct ? 'completed' : 'available';
         const points = lobbyPoints.get(lobbyId);
         if (points) {
           const point = points.find((p) => p.id === pointId);
@@ -309,6 +309,13 @@ function initLobbySockets(nsp) {
       
       nsp.to(roomKey).emit('lobby:incorrectAnswer', payload);
       console.log('📡 [SOCKET] Событие переслано в комнату:', roomKey);
+    });
+
+    // Уведомление о истечении времени
+    socket.on('lobby:timeout', (payload) => {
+      console.log('📡 [SOCKET] Получено lobby:timeout, пересылаю:', payload);
+      nsp.to(roomKey).emit('lobby:timeout', payload);
+      console.log('📡 [SOCKET] Событие timeout переслано в комнату:', roomKey);
     });
 
     // Синхронное открытие модалки всем в лобби

@@ -17,8 +17,9 @@ interface ExamModalProps {
   currentUserId: number;
   activePlayerId: number | null;
   activePlayerName: string;
-  incorrectAnswers: number;
   onExamComplete?: (correctAnswers: number, totalQuestions: number) => void;
+  onLocalIncorrectAnswer?: () => void;
+  onTimeout?: (pointId: string) => void;
   sharedResult?: string | null;
   questions?: ExamQuestion[];
   onAdvance?: () => void;
@@ -31,8 +32,9 @@ export function ExamModal({
   currentUserId,
   activePlayerId,
   activePlayerName,
-  incorrectAnswers,
   onExamComplete,
+  onLocalIncorrectAnswer,
+  onTimeout,
   sharedResult,
   questions,
   onAdvance,
@@ -45,6 +47,8 @@ export function ExamModal({
   const [answer, setAnswer] = useState("");
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState<string | null>(null);
+  const [timeLeft, setTimeLeft] = useState(30);
+  const [timerActive, setTimerActive] = useState(false);
 
   const totalQuestions = examQuestions.length;
   const currentQuestion = examQuestions[currentQuestionIndex];
@@ -63,12 +67,58 @@ export function ExamModal({
   useEffect(() => {
     setAnswer('');
     setResult(null);
+    setTimeLeft(30);
+    setTimerActive(false);
   }, [currentQuestionIndex]);
+
+  // Таймер для активного игрока
+  useEffect(() => {
+    if (!isOpen || !timerActive || Number(currentUserId) !== Number(activePlayerId)) {
+      return;
+    }
+
+    const timer = setInterval(() => {
+      setTimeLeft((prev) => {
+        if (prev <= 1) {
+          setTimerActive(false);
+          // Автоматически отправляем ответ при истечении времени
+          console.log("⏰ Время истекло в экзамене, автоматически отправляем ответ:", answer.trim() || "пустой");
+          if (answer.trim()) {
+            handleSubmit();
+          } else {
+            // Если ответ пустой, отправляем событие timeout всем игрокам
+            console.log("⏰ Пустой ответ при истечении времени в экзамене - отправляем timeout");
+            onTimeout?.("exam");
+            // Закрываем модальное окно локально
+            console.log("⏰ Закрываем ExamModal через 100ms");
+            setTimeout(() => {
+              onClose();
+            }, 100);
+          }
+          return 0;
+        }
+        return prev - 1;
+      });
+    }, 1000);
+
+    return () => clearInterval(timer);
+  }, [isOpen, timerActive, currentUserId, activePlayerId, answer]);
+
+  // Запускаем таймер когда модальное окно открывается для активного игрока
+  useEffect(() => {
+    if (isOpen && Number(currentUserId) === Number(activePlayerId) && !loading) {
+      setTimerActive(true);
+    } else {
+      setTimerActive(false);
+    }
+  }, [isOpen, currentUserId, activePlayerId, loading]);
 
   // Загрузка перенесена в инициатора и рассылается по сокету
 
   const handleSubmit = async () => {
     if (!currentQuestion) return;
+
+    setTimerActive(false); // Останавливаем таймер при отправке ответа
 
     try {
       setLoading(true);
@@ -111,7 +161,16 @@ export function ExamModal({
     setResult(null);
     setExamQuestions([]);
     setCurrentQuestionIndex(0);
-    onClose();
+    setTimerActive(false);
+    setTimeLeft(30);
+    
+    // Если закрывает активный игрок до истечения времени - это неправильный ответ
+    if (Number(currentUserId) === Number(activePlayerId) && timerActive) {
+      console.log("❌ Активный игрок закрыл экзамен до истечения времени - локальная обработка");
+      onLocalIncorrectAnswer?.();
+    } else {
+      onClose();
+    }
   };
 
   if (!isOpen) return null;
@@ -136,12 +195,32 @@ export function ExamModal({
             <h3 className={styles.topic}>{currentQuestion.topic_title}</h3>
             <p className={styles.question}>{currentQuestion.question_text}</p>
 
+            {Number(currentUserId) === Number(activePlayerId) && timerActive && (
+              <div className={`${styles.timer} ${
+                timeLeft <= 10 ? styles.timerDanger : 
+                timeLeft <= 15 ? styles.timerWarning : ''
+              }`}>
+                <p className={styles.timerText}>
+                  ⏰ Осталось: {timeLeft} сек
+                </p>
+                <div className={styles.timerBar}>
+                  <div 
+                    className={`${styles.timerBarFill} ${
+                      timeLeft <= 10 ? styles.timerBarDanger : 
+                      timeLeft <= 15 ? styles.timerBarWarning : ''
+                    }`}
+                    style={{ width: `${(timeLeft / 30) * 100}%` }}
+                  />
+                </div>
+              </div>
+            )}
+
             {Number(currentUserId) === Number(activePlayerId) ? (
               <>
                 <input
                   type="text"
                   className={styles.input}
-                  placeholder="Ваш ответ..."
+                  placeholder="Ваш ответ... (пустой ответ = неправильный)"
                   value={answer}
                   onChange={(e) => setAnswer(e.target.value)}
                   disabled={loading}
@@ -149,7 +228,7 @@ export function ExamModal({
 
                 <div className={styles.actions}>
                   <Button onClick={handleClose}>Закрыть</Button>
-                  <Button onClick={handleSubmit} disabled={loading || !answer.trim()}>
+                  <Button onClick={handleSubmit} disabled={loading}>
                     Отправить
                   </Button>
                 </div>

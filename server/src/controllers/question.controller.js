@@ -75,8 +75,8 @@ class QuestionController {
       const userId = req.user.id;
       const io = req.io;
 
-      if (!question_id || !answer) {
-        return res.status(400).json({ error: "Параметры question_id и answer обязательны" });
+      if (!question_id) {
+        return res.status(400).json({ error: "Параметр question_id обязателен" });
       }
 
       const question = await Question.findByPk(question_id, {
