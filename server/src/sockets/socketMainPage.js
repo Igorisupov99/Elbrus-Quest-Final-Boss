@@ -56,6 +56,44 @@ function initMainPageSockets(nsp) {
       }
     });
 
+    socket.on('test', (data) => {
+      console.log('🧪 Received test event from client:', data);
+      socket.emit('test:response', {
+        message: 'Hello from server!',
+        timestamp: new Date().toISOString(),
+      });
+    });
+
+    socket.on('request:chat:history', async () => {
+      console.log('📜 Client requested chat history');
+      try {
+        const lastMessages = await db.ChatMessage.findAll({
+          include: [
+            {
+              model: db.User,
+              as: 'user',
+              attributes: ['id', 'username'],
+            },
+          ],
+          order: [['createdAt', 'ASC']],
+          limit: 20,
+        });
+
+        const history = lastMessages.map((m) => ({
+          id: m.id,
+          text: m.message,
+          user: { id: m.user.id, username: m.user.username },
+          createdAt: m.createdAt,
+        }));
+
+        socket.emit('chat:history', history);
+        console.log('📜 Sent chat history:', history.length, 'messages');
+      } catch (err) {
+        console.error('❌ Ошибка при загрузке истории чата по запросу:', err);
+        socket.emit('error', { message: 'Не удалось загрузить историю чата' });
+      }
+    });
+
     socket.on('disconnect', (reason) => {
       console.log(
         `❌ Main page socket disconnected: ${socket.id}, reason=${reason}`

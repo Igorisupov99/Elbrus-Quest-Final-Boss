@@ -13,6 +13,7 @@ export type MainChatMessage = {
 
 class MainSocketClient {
   private _socket: Socket | null = null;
+  private _roomUpdateListener: ((data: any) => void) | null = null;
 
   connectWithToken(token: string) {
     // Disconnect existing socket if any
@@ -36,6 +37,11 @@ class MainSocketClient {
     // Add connection event listeners
     this._socket.on('connect', () => {
       console.log('✅ Main page socket connected');
+      // Re-setup room update listener if it exists
+      if (this._roomUpdateListener) {
+        this._socket?.on('room:update', this._roomUpdateListener);
+        console.log('🔄 Re-setup room update listener after reconnection');
+      }
     });
 
     this._socket.on('disconnect', (reason) => {
@@ -45,6 +51,46 @@ class MainSocketClient {
     this._socket.on('connect_error', (error) => {
       console.error('❌ Main page socket connection error:', error);
     });
+
+    // Add test response listener
+    this._socket.on('test:response', (data) => {
+      console.log('🎉 Received test response from server:', data);
+    });
+  }
+
+  setupRoomUpdateListener(listener: (data: any) => void) {
+    console.log('🔧 Setting up room update listener...');
+    this._roomUpdateListener = listener;
+
+    if (this._socket) {
+      console.log(
+        '🔌 Socket exists, checking connection status:',
+        this._socket.connected
+      );
+      if (this._socket.connected) {
+        this._socket.on('room:update', listener);
+        console.log('📡 Room update listener set up immediately');
+      } else {
+        console.log(
+          '⏳ Socket not connected yet, listener will be set up on connect'
+        );
+        // Set up a one-time connection listener
+        this._socket.once('connect', () => {
+          console.log('🔄 Socket connected, setting up room update listener');
+          this._socket?.on('room:update', listener);
+        });
+      }
+    } else {
+      console.log('❌ No socket instance available');
+    }
+  }
+
+  removeRoomUpdateListener() {
+    if (this._socket && this._roomUpdateListener) {
+      this._socket.off('room:update', this._roomUpdateListener);
+      console.log('🧹 Room update listener removed');
+    }
+    this._roomUpdateListener = null;
   }
 
   disconnect() {
@@ -61,6 +107,18 @@ class MainSocketClient {
 
   get isConnected() {
     return this._socket?.connected || false;
+  }
+
+  // Test function to emit a test event
+  testConnection() {
+    if (this._socket && this._socket.connected) {
+      console.log('🧪 Testing socket connection...');
+      this._socket.emit('test', { message: 'Hello from client' });
+      return true;
+    } else {
+      console.log('❌ Cannot test - socket not connected');
+      return false;
+    }
   }
 }
 
