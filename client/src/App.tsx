@@ -3,7 +3,7 @@ import { Header } from './components/Header/Header';
 import { MainPage } from './pages/MainPage/MainPage';
 import { Register } from './pages/Register/Register';
 import { Login } from './pages/Login/Login';
-import { Profile } from './pages/Profile/Profile';
+import { Profile } from './pages/ProfilePage/Profile';
 import { LobbyPage } from './pages/LobbyPage/LobbyPage';
 import { PrivateRoute } from './components/PrivateRoute/PrivateRoute';
 import { useEffect } from 'react';

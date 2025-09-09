@@ -1,0 +1,230 @@
+/* Фон оверлея */
+.modalOverlay {
+    position: fixed;
+    top: 0; left: 0; width: 100%; height: 100%;
+    background: rgba(0, 0, 0, 0.5);
+    display: flex; align-items: center; justify-content: center;
+    z-index: 1000;
+  }
+  
+  /* Окно модалки */
+  .modalContent {
+    position: relative;
+    background: #f5deb3;        /* пергамент */
+    border-radius: 12px;
+    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.25);
+    padding: 24px;
+    max-width: 400px;
+    width: 90%;
+    box-sizing: border-box;
+  }
+  
+  /* Заголовок */
+  .modalHeader {
+    margin: 0 0 16px;
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: #5c3d2e;
+    text-align: center;
+  }
+  
+  /* Группы полей */
+  .formGroup {
+    margin-bottom: 12px;
+  }
+  
+  .formGroup label {
+    display: block;
+    margin-bottom: 4px;
+    font-weight: 600;
+    color: #8b4513;
+  }
+  
+  .formGroup input {
+    width: 100%;
+    padding: 8px 10px;
+    border: 1px solid rgba(0, 0, 0, 0.2);
+    border-radius: 8px;
+    background: #fffaf0;
+    color: #5c3d2e;
+    font-size: 1rem;
+    box-sizing: border-box;
+  }
+  
+  /* Кнопка закрытия */
+  .closeBtn {
+    position: absolute;
+    top: 12px;
+    right: 12px;
+    background: transparent;
+    border: none;
+    font-size: 1.4rem;
+    color: #5c3d2e;
+    cursor: pointer;
+  }
+  
+  /* Группа действий */
+  .modalActions {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 20px;
+  }
+  
+  /* Общие стили кнопок */
+  .button {
+    flex: 1;
+    text-align: center;
+    padding: 10px 14px;
+    font-size: 1rem;
+    font-weight: bold;
+    border-radius: 8px;
+    border: 2px solid #6b3e15;
+    color: #2c1810;
+    text-shadow: 0 1px 0 #f3e0c0;
+    box-shadow: 0 4px 0 #6b3e15, 0 6px 10px rgba(0, 0, 0, 0.25);
+    cursor: pointer;
+    transition: all 0.2s ease-in-out;
+    background: linear-gradient(180deg, #d8a35d, #b0752d);
+    margin: 0 4px;
+  }
+  
+  .button:hover {
+    background: linear-gradient(180deg, #e8b76d, #c6853d);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 0 #6b3e15, 0 8px 12px rgba(0, 0, 0, 0.3);
+  }
+  
+  .button:active {
+    transform: translateY(2px);
+    box-shadow: 0 2px 0 #6b3e15, 0 3px 6px rgba(0, 0, 0, 0.2);
+  }
+  
+  /* Отдельные кнопки */
+  .saveBtn {
+    /* можно оставить базовый .button */
+  }
+  
+  .deleteBtn {
+    background: linear-gradient(180deg, #d32f2f, #b71c1c);
+    border-color: #7f1a1a;
+    color: #fff8dc;
+  }
+  
+  .deleteBtn:hover {
+    background: linear-gradient(180deg, #e35252, #c03939);
+  }
+  
+  .settingsButton {
+    margin-top: 16px;
+    padding: 10px 14px;
+    font-weight: bold;
+    font-size: 1rem;
+    border-radius: 8px;
+    border: 2px solid #6b3e15;
+    background: linear-gradient(180deg, #d8a35d, #b0752d);
+    color: #2c1810;
+    text-shadow: 0 1px 0 #f3e0c0;
+    box-shadow: 0 4px 0 #6b3e15, 0 6px 10px rgba(0, 0, 0, 0.25);
+    cursor: pointer;
+    transition: all 0.2s ease-in-out;
+  }
+  
+  .settingsButton:hover {
+    background: linear-gradient(180deg, #e8b76d, #c6853d);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 0 #6b3e15, 0 8px 12px rgba(0, 0, 0, 0.3);
+  }
+  
+  .settingsButton:active {
+    transform: translateY(2px);
+    box-shadow: 0 2px 0 #6b3e15, 0 3px 6px rgba(0, 0, 0, 0.2);
+  }
+  
+  /* Тексты состояния */
+  .loading,
+  .error,
+  .notFound {
+    padding: 20px;
+    text-align: center;
+    color: #5c3d2e;
+    font-weight: 600;
+  }
+/* Центрируем весь контент страницы */
+.profileSection {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    justify-content: center; /* вертикальный центр */
+    align-items: center;     /* горизонтальный центр */
+    padding: 20px;
+    box-sizing: border-box;
+  
+    background: #fffaf0;
+  }
+  
+  .header {
+    color: #5c3d2e;
+    font-weight: 700;
+    font-size: 2rem;
+    margin-bottom: 24px;
+    text-align: center;
+  }
+  
+  /* Контейнер для аватара и информации */
+  .profileContainer {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    gap: 32px;
+  
+    width: 540px;        /* 200 + 32 + 200 (аватар + gap + инфо) */
+    margin: 0 auto;
+  }
+  
+  .avatar {
+    width: 250px;
+    height: 250px;
+    border-radius: 12px;
+    object-fit: cover;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+    background: #ddd;
+  }
+  
+  .userInfo {
+    width: 200px;          /* равная ширина с аватаром */
+    font-size: 1.1rem;
+    line-height: 1.5;
+    color: #5c3d2e;
+  }
+  
+  /* Кнопка под контейнером */
+  .settingsButton {
+    padding: 12px 28px;
+    font-weight: bold;
+    font-size: 1.1rem;
+    border-radius: 8px;
+    border: 2px solid #6b3e15;
+    background: linear-gradient(180deg, #d8a35d, #b0752d);
+    color: #2c1810;
+    text-shadow: 0 1px 0 #f3e0c0;
+    box-shadow: 0 4px 0 #6b3e15, 0 6px 10px rgba(0, 0, 0, 0.25);
+    cursor: pointer;
+    transition: all 0.2s ease-in-out;
+    align-self: center;  /* центрировать кнопку по ширине родителя */
+  }
+  
+  .settingsButton:hover {
+    background: linear-gradient(180deg, #e8b76d, #c6853d);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 0 #6b3e15, 0 8px 12px rgba(0, 0, 0, 0.3);
+  }
+  
+  .settingsButton:active {
+    transform: translateY(2px);
+    box-shadow: 0 2px 0 #6b3e15, 0 3px 6px rgba(0, 0, 0, 0.2);
+  }
+
+  .profileSection {
+    background-color: #d6b37a;
+  }
+  
