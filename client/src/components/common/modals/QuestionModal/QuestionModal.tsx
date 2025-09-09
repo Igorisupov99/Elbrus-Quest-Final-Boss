@@ -129,8 +129,7 @@ export function QuestionModal({
           incorrectAnswers: s.incorrectAnswers ?? s.incorrect_answers,
         });
       } else {
-        // Не показываем локальное сообщение при неправильном ответе.
-        // Глобальное уведомление приходит через sharedResult и скрывается через 3 сек.
+        // Не показываем правильный ответ для обычных вопросов
         onAnswerResult?.(false);
       }
       

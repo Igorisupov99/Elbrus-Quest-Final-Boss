@@ -49,6 +49,7 @@ export function ExamModal({
   const [answer, setAnswer] = useState("");
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState<string | null>(null);
+  const [correctAnswer, setCorrectAnswer] = useState<string | null>(null);
   const [timeLeft, setTimeLeft] = useState(30);
   const [timerActive, setTimerActive] = useState(false);
 
@@ -85,6 +86,7 @@ export function ExamModal({
   useEffect(() => {
     setAnswer('');
     setResult(null);
+    setCorrectAnswer(null);
     setTimeLeft(30);
     setTimerActive(false);
     
@@ -154,7 +156,7 @@ export function ExamModal({
       );
 
       if (res.data.correct) {
-        setResult("✅ Правильный ответ!");
+        setResult("✅ Правильный ответ! (+10 очков)");
         // Переходим к следующему вопросу или завершаем экзамен
         if (isLastQuestion) {
         // Экзамен завершен
@@ -166,7 +168,8 @@ export function ExamModal({
           onAdvance?.();
         }
       } else {
-        setResult("❌ Неправильный ответ!");
+        setResult("❌ Неправильный ответ! (-5 очков)");
+        setCorrectAnswer(res.data.correctAnswer);
         // При неправильном ответе завершаем экзамен
         const correctAnswers = currentQuestionIndex; // Количество правильных ответов до этого
         dispatch(setExamIndex(0)); // Сбрасываем индекс
@@ -184,6 +187,7 @@ export function ExamModal({
   const handleClose = () => {
     setAnswer('');
     setResult(null);
+    setCorrectAnswer(null);
     setExamQuestions([]);
     setCurrentQuestionIndex(0);
     setTimerActive(false);
@@ -210,6 +214,13 @@ export function ExamModal({
         
         {(sharedResult || result) && (
           <p className={styles.result}>{sharedResult ?? result}</p>
+        )}
+
+        {correctAnswer && (
+          <div className={styles.correctAnswerSection}>
+            <p className={styles.correctAnswerLabel}>Правильный ответ:</p>
+            <p className={styles.correctAnswerText}>{correctAnswer}</p>
+          </div>
         )}
 
         {!isCorrectMessage && totalQuestions > 0 && currentQuestion && (
