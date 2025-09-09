@@ -17,6 +17,12 @@ export interface LobbyPoint {
   topicId: number;
 }
 
+export interface ExamQuestion {
+  id: number;
+  question_text: string;
+  topic_title: string;
+}
+
 interface LobbyModal {
   isOpen: boolean;
   questionId: number | null;
@@ -29,6 +35,9 @@ interface LobbyState {
   activePlayerId: number | null;
   points: LobbyPoint[];
   modal: LobbyModal;
+  examModalOpen: boolean;
+  examQuestions: ExamQuestion[];
+  examIndex: number;
   scores: {
     userScore: number;
     sessionScore: number;
@@ -93,6 +102,9 @@ export const initialState: LobbyState = {
     topic: "",
     question: "",
   },
+  examModalOpen: false,
+  examQuestions: [],
+  examIndex: 0,
   modalResult: null,
   scores: { userScore: 0, sessionScore: 0, incorrectAnswers: 0},
 };
@@ -127,6 +139,21 @@ const lobbyPageReducer = createSlice({
     closeModal(state) {
       state.modal = { isOpen: false, questionId: null, topic: "", question: "" };
     },
+    openExamModal(state) {
+      state.examModalOpen = true;
+    },
+    closeExamModal(state) {
+      state.examModalOpen = false;
+    },
+    setExamQuestions(state, action: PayloadAction<ExamQuestion[]>) {
+      state.examQuestions = action.payload;
+    },
+    clearExamQuestions(state) {
+      state.examQuestions = [];
+    },
+    setExamIndex(state, action: PayloadAction<number>) {
+      state.examIndex = action.payload;
+    },
     setModalResult(state, action: PayloadAction<string | null>) {
       state.modalResult = action.payload;
     },
@@ -154,7 +181,7 @@ const lobbyPageReducer = createSlice({
   },
 });
 
-export const { setUsers, setPoints, updatePointStatus, openModal, closeModal, setScores, mergeScores, incrementIncorrectAnswers, setIncorrectAnswers, setModalResult } =
+export const { setUsers, setPoints, updatePointStatus, openModal, closeModal, openExamModal, closeExamModal, setExamQuestions, clearExamQuestions, setExamIndex, setScores, mergeScores, incrementIncorrectAnswers, setIncorrectAnswers, setModalResult } =
   lobbyPageReducer.actions;
 
 export default lobbyPageReducer.reducer;

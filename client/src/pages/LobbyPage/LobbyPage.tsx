@@ -4,16 +4,13 @@ import styles from "./LobbyPage.module.css";
 import { Button } from "../../components/common/Button/Button";
 import { Point, type POIStatus } from "../../components/map/Point/Point";
 import { QuestionModal } from "../../components/common/modals/QuestionModal/QuestionModal";
+import { ExamModal } from "../../components/common/modals/ExamModal/ExamModal";
 import api from "../../api/axios";
 import { useLobbySocket } from "../../hooks/useLobbySocket";
 import { useAppDispatch, useAppSelector } from "../../store/hooks";
-import { updatePointStatus, mergeScores, openModal as openModalAction, closeModal as closeModalAction } from "../../store/lobbyPage/lobbySlice";
+import { updatePointStatus, mergeScores, openModal as openModalAction, closeModal as closeModalAction, openExamModal as openExamModalAction } from "../../store/lobbyPage/lobbySlice";
 
-interface ExamQuestion {
-  id: number; 
-  question_text: string;
-  topic_title: string;
-}
+// УДАЛИТЬ: ExamQuestion перенесен в ExamModal
 
 export function LobbyPage() {
   const { id } = useParams<{ id: string }>();
@@ -34,6 +31,8 @@ export function LobbyPage() {
     sendAnswer,
     sendExamComplete,
     sendOpenModal,
+    sendOpenExam,
+    sendExamAnswerProgress,
   } = useLobbySocket(lobbyId);
 
   const [input, setInput] = useState("");
@@ -41,11 +40,13 @@ export function LobbyPage() {
 
   // локальная модалка (для обратной совместимости). Также используем redux.modal для синхронизации через сокет
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isExamModalOpen, setIsExamModalOpen] = useState(false);
   const [currentTopic, setCurrentTopic] = useState("");
   const [currentQuestion, setCurrentQuestion] = useState("");
   const [currentQuestionId, setCurrentQuestionId] = useState<number | null>(null);
   const [currentPointId, setCurrentPointId] = useState<string | null>(null);
   const modal = useAppSelector(s => s.lobbyPage.modal);
+  const examModalOpenGlobal = useAppSelector(s => s.lobbyPage.examModalOpen);
   const modalResult = useAppSelector(s => s.lobbyPage.modalResult);
 
   // Вычисляемые значения модалки: если в Redux есть открытая модалка — используем её
@@ -54,10 +55,7 @@ export function LobbyPage() {
   const effectiveQuestion = modal.isOpen ? modal.question : currentQuestion;
   const effectiveQuestionId = modal.isOpen ? modal.questionId : currentQuestionId;
 
-  // состояние для экзамена
-  const [examQuestions, setExamQuestions] = useState<ExamQuestion[]>([]);
-  const [currentExamQuestionIndex, setCurrentExamQuestionIndex] = useState(0);
-  // УДАЛИТЬ: const [incorrectAnswersCount, setIncorrectAnswersCount] = useState(0);
+  // УДАЛИТЬ: состояние для экзамена перенесено в ExamModal
 
   const openModal = async (pointId: string) => {
     const point = points.find(p => p.id === pointId);
@@ -85,35 +83,22 @@ export function LobbyPage() {
         dispatch(openModalAction(payload));
         sendOpenModal(payload);
       } else {
-        await loadExamQuestions();
+        // Для экзамена инициатор загружает вопросы и рассылает всем
+        const res = await api.get("/api/exam/examQuestion", {
+          params: { phase_id: 1, count: 2 + incorrectAnswers },
+          withCredentials: true,
+        });
+        const questions = res.data?.questions ?? [];
+        setIsExamModalOpen(true);
+        dispatch(openExamModalAction());
+        sendOpenExam({ questions });
       }
     } catch (err) {
       console.error("Ошибка при получении вопроса:", err);
     }
   };
 
-  const loadExamQuestions = async () => {
-    try {
-      const res = await api.get("/api/exam/examQuestion", {
-        params: { phase_id: 1, count: 2 + incorrectAnswers }, // Используем из Redux
-        withCredentials: true,
-      });
-      if (!res.data.questions || res.data.questions.length === 0) return;
-      setExamQuestions(res.data.questions);
-      setCurrentExamQuestionIndex(0);
-      const question = res.data.questions[0];
-      setCurrentTopic(question.topic_title || "Экзамен");
-      setCurrentQuestion(question.question_text);
-      setCurrentQuestionId(question.id);
-      setCurrentPointId("exam");
-      setIsModalOpen(true);
-      const payload = { questionId: question.id, topic: question.topic_title || "Экзамен", question: question.question_text };
-      dispatch(openModalAction(payload));
-      sendOpenModal(payload);
-    } catch (err) {
-      console.error("Ошибка при загрузке вопросов для экзамена:", err);
-    }
-  };
+  // УДАЛИТЬ: loadExamQuestions перенесена в ExamModal
 
   const updatePoint = (pointId: string, status: POIStatus) => {
     dispatch(updatePointStatus({ pointId, status }));
@@ -149,30 +134,15 @@ export function LobbyPage() {
 
   const handleExitLobby = () => navigate("/");
 
-  const handleExamAnswer = (correct: boolean) => {
-    if (currentPointId !== "exam") return;
-    if (currentExamQuestionIndex + 1 < examQuestions.length) {
-      setCurrentExamQuestionIndex(prev => prev + 1);
-      const next = examQuestions[currentExamQuestionIndex + 1];
-      setCurrentTopic(next.topic_title);
-      setCurrentQuestion(next.question_text);
-      setCurrentQuestionId(next.id);
-    } else {
-      setIsModalOpen(false);
-      dispatch(closeModalAction());
-      dispatch(updatePointStatus({ pointId: "exam", status: "completed" }));
-      const correctAnswers = examQuestions.filter((_, i) => i <= currentExamQuestionIndex).length - (correct ? 0 : 1);
-      const totalQuestions = examQuestions.length;
-      sendExamComplete(correctAnswers, totalQuestions);
-    }
+  const handleExamComplete = (correctAnswers: number, totalQuestions: number) => {
+    setIsExamModalOpen(false);
+    dispatch(updatePointStatus({ pointId: "exam", status: "completed" }));
+    sendExamComplete(correctAnswers, totalQuestions);
   };
 
   const handleAnswerResult = (correct: boolean, scores: any) => {
     // Если сервер ничего не прислал про очки, не трогаем текущие значения
     if (!scores) {
-      if (currentPointId === "exam") {
-        handleExamAnswer(correct);
-      }
       return;
     }
 
@@ -201,9 +171,7 @@ export function LobbyPage() {
       incorrectAnswers: Number(nextIncorrect),
     }));
     
-    if (currentPointId === "exam") {
-      handleExamAnswer(correct);
-    } else if (correct && currentPointId) {
+    if (correct && currentPointId) {
       dispatch(updatePointStatus({ pointId: currentPointId, status: "completed" }));
       sendAnswer(currentPointId, true);
       // Закрываем модалку локально для отвечающего игрока через 3 секунды
@@ -343,6 +311,25 @@ export function LobbyPage() {
           usersInLobby.find(u => u.id === activePlayerId)?.username ?? ''
         }
         sharedResult={modalResult}
+      />
+
+      <ExamModal
+        isOpen={isExamModalOpen || examModalOpenGlobal}
+        onClose={() => setIsExamModalOpen(false)}
+        lobbyId={lobbyId}
+        currentUserId={user?.id ?? 0}
+        activePlayerId={activePlayerId}
+        activePlayerName={
+          usersInLobby.find(u => u.id === activePlayerId)?.username ?? ''
+        }
+        incorrectAnswers={incorrectAnswers}
+        onExamComplete={handleExamComplete}
+        sharedResult={modalResult}
+        questions={useAppSelector(s => s.lobbyPage.examQuestions)}
+        onAdvance={() => {
+          // дергаем из сокет-хука
+          (sendExamAnswerProgress as any)?.();
+        }}
       />
     </div>
   );

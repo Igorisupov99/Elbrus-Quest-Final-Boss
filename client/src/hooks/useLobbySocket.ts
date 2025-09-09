@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { useAppDispatch, useAppSelector } from "../store/hooks";
 import type { RootState } from "../store/store";
 import { type ChatHistoryItem, type IncomingChatMessage, socketClient, type SystemEvent } from "../socket/socketLobbyPage";
-import { initialState, setScores, mergeScores, openModal, setModalResult, closeModal } from "../store/lobbyPage/lobbySlice";
+import { initialState, setScores, mergeScores, openModal, setModalResult, closeModal, openExamModal, closeExamModal, setExamQuestions, setExamIndex, clearExamQuestions } from "../store/lobbyPage/lobbySlice";
 import {
   setUsers,
   setPoints,
@@ -68,10 +68,12 @@ export function useLobbySocket(lobbyId: number) {
 
     const onScores = (payload: any) => {
       console.log("ON lobby:scores", payload);
-      dispatch(mergeScores({
-        userScore: payload.userScore,
-        sessionScore: payload.sessionScore,
-      }));
+      // Обновляем общий счёт лобби всем
+      dispatch(mergeScores({ sessionScore: payload.sessionScore }));
+      // Личный счёт обновляем только тому пользователю, чьи очки пришли
+      if (payload.userId && user?.id && Number(payload.userId) === Number(user.id)) {
+        dispatch(mergeScores({ userScore: payload.userScore }));
+      }
     };
 
     const onIncorrectAnswer = (payload: any) => {
@@ -97,6 +99,19 @@ export function useLobbySocket(lobbyId: number) {
     
     const onOpenModal = (payload: { questionId: number; topic: string; question: string }) => {
       dispatch(openModal(payload));
+    };
+    const onExamStart = (payload: { questions: any[]; index: number }) => {
+      dispatch(setExamQuestions(payload.questions));
+      dispatch(setExamIndex(payload.index));
+      dispatch(openExamModal());
+    };
+    const onExamNext = (payload: { index: number }) => {
+      dispatch(setExamIndex(payload.index));
+    };
+    const onExamComplete = () => {
+      dispatch(closeExamModal());
+      dispatch(clearExamQuestions());
+      dispatch(setExamIndex(0));
     };
 ;
     socket.on("connect", () => {
@@ -132,6 +147,9 @@ export function useLobbySocket(lobbyId: number) {
     socket.on("lobby:incorrectAnswer", onIncorrectAnswer);
     socket.on("lobby:correctAnswer", onCorrectAnswer);
     socket.on("lobby:openModal", onOpenModal);
+    socket.on("lobby:examStart", onExamStart);
+    socket.on("lobby:examNext", onExamNext);
+    socket.on("lobby:examComplete", onExamComplete);
     
     console.log('✅ [SOCKET] Обработчик lobby:incorrectAnswer зарегистрирован');
 
@@ -152,6 +170,9 @@ export function useLobbySocket(lobbyId: number) {
       socket.off("lobby:incorrectAnswer", onIncorrectAnswer);
       socket.off("lobby:correctAnswer", onCorrectAnswer);
       socket.off("lobby:openModal", onOpenModal);
+      socket.off("lobby:examStart", onExamStart);
+      socket.off("lobby:examNext", onExamNext);
+      socket.off("lobby:examComplete", onExamComplete);
       socket.disconnect();
     };
   }, [dispatch, lobbyId, token]);
@@ -172,6 +193,12 @@ export function useLobbySocket(lobbyId: number) {
   const sendOpenModal = (payload: { questionId: number; topic: string; question: string }) => {
     socketClient.socket.emit("lobby:openModal", payload);
   };
+  const sendOpenExam = (payload?: { questions?: any[] }) => {
+    socketClient.socket.emit("lobby:openExam", payload ?? {});
+  };
+  const sendExamAnswerProgress = () => {
+    socketClient.socket.emit("lobby:examAnswer");
+  };
 
   return {
     history,
@@ -182,5 +209,7 @@ export function useLobbySocket(lobbyId: number) {
     sendAnswer,
     sendExamComplete,
     sendOpenModal,
+    sendOpenExam,
+    sendExamAnswerProgress,
   };
 };

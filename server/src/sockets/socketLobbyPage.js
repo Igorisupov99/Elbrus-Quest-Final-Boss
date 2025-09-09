@@ -4,6 +4,7 @@ const { incorrectAnswersMap } = require("../controllers/question.controller");
 const lobbyUsers = new Map();
 const lobbyPoints = new Map();
 const lobbyTimeouts = new Map();
+const lobbyExamState = new Map(); // lobbyId -> { questions: any[], index: number }
 
 function initLobbySockets(nsp) {
   nsp.on('connection', async (socket) => {
@@ -317,6 +318,44 @@ function initLobbySockets(nsp) {
         nsp.to(roomKey).emit('lobby:openModal', payload);
       } catch (err) {
         console.error('Ошибка в lobby:openModal:', err);
+      }
+    });
+
+    socket.on('lobby:openExam', (payload) => {
+      try {
+        const questions = payload?.questions || [];
+        lobbyExamState.set(lobbyId, { questions, index: 0 });
+        nsp.to(roomKey).emit('lobby:examStart', { questions, index: 0 });
+      } catch (err) {
+        console.error('Ошибка в lobby:openExam:', err);
+      }
+    });
+
+    socket.on('lobby:examAnswer', async () => {
+      try {
+        const state = lobbyExamState.get(lobbyId);
+        if (!state) return;
+        const nextIndex = state.index + 1;
+        if (nextIndex < state.questions.length) {
+          state.index = nextIndex;
+          lobbyExamState.set(lobbyId, state);
+          nsp.to(roomKey).emit('lobby:examNext', { index: nextIndex });
+          await passTurnToNextPlayer();
+        } else {
+          // Экзамен завершён
+          lobbyExamState.delete(lobbyId);
+          // Обновим точку экзамена как выполненную и известим всех
+          const points = lobbyPoints.get(lobbyId);
+          if (points) {
+            const examPoint = points.find((p) => p.id === 'exam');
+            if (examPoint) examPoint.status = 'completed';
+          }
+          nsp.to(roomKey).emit('lobby:updatePointStatus', { pointId: 'exam', status: 'completed' });
+          nsp.to(roomKey).emit('lobby:examComplete');
+          await passTurnToNextPlayer();
+        }
+      } catch (err) {
+        console.error('Ошибка в lobby:examAnswer:', err);
       }
     });
 
