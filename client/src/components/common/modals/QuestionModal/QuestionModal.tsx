@@ -139,16 +139,23 @@ export function QuestionModal({
   };
 
   const handleClose = () => {
+    console.log("🔍 [QuestionModal] handleClose вызван");
+    console.log("🔍 [QuestionModal] currentUserId:", currentUserId);
+    console.log("🔍 [QuestionModal] activePlayerId:", activePlayerId);
+    console.log("🔍 [QuestionModal] timerActive:", timerActive);
+    
     setAnswer('');
     setResult(null);
     setTimerActive(false);
     setTimeLeft(30);
     
-    // Если закрывает активный игрок до истечения времени - это неправильный ответ
-    if (Number(currentUserId) === Number(activePlayerId) && timerActive) {
-      console.log("❌ Активный игрок закрыл модалку до истечения времени - локальная обработка");
+    // Если закрывает активный игрок - это неправильный ответ
+    if (Number(currentUserId) === Number(activePlayerId)) {
+      console.log("❌ [QuestionModal] Активный игрок закрыл модалку - засчитываем неправильный ответ");
+      console.log("❌ [QuestionModal] Вызываем onLocalIncorrectAnswer");
       onLocalIncorrectAnswer?.();
     } else {
+      console.log("ℹ️ [QuestionModal] Неактивный игрок закрыл модалку - просто закрываем");
       onClose();
     }
   };
@@ -199,7 +206,7 @@ export function QuestionModal({
                 />
 
                 <div className={styles.actions}>
-                  <Button onClick={onClose}>Закрыть</Button>
+                  <Button onClick={handleClose}>Закрыть</Button>
                   <Button onClick={handleSubmit} disabled={loading}>
                     Отправить
                   </Button>

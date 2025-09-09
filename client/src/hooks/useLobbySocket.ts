@@ -7,7 +7,6 @@ import {
   setUsers,
   setPoints,
   updatePointStatus,
-  incrementIncorrectAnswers,
 } from "../store/lobbyPage/lobbySlice";
 
 export function useLobbySocket(lobbyId: number) {
@@ -81,7 +80,21 @@ export function useLobbySocket(lobbyId: number) {
       console.log('🔍 [DEBUG] Структура payload:', payload);
       console.log('🔍 [DEBUG] incorrectAnswers value:', payload.incorrectAnswers);
       console.log('🔍 [DEBUG] Тип incorrectAnswers:', typeof payload.incorrectAnswers);
-      dispatch(incrementIncorrectAnswers());
+      
+      // Обновляем общий счет лобби и счетчик неправильных ответов для всех
+      dispatch(mergeScores({
+        sessionScore: payload.sessionScore || 0,
+        incorrectAnswers: payload.incorrectAnswers || 0,
+      }));
+      
+      // Личный счет обновляем только для того игрока, чей ID совпадает
+      if (payload.userId && user?.id && Number(payload.userId) === Number(user.id)) {
+        console.log('🎯 [CLIENT] Обновляем личный счет для текущего пользователя');
+        dispatch(mergeScores({
+          userScore: payload.userScore || 0,
+        }));
+      }
+      
       dispatch(setModalResult('❌ Неправильный ответ!'));
       setTimeout(() => dispatch(setModalResult(null)), 3000);
 
@@ -123,6 +136,11 @@ export function useLobbySocket(lobbyId: number) {
       dispatch(clearExamQuestions());
       dispatch(setExamIndex(0));
     };
+
+    const onCloseModal = () => {
+      console.log('🔒 [CLIENT] Получил lobby:closeModal - закрываем модалку');
+      dispatch(closeModal());
+    };
 ;
     socket.on("connect", () => {
       console.log('✅ [SOCKET] Подключен к комнате lobby:', lobbyId);
@@ -161,6 +179,7 @@ export function useLobbySocket(lobbyId: number) {
     socket.on("lobby:examNext", onExamNext);
     socket.on("lobby:examComplete", onExamComplete);
     socket.on("lobby:timeout", onTimeout);
+    socket.on("lobby:closeModal", onCloseModal);
     
     console.log('✅ [SOCKET] Обработчик lobby:incorrectAnswer зарегистрирован');
 
@@ -185,6 +204,7 @@ export function useLobbySocket(lobbyId: number) {
       socket.off("lobby:examStart", onExamStart);
       socket.off("lobby:examNext", onExamNext);
       socket.off("lobby:examComplete", onExamComplete);
+      socket.off("lobby:closeModal", onCloseModal);
       socket.disconnect();
     };
   }, [dispatch, lobbyId, token]);
@@ -195,6 +215,8 @@ export function useLobbySocket(lobbyId: number) {
   };
 
   const sendAnswer = (pointId: string, correct: boolean) => {
+    console.log("📡 [CLIENT] sendAnswer вызван:", { lobbyId, pointId, correct });
+    console.log("📡 [CLIENT] connected:", connected);
     socketClient.socket.emit("lobby:answer", { lobbyId, pointId, correct });
   };
 
@@ -216,6 +238,11 @@ export function useLobbySocket(lobbyId: number) {
     socketClient.socket.emit("lobby:examAnswer");
   };
 
+  const sendCloseModal = () => {
+    console.log("📡 [CLIENT] sendCloseModal вызван");
+    socketClient.socket.emit("lobby:closeModal");
+  };
+
   return {
     history,
     connected,
@@ -228,5 +255,6 @@ export function useLobbySocket(lobbyId: number) {
     sendOpenModal,
     sendOpenExam,
     sendExamAnswerProgress,
+    sendCloseModal,
   };
 };

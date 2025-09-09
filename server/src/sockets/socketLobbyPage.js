@@ -276,14 +276,19 @@ function initLobbySockets(nsp) {
 
     socket.on('lobby:answer', async ({ pointId, correct }) => {
       try {
+        console.log(`🎯 [SOCKET] Получен lobby:answer: pointId=${pointId}, correct=${correct}, userId=${socket.user.id}`);
+        
         const activeUserSession = await db.UserSession.findOne({
           where: { game_session_id: lobbyId, is_user_active: true },
         });
 
         if (!activeUserSession || activeUserSession.user_id !== socket.user.id) {
+          console.log(`❌ [SOCKET] Неправильный игрок пытается ответить: active=${activeUserSession?.user_id}, current=${socket.user.id}`);
           socket.emit('error', { message: 'Сейчас отвечает другой игрок' });
           return;
         }
+
+        console.log(`✅ [SOCKET] Активный игрок отвечает: ${socket.user.username}`);
 
         const status = correct ? 'completed' : 'available';
         const points = lobbyPoints.get(lobbyId);
@@ -292,7 +297,31 @@ function initLobbySockets(nsp) {
           if (point) point.status = status;
         }
 
+        // Если ответ неправильный, увеличиваем счетчик неправильных ответов
+        if (!correct) {
+          const current = incorrectAnswersMap.get(lobbyId) || 0;
+          const newCount = current + 1;
+          incorrectAnswersMap.set(lobbyId, newCount);
+          
+          console.log(`📊 [SOCKET] Увеличиваем счетчик неправильных ответов: ${current} -> ${newCount}`);
+          
+          // Отправляем обновленный счетчик всем игрокам
+          const allSessions = await db.UserSession.findAll({ where: { game_session_id: lobbyId } });
+          const lobbyTotalScore = allSessions.reduce((sum, s) => sum + Number(s.score || 0), 0);
+          
+          const payload = {
+            userId: socket.user.id,
+            userScore: activeUserSession.score || 0,
+            sessionScore: lobbyTotalScore,
+            incorrectAnswers: newCount,
+          };
+          
+          console.log(`📡 [SOCKET] Отправляем lobby:incorrectAnswer:`, payload);
+          nsp.to(roomKey).emit('lobby:incorrectAnswer', payload);
+        }
+
         nsp.to(roomKey).emit('lobby:updatePointStatus', { pointId, status });
+        console.log(`🔄 [SOCKET] Передаем ход следующему игроку`);
         await passTurnToNextPlayer();
       } catch (err) {
         console.error('Ошибка в обработке ответа:', err);
@@ -327,6 +356,13 @@ function initLobbySockets(nsp) {
       
       nsp.to(roomKey).emit('lobby:timeout', payload);
       console.log('📡 [SOCKET] Событие timeout переслано в комнату:', roomKey);
+    });
+
+    // Синхронное закрытие модалки всем в лобби
+    socket.on('lobby:closeModal', () => {
+      console.log('🔒 [SOCKET] Получено lobby:closeModal, пересылаю всем игрокам');
+      nsp.to(roomKey).emit('lobby:closeModal');
+      console.log('🔒 [SOCKET] Событие closeModal переслано в комнату:', roomKey);
     });
 
     // Синхронное открытие модалки всем в лобби

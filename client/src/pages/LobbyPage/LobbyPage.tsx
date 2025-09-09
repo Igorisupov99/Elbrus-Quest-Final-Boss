@@ -34,6 +34,7 @@ export function LobbyPage() {
     sendOpenModal,
     sendOpenExam,
     sendExamAnswerProgress,
+    sendCloseModal,
   } = useLobbySocket(lobbyId);
 
   const [input, setInput] = useState("");
@@ -194,23 +195,36 @@ export function LobbyPage() {
 
   // Локальная обработка неправильного ответа без запроса к серверу
   const handleLocalIncorrectAnswer = () => {
-    if (!currentPointId) return;
+    console.log("🔍 [CLIENT] handleLocalIncorrectAnswer вызван");
+    console.log("🔍 [CLIENT] currentPointId:", currentPointId);
+    console.log("🔍 [CLIENT] user?.id:", user?.id);
+    console.log("🔍 [CLIENT] activePlayerId:", activePlayerId);
     
-    console.log("Локальная обработка неправильного ответа (пустой ответ или закрытие модалки)");
+    if (!currentPointId) {
+      console.log("❌ [CLIENT] currentPointId не установлен, не можем отправить неправильный ответ");
+      return;
+    }
     
-    // Увеличиваем счетчик неправильных ответов локально
-    dispatch(mergeScores({
-      userScore: userScore,
-      sessionScore: sessionScore,
-      incorrectAnswers: incorrectAnswers + 1,
-    }));
+    console.log("❌ [CLIENT] Локальная обработка неправильного ответа (пустой ответ или закрытие модалки)");
+    console.log("❌ [CLIENT] Отправляем sendAnswer с pointId:", currentPointId, "correct: false");
     
-    // Меняем роль, точка остается доступной для других игроков
-    sendAnswer(currentPointId, false);
+    // Сохраняем pointId перед отправкой
+    const pointIdToSend = currentPointId;
+    
+    // Отправляем неправильный ответ на сервер - он сам обновит счетчики и передаст ход
+    sendAnswer(pointIdToSend, false);
+    
+    // Отправляем событие закрытия модалки всем игрокам
+    console.log("🔒 [CLIENT] Отправляем событие закрытия модалки всем игрокам");
+    sendCloseModal();
+    
+    // Закрываем модалку локально
     setTimeout(() => {
+      console.log("❌ [CLIENT] Закрываем модалку локально");
       setIsModalOpen(false);
       dispatch(closeModalAction());
-    }, 1000); // Быстрее закрываем при локальной обработке
+      setCurrentPointId(null);
+    }, 1000);
   };
 
   // Обработка timeout - отправка события всем игрокам
@@ -334,7 +348,11 @@ export function LobbyPage() {
 
       <QuestionModal
         isOpen={effectiveIsOpen}
-        onClose={() => { setIsModalOpen(false); dispatch(closeModalAction()); }}
+        onClose={() => { 
+          setIsModalOpen(false); 
+          dispatch(closeModalAction()); 
+          setCurrentPointId(null);
+        }}
         topic={effectiveTopic}
         question={effectiveQuestion}
         questionId={effectiveQuestionId}
