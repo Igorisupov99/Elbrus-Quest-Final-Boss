@@ -105,3 +105,88 @@
 .timerBarDanger {
   background: #dc3545;
 }
+
+/* Стили для подсказки */
+.hintSection {
+  margin: 16px 0;
+  padding: 12px;
+  background: #f8f9fa;
+  border-radius: 8px;
+  border: 1px solid #e9ecef;
+}
+
+.hintButton {
+  background: linear-gradient(135deg, #ffc107, #ff8f00);
+  border: none;
+  color: #212529;
+  font-weight: 600;
+  padding: 8px 16px;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  box-shadow: 0 2px 4px rgba(255, 193, 7, 0.3);
+}
+
+.hintButton:hover {
+  background: linear-gradient(135deg, #ffb300, #ff6f00);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 8px rgba(255, 193, 7, 0.4);
+}
+
+.hintContent {
+  animation: fadeIn 0.3s ease-in-out;
+}
+
+.hintHeader {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+.hintIcon {
+  font-size: 18px;
+}
+
+.hintTitle {
+  font-weight: 600;
+  color: #495057;
+  font-size: 14px;
+}
+
+.hintText {
+  margin: 8px 0;
+  padding: 12px;
+  background: #fff;
+  border-radius: 6px;
+  border-left: 4px solid #ffc107;
+  color: #495057;
+  line-height: 1.5;
+  font-style: italic;
+}
+
+.hideHintButton {
+  background: #6c757d;
+  border: none;
+  color: white;
+  font-size: 12px;
+  padding: 6px 12px;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.hideHintButton:hover {
+  background: #5a6268;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}

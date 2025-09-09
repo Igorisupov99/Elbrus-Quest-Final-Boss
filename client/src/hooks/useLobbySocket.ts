@@ -128,6 +128,7 @@ export function useLobbySocket(lobbyId: number) {
       dispatch(setExamIndex(payload.index));
       dispatch(openExamModal());
     };
+    
     const onExamNext = (payload: { index: number }) => {
       dispatch(setExamIndex(payload.index));
     };

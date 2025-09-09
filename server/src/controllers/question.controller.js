@@ -47,7 +47,7 @@ class QuestionController {
       const randomOffset = Math.floor(Math.random() * questionsCount);
       const randomQuestion = await Question.findOne({
         where: { topic_id: topicId },
-        attributes: ["question_text", "id"],
+        attributes: ["question_text", "id", "mentor_tip"],
         order: [["id", "ASC"]],
         offset: randomOffset,
         limit: 1,
@@ -61,6 +61,7 @@ class QuestionController {
         question_text: randomQuestion.question_text,
         question_id: randomQuestion.id,
         topic_title: topic.title,
+        mentor_tip: randomQuestion.mentor_tip,
       });
     } catch (error) {
       console.error("Ошибка на сервере:", error);

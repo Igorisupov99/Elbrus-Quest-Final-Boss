@@ -14,6 +14,7 @@ interface QuestionModalProps {
   currentUserId: number;          // 👈 id текущего игрока
   activePlayerId: number | null;  // 👈 id активного игрока
   activePlayerName: string;       // 👈 имя активного игрока
+  mentor_tip?: string | null;     // 👈 подсказка от ментора
   onAnswerResult?: (
     correct: boolean,
     scores?: { userScore?: number; sessionScore?: number; incorrectAnswers?: number }
@@ -34,6 +35,7 @@ export function QuestionModal({
   currentUserId,
   activePlayerId,
   activePlayerName,
+  mentor_tip,
   onAnswerResult,
   onLocalIncorrectAnswer,
   onTimeout,
@@ -44,12 +46,14 @@ export function QuestionModal({
   const [result, setResult] = useState<string | null>(null);
   const [timeLeft, setTimeLeft] = useState(30);
   const [timerActive, setTimerActive] = useState(false);
+  const [showHint, setShowHint] = useState(false);
 
   useEffect(() => {
     setAnswer('');
     setResult(null);
     setTimeLeft(30);
     setTimerActive(false);
+    setShowHint(false);
   }, [questionId]);
 
   // Таймер для активного игрока
@@ -148,6 +152,7 @@ export function QuestionModal({
     setResult(null);
     setTimerActive(false);
     setTimeLeft(30);
+    setShowHint(false);
     
     // Если закрывает активный игрок - это неправильный ответ
     if (Number(currentUserId) === Number(activePlayerId)) {
@@ -173,6 +178,34 @@ export function QuestionModal({
           <>
             <h2 className={styles.title}>{topic}</h2>
             <p className={styles.question}>{question}</p>
+
+            {/* Кнопка подсказки и отображение подсказки */}
+            {mentor_tip && (
+              <div className={styles.hintSection}>
+                {!showHint ? (
+                  <Button 
+                    onClick={() => setShowHint(true)}
+                    className={styles.hintButton}
+                  >
+                    💡 Подсказка
+                  </Button>
+                ) : (
+                  <div className={styles.hintContent}>
+                    <div className={styles.hintHeader}>
+                      <span className={styles.hintIcon}>💡</span>
+                      <span className={styles.hintTitle}>Подсказка от ментора:</span>
+                    </div>
+                    <p className={styles.hintText}>{mentor_tip}</p>
+                    <Button 
+                      onClick={() => setShowHint(false)}
+                      className={styles.hideHintButton}
+                    >
+                      Скрыть подсказку
+                    </Button>
+                  </div>
+                )}
+              </div>
+            )}
 
             {Number(currentUserId) === Number(activePlayerId) && timerActive && (
               <div className={`${styles.timer} ${

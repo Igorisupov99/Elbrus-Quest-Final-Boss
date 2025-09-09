@@ -2,7 +2,8 @@ import { useState, useEffect } from "react";
 import { Button } from "../../Button/Button";
 import styles from "./ExamModal.module.css";
 import api from "../../../../api/axios";
-import { useAppSelector } from "../../../../store/hooks";
+import { useAppSelector, useAppDispatch } from "../../../../store/hooks";
+import { setExamIndex } from "../../../../store/lobbyPage/lobbySlice";
 
 interface ExamQuestion {
   id: number;
@@ -40,6 +41,7 @@ export function ExamModal({
   onAdvance,
 }: ExamModalProps) {
   // Для отправки прогресса экзамена (следующий вопрос) используем хук сокета через пропсы не получаем, поэтому просто импорт нельзя использовать напрямую.
+  const dispatch = useAppDispatch();
   const globalQuestions = useAppSelector(s => s.lobbyPage.examQuestions);
   const globalIndex = useAppSelector(s => s.lobbyPage.examIndex);
   const [examQuestions, setExamQuestions] = useState<ExamQuestion[]>(questions ?? globalQuestions ?? []);
@@ -58,18 +60,39 @@ export function ExamModal({
     if (questions && questions.length > 0) {
       setExamQuestions(questions);
       setCurrentQuestionIndex(0);
+      dispatch(setExamIndex(0));
     } else if (globalQuestions && globalQuestions.length > 0) {
       setExamQuestions(globalQuestions);
       setCurrentQuestionIndex(globalIndex ?? 0);
     }
-  }, [questions, globalQuestions, globalIndex]);
+  }, [questions, globalQuestions, globalIndex, dispatch]);
+
+  // Сброс при открытии экзамена
+  useEffect(() => {
+    if (isOpen && questions && questions.length > 0) {
+      setCurrentQuestionIndex(0);
+      dispatch(setExamIndex(0));
+    }
+  }, [isOpen, questions, dispatch]);
+
+  // Синхронизируем локальное состояние с Redux при изменении globalIndex
+  useEffect(() => {
+    if (globalIndex !== undefined) {
+      setCurrentQuestionIndex(globalIndex);
+    }
+  }, [globalIndex]);
 
   useEffect(() => {
     setAnswer('');
     setResult(null);
     setTimeLeft(30);
     setTimerActive(false);
-  }, [currentQuestionIndex]);
+    
+    // Автоматически запускаем таймер для активного игрока при переходе к новому вопросу
+    if (Number(currentUserId) === Number(activePlayerId) && isOpen) {
+      setTimerActive(true);
+    }
+  }, [currentQuestionIndex, currentUserId, activePlayerId, isOpen]);
 
   // Таймер для активного игрока
   useEffect(() => {
@@ -134,9 +157,10 @@ export function ExamModal({
         setResult("✅ Правильный ответ!");
         // Переходим к следующему вопросу или завершаем экзамен
         if (isLastQuestion) {
-          // Экзамен завершен
-          const correctAnswers = totalQuestions; // Все ответы правильные
-          onExamComplete?.(correctAnswers, totalQuestions);
+        // Экзамен завершен
+        const correctAnswers = totalQuestions; // Все ответы правильные
+        dispatch(setExamIndex(0)); // Сбрасываем индекс
+        onExamComplete?.(correctAnswers, totalQuestions);
         } else {
           // Переходим к следующему вопросу
           onAdvance?.();
@@ -145,6 +169,7 @@ export function ExamModal({
         setResult("❌ Неправильный ответ!");
         // При неправильном ответе завершаем экзамен
         const correctAnswers = currentQuestionIndex; // Количество правильных ответов до этого
+        dispatch(setExamIndex(0)); // Сбрасываем индекс
         onExamComplete?.(correctAnswers, totalQuestions);
       }
       
@@ -163,6 +188,7 @@ export function ExamModal({
     setCurrentQuestionIndex(0);
     setTimerActive(false);
     setTimeLeft(30);
+    dispatch(setExamIndex(0)); // Сбрасываем индекс в Redux
     
     // Если закрывает активный игрок - это неправильный ответ
     if (Number(currentUserId) === Number(activePlayerId)) {
