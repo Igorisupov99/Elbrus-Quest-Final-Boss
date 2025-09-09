@@ -58,6 +58,7 @@ class RoomController {
           id: room.id,
           title: room.room_name,
           room_creator: room.room_creator,
+          room_code: room.room_code,
         });
       } else {
         console.log('❌ Socket functions not available:', {
@@ -110,6 +111,7 @@ class RoomController {
           id: room.id,
           title: room.room_name,
           room_creator: room.room_creator,
+          room_code: room.room_code,
         });
       } else {
         console.log('❌ Socket functions not available:', {

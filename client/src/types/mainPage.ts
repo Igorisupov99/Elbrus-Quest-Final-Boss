@@ -3,6 +3,7 @@ export interface MainPageItem {
   title: string;
   room_creator: number;
   isCreator: boolean;
+  room_code?: string | null;
 }
 
 export interface MainPageState {
@@ -12,7 +13,7 @@ export interface MainPageState {
 }
 
 export interface CheckCreatorResponse {
-  map(arg0: (el: any) => import("react/jsx-runtime").JSX.Element): unknown;
+  map(arg0: (el: any) => import('react/jsx-runtime').JSX.Element): unknown;
   success: boolean;
   data: {
     id: string;

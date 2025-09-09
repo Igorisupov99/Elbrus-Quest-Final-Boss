@@ -21,6 +21,7 @@ import {
   removeRoom,
 } from '../../store/mainPage/mainPageThunks';
 import { addRoom } from '../../store/mainPage/mainPageSlice';
+import type { MainPageItem } from '../../types/mainPage';
 
 type ModalKind = 'confirm' | 'password' | null;
 
@@ -68,57 +69,62 @@ export function MainPage(): JSX.Element {
     dispatch(fetchRooms());
 
     // Connect to socket and set up room update listeners
-    const token = localStorage.getItem('token');
+    const token = localStorage.getItem('accessToken');
+    console.log('🔑 Token available:', !!token);
     if (token) {
       try {
         console.log('🔌 Setting up socket connection...');
         mainSocketClient.connectWithToken(token);
 
-        // Wait a bit for connection to establish
+        // Wait a moment for connection to establish
         setTimeout(() => {
-          if (mainSocketClient.isConnected) {
-            console.log('✅ Socket is connected, setting up listeners...');
-            const socket = mainSocketClient.socket;
-
-            // Listen for room updates
-            socket.on('room:update', (data) => {
-              console.log('📡 Received room update:', data);
-              const { event, data: roomData } = data;
-
-              switch (event) {
-                case 'created':
-                  console.log('➕ Adding new room:', roomData);
-                  dispatch(addRoom(roomData));
-                  break;
-                case 'updated':
-                  console.log('🔄 Updating room:', roomData);
-                  dispatch(
-                    updateRoom.fulfilled(roomData, '', {
-                      id: roomData.id,
-                      room_name: roomData.title,
-                    })
-                  );
-                  break;
-                case 'deleted':
-                  console.log('🗑️ Removing room:', roomData);
-                  dispatch(removeRoom.fulfilled(roomData.id, '', roomData.id));
-                  break;
-                default:
-                  console.log('❓ Unknown room event:', event);
-              }
-            });
-          } else {
-            console.log('❌ Socket connection failed');
-          }
+          console.log(
+            '🔍 Checking socket connection status:',
+            mainSocketClient.isConnected
+          );
+          // Test the connection
+          mainSocketClient.testConnection();
         }, 1000);
+
+        // Create room update listener function
+        const roomUpdateListener = (data: {
+          event: string;
+          data: MainPageItem;
+        }) => {
+          console.log('📡 Received room update:', data);
+          const { event, data: roomData } = data;
+
+          switch (event) {
+            case 'created':
+              console.log('➕ Adding new room:', roomData);
+              dispatch(addRoom(roomData));
+              break;
+            case 'updated':
+              console.log('🔄 Updating room:', roomData);
+              dispatch(
+                updateRoom.fulfilled(roomData, '', {
+                  id: roomData.id,
+                  room_name: roomData.title,
+                })
+              );
+              break;
+            case 'deleted':
+              console.log('🗑️ Removing room:', roomData);
+              dispatch(removeRoom.fulfilled(roomData.id, '', roomData.id));
+              break;
+            default:
+              console.log('❓ Unknown room event:', event);
+          }
+        };
+
+        // Set up the room update listener
+        console.log('🎯 Setting up room update listener...');
+        mainSocketClient.setupRoomUpdateListener(roomUpdateListener);
 
         // Cleanup on unmount
         return () => {
           console.log('🧹 Cleaning up socket listeners');
-          if (mainSocketClient.isConnected) {
-            const socket = mainSocketClient.socket;
-            socket.off('room:update');
-          }
+          mainSocketClient.removeRoomUpdateListener();
           mainSocketClient.disconnect();
         };
       } catch (error) {
@@ -220,7 +226,17 @@ export function MainPage(): JSX.Element {
               }
             }}
           >
-            <span className={styles.roomItem}>{item.title}</span>
+            <span className={styles.roomItem}>
+              {item.title}
+              {item.room_code && (
+                <span
+                  className={styles.lockIcon}
+                  title="Комната защищена паролем"
+                >
+                  🔒
+                </span>
+              )}
+            </span>
 
             {userId !== null && item.room_creator === userId && (
               <div className={styles.actions}>
