@@ -234,6 +234,49 @@ export function LobbyPage() {
             onClick={openModal}
           />
         ))}
+        
+        {/* Модальные окна рендерятся внутри области карты */}
+        <QuestionModal
+          isOpen={effectiveIsOpen}
+          onClose={() => { setIsModalOpen(false); dispatch(closeModalAction()); }}
+          topic={effectiveTopic}
+          question={effectiveQuestion}
+          questionId={effectiveQuestionId}
+          pointId={currentPointId || undefined}
+          lobbyId={lobbyId}
+          onAnswerResult={handleAnswerResult}
+          onLocalIncorrectAnswer={handleLocalIncorrectAnswer}
+          onTimeout={handleTimeout}
+          currentUserId={user?.id ?? 0}
+          activePlayerId={activePlayerId}
+          activePlayerName={
+            usersInLobby.find(u => u.id === activePlayerId)?.username ?? ''
+          }
+          sharedResult={modalResult}
+        />
+
+        <ExamModal
+          isOpen={isExamModalOpen || examModalOpenGlobal}
+          onClose={() => {
+            setIsExamModalOpen(false);
+            dispatch(openExamModalAction());
+          }}
+          lobbyId={lobbyId}
+          currentUserId={user?.id ?? 0}
+          activePlayerId={activePlayerId}
+          activePlayerName={
+            usersInLobby.find(u => u.id === activePlayerId)?.username ?? ''
+          }
+          onExamComplete={handleExamComplete}
+          onLocalIncorrectAnswer={handleLocalIncorrectAnswer}
+          onTimeout={handleTimeout}
+          sharedResult={modalResult}
+          questions={useAppSelector(s => s.lobbyPage.examQuestions)}
+          onAdvance={() => {
+            // дергаем из сокет-хука
+            (sendExamAnswerProgress as any)?.();
+          }}
+        />
       </div>
 
       <div className={styles.sidebar}>
@@ -331,45 +374,6 @@ export function LobbyPage() {
           </form>
         </div>
       </div>
-
-      <QuestionModal
-        isOpen={effectiveIsOpen}
-        onClose={() => { setIsModalOpen(false); dispatch(closeModalAction()); }}
-        topic={effectiveTopic}
-        question={effectiveQuestion}
-        questionId={effectiveQuestionId}
-        pointId={currentPointId || undefined}
-        lobbyId={lobbyId}
-        onAnswerResult={handleAnswerResult}
-        onLocalIncorrectAnswer={handleLocalIncorrectAnswer}
-        onTimeout={handleTimeout}
-        currentUserId={user?.id ?? 0}
-        activePlayerId={activePlayerId}
-        activePlayerName={
-          usersInLobby.find(u => u.id === activePlayerId)?.username ?? ''
-        }
-        sharedResult={modalResult}
-      />
-
-      <ExamModal
-        isOpen={isExamModalOpen || examModalOpenGlobal}
-        onClose={() => setIsExamModalOpen(false)}
-        lobbyId={lobbyId}
-        currentUserId={user?.id ?? 0}
-        activePlayerId={activePlayerId}
-        activePlayerName={
-          usersInLobby.find(u => u.id === activePlayerId)?.username ?? ''
-        }
-        onExamComplete={handleExamComplete}
-        onLocalIncorrectAnswer={handleLocalIncorrectAnswer}
-        onTimeout={handleTimeout}
-        sharedResult={modalResult}
-        questions={useAppSelector(s => s.lobbyPage.examQuestions)}
-        onAdvance={() => {
-          // дергаем из сокет-хука
-          (sendExamAnswerProgress as any)?.();
-        }}
-      />
     </div>
   );
 }
