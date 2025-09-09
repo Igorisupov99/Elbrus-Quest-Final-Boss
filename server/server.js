@@ -25,7 +25,10 @@ const questionRouter = require('./src/routes/question.routes');
 const examRouter = require('./src/routes/exam.routes');
 
 const initLobbySockets = require('./src/sockets/socketLobbyPage');
-const initMainSockets = require('./src/sockets/socketMainPage');
+const {
+  initMainPageSockets,
+  emitRoomUpdate,
+} = require('./src/sockets/socketMainPage');
 const withAuth = require('./src/sockets/withAuth');
 
 const PORT = process.env.PORT || 3000;
@@ -52,11 +55,13 @@ app.use('/api/room', roomRouter);
 app.use('/api/question', questionRouter);
 app.use('/api/exam', examRouter);
 
-
-
-const mainNsp = io.of('/'); 
+const mainNsp = io.of('/');
 withAuth(mainNsp);
-initMainSockets(mainNsp);
+initMainPageSockets(mainNsp);
+
+// Make io and emitRoomUpdate available globally for room updates
+global.io = io;
+global.emitRoomUpdate = emitRoomUpdate;
 
 const lobbyNsp = io.of('/lobby');
 withAuth(lobbyNsp);

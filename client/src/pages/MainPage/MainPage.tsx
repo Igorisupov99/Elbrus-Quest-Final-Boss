@@ -8,6 +8,10 @@ import MainPageChat from '../../components/MainPageChat/MainPageChat';
 import ModelPageCreateRoom from '../../components/ModelPageCreateRoom/ModelPageCreateRoom';
 import ModelPageRedirectLobby from '../../components/ModelPageRedirectLobby/ModelPageRedirectLobby';
 import ModelPageEnterPassword from '../../components/ModelPageEnterPassword/ModelPageEnterPassword';
+import SuccessModal from '../../components/common/modals/SuccessModal/SuccessModal';
+import EditRoomModal from '../../components/common/modals/EditRoomModal/EditRoomModal';
+import DeleteRoomModal from '../../components/common/modals/DeleteRoomModal/DeleteRoomModal';
+import { mainSocketClient } from '../../socket/socketMainPage';
 
 import styles from './MainPage.module.css';
 import api from '../../lib/axios';
@@ -16,6 +20,7 @@ import {
   updateRoom,
   removeRoom,
 } from '../../store/mainPage/mainPageThunks';
+import { addRoom } from '../../store/mainPage/mainPageSlice';
 
 type ModalKind = 'confirm' | 'password' | null;
 
@@ -31,6 +36,28 @@ export function MainPage(): JSX.Element {
   const [selectedRoomId, setSelectedRoomId] = useState<number | null>(null);
   const [modalKind, setModalKind] = useState<ModalKind>(null);
 
+  // Success modal states
+  const [isSuccessModalOpen, setIsSuccessModalOpen] = useState(false);
+  const [successModalData, setSuccessModalData] = useState<{
+    type: 'edit' | 'delete';
+    title: string;
+    message: string;
+  } | null>(null);
+
+  // Edit modal states
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [editingRoom, setEditingRoom] = useState<{
+    id: number;
+    name: string;
+  } | null>(null);
+
+  // Delete modal states
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+  const [deletingRoom, setDeletingRoom] = useState<{
+    id: number;
+    name: string;
+  } | null>(null);
+
   useEffect(() => {
     // if no user in state, redirect to login
     if (!userId) {
@@ -39,15 +66,119 @@ export function MainPage(): JSX.Element {
     }
 
     dispatch(fetchRooms());
+
+    // Connect to socket and set up room update listeners
+    const token = localStorage.getItem('token');
+    if (token) {
+      try {
+        console.log('🔌 Setting up socket connection...');
+        mainSocketClient.connectWithToken(token);
+
+        // Wait a bit for connection to establish
+        setTimeout(() => {
+          if (mainSocketClient.isConnected) {
+            console.log('✅ Socket is connected, setting up listeners...');
+            const socket = mainSocketClient.socket;
+
+            // Listen for room updates
+            socket.on('room:update', (data) => {
+              console.log('📡 Received room update:', data);
+              const { event, data: roomData } = data;
+
+              switch (event) {
+                case 'created':
+                  console.log('➕ Adding new room:', roomData);
+                  dispatch(addRoom(roomData));
+                  break;
+                case 'updated':
+                  console.log('🔄 Updating room:', roomData);
+                  dispatch(
+                    updateRoom.fulfilled(roomData, '', {
+                      id: roomData.id,
+                      room_name: roomData.title,
+                    })
+                  );
+                  break;
+                case 'deleted':
+                  console.log('🗑️ Removing room:', roomData);
+                  dispatch(removeRoom.fulfilled(roomData.id, '', roomData.id));
+                  break;
+                default:
+                  console.log('❓ Unknown room event:', event);
+              }
+            });
+          } else {
+            console.log('❌ Socket connection failed');
+          }
+        }, 1000);
+
+        // Cleanup on unmount
+        return () => {
+          console.log('🧹 Cleaning up socket listeners');
+          if (mainSocketClient.isConnected) {
+            const socket = mainSocketClient.socket;
+            socket.off('room:update');
+          }
+          mainSocketClient.disconnect();
+        };
+      } catch (error) {
+        console.error('❌ Error setting up socket connection:', error);
+      }
+    }
   }, [dispatch, navigate, userId]);
 
-  const handleEdit = (id: number) => {
-    const newTitle = prompt('Введите новое название комнаты:');
-    if (newTitle) dispatch(updateRoom({ id, room_name: newTitle }));
+  const handleEdit = (id: number, currentName: string) => {
+    setEditingRoom({ id, name: currentName });
+    setIsEditModalOpen(true);
   };
 
-  const handleDelete = (id: number) => {
-    if (confirm('Удалить эту комнату?')) dispatch(removeRoom(id));
+  const handleEditConfirm = async (newName: string) => {
+    if (!editingRoom) return;
+
+    try {
+      const result = await dispatch(
+        updateRoom({ id: editingRoom.id, room_name: newName })
+      );
+      if (updateRoom.fulfilled.match(result)) {
+        setSuccessModalData({
+          type: 'edit',
+          title: 'Комната успешно изменена',
+          message: `Название комнаты изменено на "${newName}"`,
+        });
+        setIsSuccessModalOpen(true);
+      }
+    } catch (error) {
+      console.error('Error updating room:', error);
+    } finally {
+      setIsEditModalOpen(false);
+      setEditingRoom(null);
+    }
+  };
+
+  const handleDelete = (id: number, roomName: string) => {
+    setDeletingRoom({ id, name: roomName });
+    setIsDeleteModalOpen(true);
+  };
+
+  const handleDeleteConfirm = async () => {
+    if (!deletingRoom) return;
+
+    try {
+      const result = await dispatch(removeRoom(deletingRoom.id));
+      if (removeRoom.fulfilled.match(result)) {
+        setSuccessModalData({
+          type: 'delete',
+          title: 'Комната успешно удалена',
+          message: 'Комната была удалена из списка',
+        });
+        setIsSuccessModalOpen(true);
+      }
+    } catch (error) {
+      console.error('Error deleting room:', error);
+    } finally {
+      setIsDeleteModalOpen(false);
+      setDeletingRoom(null);
+    }
   };
 
   async function handleRoomClick(id: number) {
@@ -96,7 +227,7 @@ export function MainPage(): JSX.Element {
                 <button
                   onClick={(e) => {
                     e.stopPropagation();
-                    handleEdit(item.id);
+                    handleEdit(item.id, item.title);
                   }}
                 >
                   ✏️
@@ -104,7 +235,7 @@ export function MainPage(): JSX.Element {
                 <button
                   onClick={(e) => {
                     e.stopPropagation();
-                    handleDelete(item.id);
+                    handleDelete(item.id, item.title);
                   }}
                 >
                   ❌
@@ -123,23 +254,7 @@ export function MainPage(): JSX.Element {
       </button>
 
       {isCreateModalOpen && (
-        <div
-          className={styles.modalOverlay}
-          onClick={() => setIsCreateModalOpen(false)}
-        >
-          <div
-            className={styles.modalContent}
-            onClick={(e) => e.stopPropagation()}
-          >
-            <button
-              className={styles.closeBtn}
-              onClick={() => setIsCreateModalOpen(false)}
-            >
-              ×
-            </button>
-            <ModelPageCreateRoom setIsModalOpen={setIsCreateModalOpen} />
-          </div>
-        </div>
+        <ModelPageCreateRoom setIsModalOpen={setIsCreateModalOpen} />
       )}
 
       {isAccessModalOpen && selectedRoomId !== null && (
@@ -173,6 +288,48 @@ export function MainPage(): JSX.Element {
             )}
           </div>
         </div>
+      )}
+
+      {/* Edit Room Modal */}
+      {editingRoom && (
+        <EditRoomModal
+          isOpen={isEditModalOpen}
+          onClose={() => {
+            setIsEditModalOpen(false);
+            setEditingRoom(null);
+          }}
+          onConfirm={handleEditConfirm}
+          currentName={editingRoom.name}
+          currentRoomId={editingRoom.id}
+          existingRooms={items}
+        />
+      )}
+
+      {/* Delete Room Modal */}
+      {deletingRoom && (
+        <DeleteRoomModal
+          isOpen={isDeleteModalOpen}
+          onClose={() => {
+            setIsDeleteModalOpen(false);
+            setDeletingRoom(null);
+          }}
+          onConfirm={handleDeleteConfirm}
+          roomName={deletingRoom.name}
+        />
+      )}
+
+      {/* Success Modal */}
+      {successModalData && (
+        <SuccessModal
+          isOpen={isSuccessModalOpen}
+          onClose={() => {
+            setIsSuccessModalOpen(false);
+            setSuccessModalData(null);
+          }}
+          title={successModalData.title}
+          message={successModalData.message}
+          type={successModalData.type}
+        />
       )}
     </>
   );
