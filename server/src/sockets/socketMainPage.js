@@ -57,9 +57,24 @@ function initMainPageSockets(nsp) {
     });
 
     socket.on('disconnect', (reason) => {
-      console.log(`❌ Main page socket disconnected: ${socket.id}, reason=${reason}`);
+      console.log(
+        `❌ Main page socket disconnected: ${socket.id}, reason=${reason}`
+      );
     });
   });
 }
 
-module.exports = initMainPageSockets;
+// Function to emit room updates to all connected clients
+function emitRoomUpdate(io, event, roomData) {
+  console.log(`📡 Emitting room update: ${event}`, roomData);
+  console.log(`📊 Connected clients: ${io.engine.clientsCount}`);
+
+  io.emit('room:update', {
+    event,
+    data: roomData,
+  });
+
+  console.log('✅ Room update emitted successfully');
+}
+
+module.exports = { initMainPageSockets, emitRoomUpdate };

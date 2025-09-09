@@ -17,7 +17,17 @@ const initialState: MainPageState = {
 const mainPageSlice = createSlice({
   name: 'mainPage',
   initialState,
-  reducers: {},
+  reducers: {
+    addRoom: (state, action: PayloadAction<MainPageItem>) => {
+      // Check if room already exists to avoid duplicates
+      const existingRoom = state.items.find(
+        (room) => room.id === action.payload.id
+      );
+      if (!existingRoom) {
+        state.items.push(action.payload);
+      }
+    },
+  },
   extraReducers: (builder) => {
     // --- GET all rooms ---
     builder
@@ -47,7 +57,7 @@ const mainPageSlice = createSlice({
 
     // --- UPDATE room ---
     builder.addCase(updateRoom.fulfilled, (state, action) => {
-      const idx = state.items.findIndex(r => r.id === action.payload.id);
+      const idx = state.items.findIndex((r) => r.id === action.payload.id);
       if (idx !== -1) {
         state.items[idx] = { ...state.items[idx], ...action.payload };
       }
@@ -63,4 +73,5 @@ const mainPageSlice = createSlice({
   },
 });
 
+export const { addRoom } = mainPageSlice.actions;
 export default mainPageSlice.reducer;

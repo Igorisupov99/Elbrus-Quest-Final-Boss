@@ -50,6 +50,22 @@ class RoomController {
         room_creator,
       });
 
+      // Emit room creation event to all connected clients
+      console.log('🏠 Room created, attempting to emit socket event...');
+      if (global.emitRoomUpdate && global.io) {
+        console.log('✅ Socket functions available, emitting...');
+        global.emitRoomUpdate(global.io, 'created', {
+          id: room.id,
+          title: room.room_name,
+          room_creator: room.room_creator,
+        });
+      } else {
+        console.log('❌ Socket functions not available:', {
+          emitRoomUpdate: !!global.emitRoomUpdate,
+          io: !!global.io,
+        });
+      }
+
       res.status(201).json({ message: 'success', data: room });
     } catch (error) {
       console.log('Ошибка на сервере:', error);
@@ -86,6 +102,22 @@ class RoomController {
       room.room_name = room_name;
       await room.save();
 
+      // Emit room update event to all connected clients
+      console.log('✏️ Room updated, attempting to emit socket event...');
+      if (global.emitRoomUpdate && global.io) {
+        console.log('✅ Socket functions available, emitting...');
+        global.emitRoomUpdate(global.io, 'updated', {
+          id: room.id,
+          title: room.room_name,
+          room_creator: room.room_creator,
+        });
+      } else {
+        console.log('❌ Socket functions not available:', {
+          emitRoomUpdate: !!global.emitRoomUpdate,
+          io: !!global.io,
+        });
+      }
+
       res.status(200).json({ message: 'success', data: room });
     } catch (error) {
       console.log('ошибка на сервере', error);
@@ -111,7 +143,26 @@ class RoomController {
           .json({ message: 'Нет прав на удаление этой комнаты' });
       }
 
+      // Store room data before deletion for socket emission
+      const roomData = {
+        id: room.id,
+        title: room.room_name,
+        room_creator: room.room_creator,
+      };
+
       await room.destroy();
+
+      // Emit room deletion event to all connected clients
+      console.log('🗑️ Room deleted, attempting to emit socket event...');
+      if (global.emitRoomUpdate && global.io) {
+        console.log('✅ Socket functions available, emitting...');
+        global.emitRoomUpdate(global.io, 'deleted', roomData);
+      } else {
+        console.log('❌ Socket functions not available:', {
+          emitRoomUpdate: !!global.emitRoomUpdate,
+          io: !!global.io,
+        });
+      }
 
       res.status(200).json({ message: 'Комната успешно удалена' });
     } catch (error) {
