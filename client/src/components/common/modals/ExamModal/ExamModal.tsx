@@ -164,9 +164,9 @@ export function ExamModal({
     setTimerActive(false);
     setTimeLeft(30);
     
-    // Если закрывает активный игрок до истечения времени - это неправильный ответ
-    if (Number(currentUserId) === Number(activePlayerId) && timerActive) {
-      console.log("❌ Активный игрок закрыл экзамен до истечения времени - локальная обработка");
+    // Если закрывает активный игрок - это неправильный ответ
+    if (Number(currentUserId) === Number(activePlayerId)) {
+      console.log("❌ Активный игрок закрыл экзамен - засчитываем неправильный ответ");
       onLocalIncorrectAnswer?.();
     } else {
       onClose();
