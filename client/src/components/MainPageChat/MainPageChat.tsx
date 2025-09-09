@@ -3,6 +3,7 @@ import {
   mainSocketClient,
   type MainChatMessage,
 } from '../../socket/socketMainPage';
+import styles from '../../pages/MainPage/MainPage.module.css';
 
 export default function MainPageChat() {
   const [message, setMessage] = useState('');
@@ -104,70 +105,61 @@ export default function MainPageChat() {
   };
 
   return (
-    <div style={{ padding: '20px' }}>
-      <h2 style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+    <div className={styles.chat}>
+      <h3 className={styles.chatTitle}>
         Общий чат
         <span
-          style={{
-            display: 'inline-block',
-            width: '10px',
-            height: '10px',
-            borderRadius: '50%',
-            backgroundColor: connecting
-              ? 'orange'
-              : connected
-              ? 'green'
-              : 'red',
-          }}
+          className={`${styles.connectionIndicator} ${
+            connecting ? styles.connecting : connected ? '' : styles.offline
+          }`}
           title={
             connecting ? 'Подключение...' : connected ? 'Онлайн' : 'Оффлайн'
           }
         />
-      </h2>
+      </h3>
 
-      <div
-        ref={listRef}
-        style={{
-          border: '1px solid #ccc',
-          height: '200px',
-          overflowY: 'auto',
-          padding: '10px',
-        }}
-      >
+      <div ref={listRef} className={styles.chatList}>
         {chat.map((msg) => (
-          <p key={msg.id} title={new Date(msg.createdAt).toLocaleString()}>
-            <b>{msg.user.username}:</b> {msg.text}
-          </p>
+          <div
+            key={msg.id}
+            className={styles.message}
+            title={new Date(msg.createdAt).toLocaleString()}
+          >
+            <span className={styles.author}>{msg.user.username}:</span>
+            <span className={styles.text}>{msg.text}</span>
+          </div>
         ))}
       </div>
 
-      <textarea
-        value={message}
-        onChange={(e) => setMessage(e.target.value)}
-        placeholder={
-          connecting
-            ? 'Подключение…'
-            : connected
-            ? 'Напишите сообщение...'
-            : 'Отключено'
-        }
-        disabled={!connected}
-        rows={2}
-        style={{ width: '100%', marginTop: '10px' }}
-        onKeyDown={(e) => {
-          if (e.key === 'Enter' && !e.shiftKey) {
-            e.preventDefault();
-            sendMessage();
+      <div className={styles.chatForm}>
+        <input
+          type="text"
+          value={message}
+          onChange={(e) => setMessage(e.target.value)}
+          placeholder={
+            connecting
+              ? 'Подключение…'
+              : connected
+              ? 'Напишите сообщение...'
+              : 'Отключено'
           }
-        }}
-      />
-      <button
-        onClick={sendMessage}
-        disabled={!connected || !message.trim()}
-        style={{ marginTop: '5px' }}
-      >
-        Отправить
-      </button>
+          disabled={!connected}
+          className={styles.chatInput}
+          onKeyDown={(e) => {
+            if (e.key === 'Enter') {
+              e.preventDefault();
+              sendMessage();
+            }
+          }}
+        />
+        <button
+          onClick={sendMessage}
+          disabled={!connected || !message.trim()}
+          className={styles.sendButton}
+        >
+          Отправить
+        </button>
+      </div>
     </div>
   );
 }

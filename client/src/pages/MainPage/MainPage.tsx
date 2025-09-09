@@ -204,70 +204,76 @@ export function MainPage(): JSX.Element {
   }
 
   return (
-    <>
-      <MainPageChat />
+    <div className={styles.mainPage}>
+      <div className={styles.mainContent}>
+        <h2 className={styles.pageTitle}>🏰 Доступные комнаты</h2>
+        {loading && <p className={styles.loading}>⚔️ Загрузка комнат...</p>}
+        {error && <p className={styles.error}>❌ Ошибка: {error}</p>}
 
-      <h2>Доступные комнаты:</h2>
-      {loading && <p>Загрузка комнат...</p>}
-      {error && <p className={styles.error}>Ошибка: {error}</p>}
+        <ul className={styles.rooms}>
+          {items.map((item) => (
+            <li
+              key={item.id}
+              className={styles.roomRow}
+              onClick={() => handleRoomClick(item.id)}
+              role="button"
+              tabIndex={0}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' || e.key === ' ') {
+                  e.preventDefault();
+                  handleRoomClick(item.id);
+                }
+              }}
+            >
+              <span className={styles.roomItem}>
+                {item.title}
+                {item.room_code && (
+                  <span
+                    className={styles.lockIcon}
+                    title="Комната защищена паролем"
+                  >
+                    🔒
+                  </span>
+                )}
+              </span>
 
-      <ul className={styles.rooms}>
-        {items.map((item) => (
-          <li
-            key={item.id}
-            className={styles.roomRow}
-            onClick={() => handleRoomClick(item.id)}
-            role="button"
-            tabIndex={0}
-            onKeyDown={(e) => {
-              if (e.key === 'Enter' || e.key === ' ') {
-                e.preventDefault();
-                handleRoomClick(item.id);
-              }
-            }}
-          >
-            <span className={styles.roomItem}>
-              {item.title}
-              {item.room_code && (
-                <span
-                  className={styles.lockIcon}
-                  title="Комната защищена паролем"
-                >
-                  🔒
-                </span>
+              {userId !== null && item.room_creator === userId && (
+                <div className={styles.actions}>
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleEdit(item.id, item.title);
+                    }}
+                    title="Редактировать комнату"
+                  >
+                    ✏️
+                  </button>
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleDelete(item.id, item.title);
+                    }}
+                    title="Удалить комнату"
+                  >
+                    🗑️
+                  </button>
+                </div>
               )}
-            </span>
+            </li>
+          ))}
+        </ul>
 
-            {userId !== null && item.room_creator === userId && (
-              <div className={styles.actions}>
-                <button
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    handleEdit(item.id, item.title);
-                  }}
-                >
-                  ✏️
-                </button>
-                <button
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    handleDelete(item.id, item.title);
-                  }}
-                >
-                  ❌
-                </button>
-              </div>
-            )}
-          </li>
-        ))}
-      </ul>
+        <button
+          className={styles.createBtn}
+          onClick={() => setIsCreateModalOpen(true)}
+        >
+          ⚔️ Создать комнату
+        </button>
+      </div>
 
-      <button
-        className={styles.createBtn}
-        onClick={() => setIsCreateModalOpen(true)}
-      >
-        Создать комнату
-      </button>
+      <div className={styles.chatSidebar}>
+        <MainPageChat />
+      </div>
 
       {isCreateModalOpen && (
         <ModelPageCreateRoom setIsModalOpen={setIsCreateModalOpen} />
@@ -347,6 +353,6 @@ export function MainPage(): JSX.Element {
           type={successModalData.type}
         />
       )}
-    </>
+    </div>
   );
 }
