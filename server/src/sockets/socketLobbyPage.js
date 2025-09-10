@@ -385,29 +385,37 @@ function initLobbySockets(nsp) {
       }
     });
 
-    socket.on('lobby:examAnswer', async () => {
+    socket.on('lobby:examAnswer', async (payload) => {
       try {
         const state = lobbyExamState.get(lobbyId);
         if (!state) return;
-        const nextIndex = state.index + 1;
-        if (nextIndex < state.questions.length) {
-          state.index = nextIndex;
-          lobbyExamState.set(lobbyId, state);
-          nsp.to(roomKey).emit('lobby:examNext', { index: nextIndex });
-          await passTurnToNextPlayer();
-        } else {
-          // Экзамен завершён
-          lobbyExamState.delete(lobbyId);
-          // Обновим точку экзамена как выполненную и известим всех
-          const points = lobbyPoints.get(lobbyId);
-          if (points) {
-            const examPoint = points.find((p) => p.id === 'exam');
-            if (examPoint) examPoint.status = 'completed';
+        const isCorrect = Boolean(payload && payload.correct);
+
+        if (isCorrect) {
+          const nextIndex = state.index + 1;
+          if (nextIndex < state.questions.length) {
+            state.index = nextIndex;
+            lobbyExamState.set(lobbyId, state);
+            const nextQuestion = state.questions[nextIndex];
+            nsp.to(roomKey).emit('lobby:examNext', { index: nextIndex, question: nextQuestion });
+          } else {
+            // Экзамен завершён
+            lobbyExamState.delete(lobbyId);
+            // Обновим точку экзамена как выполненную и известим всех
+            const points = lobbyPoints.get(lobbyId);
+            if (points) {
+              const examPoint = points.find((p) => p.id === 'exam');
+              if (examPoint) examPoint.status = 'completed';
+            }
+            nsp.to(roomKey).emit('lobby:updatePointStatus', { pointId: 'exam', status: 'completed' });
+            nsp.to(roomKey).emit('lobby:examComplete');
+            // На всякий случай синхронно закроем любые открытые модалки
+            nsp.to(roomKey).emit('lobby:closeModal');
           }
-          nsp.to(roomKey).emit('lobby:updatePointStatus', { pointId: 'exam', status: 'completed' });
-          nsp.to(roomKey).emit('lobby:examComplete');
-          await passTurnToNextPlayer();
         }
+
+        // После любого ответа передаем ход следующему игроку
+        await passTurnToNextPlayer();
       } catch (err) {
         console.error('Ошибка в lobby:examAnswer:', err);
       }

@@ -23,7 +23,7 @@ interface ExamModalProps {
   onTimeout?: (pointId: string) => void;
   sharedResult?: string | null;
   questions?: ExamQuestion[];
-  onAdvance?: () => void;
+  onAdvance?: (correct: boolean) => void;
 }
 
 export function ExamModal({
@@ -43,9 +43,8 @@ export function ExamModal({
   // Для отправки прогресса экзамена (следующий вопрос) используем хук сокета через пропсы не получаем, поэтому просто импорт нельзя использовать напрямую.
   const dispatch = useAppDispatch();
   const globalQuestions = useAppSelector(s => s.lobbyPage.examQuestions);
-  const globalIndex = useAppSelector(s => s.lobbyPage.examIndex);
+  const currentQuestionIndex = useAppSelector(s => s.lobbyPage.examIndex);
   const [examQuestions, setExamQuestions] = useState<ExamQuestion[]>(questions ?? globalQuestions ?? []);
-  const [currentQuestionIndex, setCurrentQuestionIndex] = useState(globalIndex ?? 0);
   const [answer, setAnswer] = useState("");
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState<string | null>(null);
@@ -60,28 +59,14 @@ export function ExamModal({
   useEffect(() => {
     if (questions && questions.length > 0) {
       setExamQuestions(questions);
-      setCurrentQuestionIndex(0);
-      dispatch(setExamIndex(0));
     } else if (globalQuestions && globalQuestions.length > 0) {
       setExamQuestions(globalQuestions);
-      setCurrentQuestionIndex(globalIndex ?? 0);
     }
-  }, [questions, globalQuestions, globalIndex, dispatch]);
+  }, [questions, globalQuestions]);
 
-  // Сброс при открытии экзамена
-  useEffect(() => {
-    if (isOpen && questions && questions.length > 0) {
-      setCurrentQuestionIndex(0);
-      dispatch(setExamIndex(0));
-    }
-  }, [isOpen, questions, dispatch]);
+  // Индекс управляется через Redux (examStart/examNext). Локально не сбрасываем.
 
-  // Синхронизируем локальное состояние с Redux при изменении globalIndex
-  useEffect(() => {
-    if (globalIndex !== undefined) {
-      setCurrentQuestionIndex(globalIndex);
-    }
-  }, [globalIndex]);
+  // Индекс берём из Redux, локально не дублируем
 
   useEffect(() => {
     setAnswer('');
@@ -158,22 +143,13 @@ export function ExamModal({
       if (res.data.correct) {
         setResult("✅ Правильный ответ! (+10 очков)");
         // Переходим к следующему вопросу или завершаем экзамен
-        if (isLastQuestion) {
-        // Экзамен завершен
-        const correctAnswers = totalQuestions; // Все ответы правильные
-        dispatch(setExamIndex(0)); // Сбрасываем индекс
-        onExamComplete?.(correctAnswers, totalQuestions);
-        } else {
-          // Переходим к следующему вопросу
-          onAdvance?.();
-        }
+        // Сообщаем серверу, что ответ правильный, чтобы он продвинул индекс и/или завершил экзамен
+        onAdvance?.(true);
       } else {
         setResult("❌ Неправильный ответ! (-5 очков)");
         setCorrectAnswer(res.data.correctAnswer);
-        // При неправильном ответе завершаем экзамен
-        const correctAnswers = currentQuestionIndex; // Количество правильных ответов до этого
-        dispatch(setExamIndex(0)); // Сбрасываем индекс
-        onExamComplete?.(correctAnswers, totalQuestions);
+        // При неправильном ответе не продвигаем индекс, просто передаём ход следующему игроку
+        onAdvance?.(false);
       }
       
     } catch (err) {
@@ -188,15 +164,10 @@ export function ExamModal({
     setAnswer('');
     setResult(null);
     setCorrectAnswer(null);
-    setExamQuestions([]);
-    setCurrentQuestionIndex(0);
     setTimerActive(false);
     setTimeLeft(30);
-    dispatch(setExamIndex(0)); // Сбрасываем индекс в Redux
-    
-    // Если закрывает активный игрок - это неправильный ответ
+    // Не трогаем общий список вопросов и индекс — это ломает синхронизацию
     if (Number(currentUserId) === Number(activePlayerId)) {
-      console.log("❌ Активный игрок закрыл экзамен - засчитываем неправильный ответ");
       onLocalIncorrectAnswer?.();
     } else {
       onClose();
@@ -205,15 +176,15 @@ export function ExamModal({
 
   if (!isOpen) return null;
 
-  const isCorrectMessage = Boolean(sharedResult && sharedResult.includes('Правильный ответ'));
+  const isCorrectMessage = false; // для экзамена не скрываем контент по общему сообщению
 
   return (
     <div className={styles.backdrop}>
       <div className={styles.modal}>
         <h2 className={styles.title}>Экзамен</h2>
         
-        {(sharedResult || result) && (
-          <p className={styles.result}>{sharedResult ?? result}</p>
+        {result && (
+          <p className={styles.result}>{result}</p>
         )}
 
         {correctAnswer && (

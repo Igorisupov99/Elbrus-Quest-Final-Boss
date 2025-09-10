@@ -8,7 +8,7 @@ import { ExamModal } from "../../components/common/modals/ExamModal/ExamModal";
 import api from "../../api/axios";
 import { useLobbySocket } from "../../hooks/useLobbySocket";
 import { useAppDispatch, useAppSelector } from "../../store/hooks";
-import { updatePointStatus, mergeScores, openModal as openModalAction, closeModal as closeModalAction, openExamModal as openExamModalAction } from "../../store/lobbyPage/lobbySlice";
+import { updatePointStatus, mergeScores, openModal as openModalAction, closeModal as closeModalAction, openExamModal as openExamModalAction, closeExamModal as closeExamModalAction } from "../../store/lobbyPage/lobbySlice";
 
 // УДАЛИТЬ: ExamQuestion перенесен в ExamModal
 
@@ -42,7 +42,6 @@ export function LobbyPage() {
 
   // локальная модалка (для обратной совместимости). Также используем redux.modal для синхронизации через сокет
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [isExamModalOpen, setIsExamModalOpen] = useState(false);
   const [currentTopic, setCurrentTopic] = useState("");
   const [currentQuestion, setCurrentQuestion] = useState("");
   const [currentQuestionId, setCurrentQuestionId] = useState<number | null>(null);
@@ -95,11 +94,10 @@ export function LobbyPage() {
       } else {
         // Для экзамена инициатор загружает вопросы и рассылает всем
         const res = await api.get("/api/exam/examQuestion", {
-          params: { phase_id: 1, count: 2 + incorrectAnswers },
+          params: { phase_id: 1, count: usersInLobby.length + incorrectAnswers },
           withCredentials: true,
         });
         const questions = res.data?.questions ?? [];
-        setIsExamModalOpen(true);
         dispatch(openExamModalAction());
         sendOpenExam({ questions });
       }
@@ -145,7 +143,6 @@ export function LobbyPage() {
   const handleExitLobby = () => navigate("/");
 
   const handleExamComplete = (correctAnswers: number, totalQuestions: number) => {
-    setIsExamModalOpen(false);
     dispatch(updatePointStatus({ pointId: "exam", status: "completed" }));
     sendExamComplete(correctAnswers, totalQuestions);
   };
@@ -279,10 +276,9 @@ export function LobbyPage() {
          />
 
         <ExamModal
-          isOpen={isExamModalOpen || examModalOpenGlobal}
+          isOpen={examModalOpenGlobal}
           onClose={() => {
-            setIsExamModalOpen(false);
-            dispatch(openExamModalAction());
+            dispatch(closeExamModalAction());
           }}
           lobbyId={lobbyId}
           currentUserId={user?.id ?? 0}
@@ -295,9 +291,9 @@ export function LobbyPage() {
           onTimeout={handleTimeout}
           sharedResult={modalResult}
           questions={useAppSelector(s => s.lobbyPage.examQuestions)}
-          onAdvance={() => {
-            // дергаем из сокет-хука
-            (sendExamAnswerProgress as any)?.();
+          onAdvance={(correct: boolean) => {
+            // Сообщаем серверу, был ли ответ правильным, чтобы он продвинул индекс
+            (sendExamAnswerProgress as any)?.(correct);
           }}
         />
       </div>

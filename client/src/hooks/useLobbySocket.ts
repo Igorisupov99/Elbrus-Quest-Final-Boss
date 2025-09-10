@@ -87,14 +87,6 @@ export function useLobbySocket(lobbyId: number) {
         incorrectAnswers: payload.incorrectAnswers || 0,
       }));
       
-      // Личный счет обновляем только для того игрока, чей ID совпадает
-      if (payload.userId && user?.id && Number(payload.userId) === Number(user.id)) {
-        console.log('🎯 [CLIENT] Обновляем личный счет для текущего пользователя');
-        dispatch(mergeScores({
-          userScore: payload.userScore || 0,
-        }));
-      }
-      
       dispatch(setModalResult('❌ Неправильный ответ!'));
       setTimeout(() => dispatch(setModalResult(null)), 3000);
 
@@ -129,7 +121,9 @@ export function useLobbySocket(lobbyId: number) {
       dispatch(openExamModal());
     };
     
-    const onExamNext = (payload: { index: number }) => {
+    const onExamNext = (payload: { index: number; question?: any }) => {
+      // В данный момент список вопросов уже синхронизирован при старте экзамена.
+      // Мы лишь двигаем индекс. payload.question зарезервирован на будущее.
       dispatch(setExamIndex(payload.index));
     };
     const onExamComplete = () => {
@@ -235,8 +229,8 @@ export function useLobbySocket(lobbyId: number) {
   const sendOpenExam = (payload?: { questions?: any[] }) => {
     socketClient.socket.emit("lobby:openExam", payload ?? {});
   };
-  const sendExamAnswerProgress = () => {
-    socketClient.socket.emit("lobby:examAnswer");
+  const sendExamAnswerProgress = (correct?: boolean) => {
+    socketClient.socket.emit("lobby:examAnswer", { correct: Boolean(correct) });
   };
 
   const sendCloseModal = () => {
