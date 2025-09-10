@@ -115,7 +115,7 @@ export function Profile() {
       // вызов API для удаления аккаунта
       await api.delete("/api/auth/delete-account", { withCredentials: true });
       // например, редирект на страницу входа или главную
-      window.location.href = "/";
+      window.location.href = "/register";
     } catch (err) {
       let errorMessage = "Ошибка удаления аккаунта";
       if (axios.isAxiosError(err)) {

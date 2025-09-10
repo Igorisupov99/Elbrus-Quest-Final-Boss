@@ -206,6 +206,102 @@ class AuthController {
       });
     }
   }
+
+  async deleteProfile(req, res) {
+    try {
+      const userId = req.user.id;
+  
+      // Ищем пользователя по ID
+      const user = await User.findByPk(userId);
+      if (!user) {
+        return res.status(404).json({
+          success: false,
+          message: 'Пользователь не найден',
+        });
+      }
+  
+      // Удаляем пользователя
+      await user.destroy();
+  
+      // Очищаем refresh токен (если есть cookies)
+      res.clearCookie('refreshToken', {
+        path: '/',
+        httpOnly: true,
+        sameSite: 'strict',
+      });
+  
+      res.status(200).json({
+        success: true,
+        message: 'Аккаунт успешно удалён',
+      });
+    } catch (error) {
+      console.error('Ошибка удаления аккаунта:', error);
+      res.status(500).json({
+        success: false,
+        message: 'Ошибка сервера',
+      });
+    }
+  }
+
+
+  async updateProfile(req, res) {
+    try {
+      const userId = req.user.id;
+      const { username, email, currentPassword, newPassword } = req.body;
+  
+      // Находим пользователя
+      const user = await User.findByPk(userId);
+      if (!user) {
+        return res.status(404).json({ success: false, message: 'Пользователь не найден' });
+      }
+  
+      // Проверяем currentPassword для возможности обновления
+      if (!currentPassword) {
+        return res.status(400).json({ success: false, message: 'Текущий пароль обязателен' });
+      }
+      const isPasswordValid = await bcrypt.compare(currentPassword, user.password_hash);
+      if (!isPasswordValid) {
+        return res.status(401).json({ success: false, message: 'Неверный текущий пароль' });
+      }
+  
+      if (username && username !== user.username) {
+        const exists = await User.findOne({ where: { username } });
+        if (exists) {
+          return res.status(409).json({ success: false, message: 'Пользователь с таким именем уже существует' });
+        }
+        user.username = username;
+      }
+  
+      if (email && email !== user.email) {
+        const existsEmail = await User.findOne({ where: { email } });
+        if (existsEmail) {
+          return res.status(409).json({ success: false, message: 'Пользователь с таким email уже существует' });
+        }
+        user.email = email;
+      }
+  
+      if (newPassword) {
+        user.password_hash = await bcrypt.hash(newPassword, 10);
+      }
+  
+      await user.save();
+  
+      res.status(200).json({
+        success: true,
+        message: 'Профиль успешно обновлён',
+        data: {
+          id: user.id,
+          username: user.username,
+          email: user.email,
+          score: user.score,
+          role: user.role,
+        },
+      });
+    } catch (error) {
+      console.error('Ошибка обновления профиля:', error);
+      res.status(500).json({ success: false, message: 'Ошибка сервера' });
+    }
+  }
 }
 
 module.exports = new AuthController();
