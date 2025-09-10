@@ -1,21 +1,25 @@
 const express = require('express');
-const userRouter = express.Router();
-const {User} = require('../../db/models')
+const userController = require('../controllers/user.controller');
+const authMiddleware = require('../middlewares/auth.middleware');
 
-/// Ручка для получения информации об авторизованном пользователе
-userRouter.get('/profile', async (req, res) => {
-    try {
-      const user = await User.findByPk(req.userId, {
-        attributes: ['username(login)', 'email', 'image_url'],
-      });
-      if (!user)
-        return res.status(404).json({ message: 'Пользователь не найден' });
-      res.json(user);
-    } catch (error) {
-      console.error('profile:', error);
-      res.status(500).json({ message: 'Ошибка сервера' });
-    }
-  });
+const router = express.Router();
 
+// Все маршруты требуют авторизации
+router.use(authMiddleware);
 
-  module.exports = userRouter;
+// Получить профиль пользователя
+router.get('/profile', userController.getProfile);
+
+// Обновить профиль пользователя
+router.put('/profile', userController.updateProfile);
+
+// Увеличить счетчик законченных игр
+router.post('/increment-games', userController.incrementGamesCompleted);
+
+// Получить статистику пользователя
+router.get('/stats', userController.getStats);
+
+// Получить топ игроков
+router.get('/top-players', userController.getTopPlayers);
+
+module.exports = router;

@@ -23,6 +23,7 @@ const userRouter = require('./src/routes/user.routes');
 const roomRouter = require('./src/routes/room.routes');
 const questionRouter = require('./src/routes/question.routes');
 const examRouter = require('./src/routes/exam.routes');
+const friendshipRouter = require('./src/routes/friendship.routes');
 
 const initLobbySockets = require('./src/sockets/socketLobbyPage');
 const {
@@ -54,6 +55,7 @@ app.use('/api/user', userRouter);
 app.use('/api/room', roomRouter);
 app.use('/api/question', questionRouter);
 app.use('/api/exam', examRouter);
+app.use('/api/friendship', friendshipRouter);
 
 const mainNsp = io.of('/');
 withAuth(mainNsp);
