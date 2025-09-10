@@ -219,24 +219,6 @@ export function LobbyPage() {
     console.log(`Добавить в друзья: ${selectedUsername}`);
   };
 
-  const handleUserClick = (username: string) => {
-    // Не открываем модальное окно для своего собственного имени
-    if (user?.username === username) return;
-    
-    setSelectedUsername(username);
-    setIsUserActionsModalOpen(true);
-  };
-
-  const handleGoToProfile = () => {
-    // TODO: Реализовать переход в профиль пользователя
-    console.log(`Переход в профиль пользователя: ${selectedUsername}`);
-  };
-
-  const handleAddFriend = () => {
-    // TODO: Реализовать добавление в друзья
-    console.log(`Добавить в друзья: ${selectedUsername}`);
-  };
-
 
   const handleAnswerResult = (correct: boolean, scores: any) => {
     // Если сервер ничего не прислал про очки, не трогаем текущие значения
