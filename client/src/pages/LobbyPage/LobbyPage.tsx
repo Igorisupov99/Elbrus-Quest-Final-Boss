@@ -5,6 +5,7 @@ import { Button } from "../../components/common/Button/Button";
 import { Point, type POIStatus } from "../../components/map/Point/Point";
 import { QuestionModal } from "../../components/common/modals/QuestionModal/QuestionModal";
 import { ExamModal } from "../../components/common/modals/ExamModal/ExamModal";
+import { UserActionsModal } from "../../components/common/modals/UserActionsModal";
 import api from "../../api/axios";
 import { useLobbySocket } from "../../hooks/useLobbySocket";
 import { useAppDispatch, useAppSelector } from "../../store/hooks";
@@ -39,6 +40,10 @@ export function LobbyPage() {
 
   const [input, setInput] = useState("");
   const [mapNaturalSize, setMapNaturalSize] = useState<{ w: number; h: number } | null>(null);
+  
+  // Состояние для модального окна действий пользователя
+  const [isUserActionsModalOpen, setIsUserActionsModalOpen] = useState(false);
+  const [selectedUsername, setSelectedUsername] = useState("");
   useEffect(() => {
     const img = new Image();
     img.src = '/map.png';
@@ -171,6 +176,24 @@ export function LobbyPage() {
   };
 
   const handleExitLobby = () => navigate("/");
+
+  const handleUserClick = (username: string) => {
+    // Не открываем модальное окно для своего собственного имени
+    if (user?.username === username) return;
+    
+    setSelectedUsername(username);
+    setIsUserActionsModalOpen(true);
+  };
+
+  const handleGoToProfile = () => {
+    // TODO: Реализовать переход в профиль пользователя
+    console.log(`Переход в профиль пользователя: ${selectedUsername}`);
+  };
+
+  const handleAddFriend = () => {
+    // TODO: Реализовать добавление в друзья
+    console.log(`Добавить в друзья: ${selectedUsername}`);
+  };
 
   const handleExamComplete = (correctAnswers: number, totalQuestions: number) => {
     dispatch(updatePointStatus({ pointId: "exam", status: "completed" }));
@@ -347,7 +370,12 @@ export function LobbyPage() {
                   fontWeight: user.id === activePlayerId ? 'bold' : 'normal'
                 }}
               >
-                {user.username}
+                <span 
+                  className={styles.clickableUsername}
+                  onClick={() => handleUserClick(user.username)}
+                >
+                  {user.username}
+                </span>
                 {user.id === activePlayerId && ' (активный)'}
               </li>
             ))}
@@ -425,6 +453,15 @@ export function LobbyPage() {
           </form>
         </div>
       </div>
+
+      {/* Модальное окно действий пользователя */}
+      <UserActionsModal
+        isOpen={isUserActionsModalOpen}
+        onClose={() => setIsUserActionsModalOpen(false)}
+        username={selectedUsername}
+        onGoToProfile={handleGoToProfile}
+        onAddFriend={handleAddFriend}
+      />
 
     </div>
   );

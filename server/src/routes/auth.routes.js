@@ -9,6 +9,7 @@ router.post('/login', loginValidation, authController.login);
 router.post('/refresh', authController.refreshToken);
 router.post('/logout', authController.logout);
 router.get('/profile', authMiddleware, authController.getProfile);
+router.get('/user/:username', authMiddleware, authController.getUserProfileByUsername);
 router.delete('/delete-account', authMiddleware, authController.deleteProfile);
 router.put('/update-profile', authMiddleware, authController.updateProfile);
 
