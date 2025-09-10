@@ -98,6 +98,16 @@ export function useLobbySocket(lobbyId: number) {
       }, 3000);
     };
 
+    const onExamCorrectAnswer = (payload: { message: string }) => {
+      // Показываем уведомление о правильном ответе в экзамене всем игрокам
+      console.log('onExamCorrectAnswer: показываем уведомление:', payload.message);
+      dispatch(setModalResult(payload.message));
+      setTimeout(() => {
+        console.log('onExamCorrectAnswer: убираем уведомление через 2 секунды');
+        dispatch(setModalResult(null));
+      }, 2000);
+    };
+
     const onTimeout = () => {
       dispatch(setModalResult('Ход будет передан следующему игроку'));
       setTimeout(() => {
@@ -170,6 +180,7 @@ export function useLobbySocket(lobbyId: number) {
     socket.on("lobby:incorrectAnswer", onIncorrectAnswer);
     socket.on("lobby:incorrectCountUpdate", onIncorrectCountUpdate);
     socket.on("lobby:correctAnswer", onCorrectAnswer);
+    socket.on("lobby:examCorrectAnswer", onExamCorrectAnswer);
     socket.on("lobby:openModal", onOpenModal);
     socket.on("lobby:examStart", onExamStart);
     socket.on("lobby:examNext", onExamNext);
@@ -195,6 +206,7 @@ export function useLobbySocket(lobbyId: number) {
       socket.off("lobby:incorrectAnswer", onIncorrectAnswer);
       socket.off("lobby:incorrectCountUpdate", onIncorrectCountUpdate);
       socket.off("lobby:correctAnswer", onCorrectAnswer);
+      socket.off("lobby:examCorrectAnswer", onExamCorrectAnswer);
       socket.off("lobby:timeout", onTimeout);
       socket.off("lobby:passTurnNotification", onPassTurnNotification);
       socket.off("lobby:openModal", onOpenModal);

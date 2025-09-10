@@ -427,13 +427,20 @@ function initLobbySockets(nsp) {
         const isCorrect = Boolean(payload && payload.correct);
 
         if (isCorrect) {
-          const nextIndex = state.index + 1;
-          if (nextIndex < state.questions.length) {
-            state.index = nextIndex;
-            lobbyExamState.set(lobbyId, state);
-            const nextQuestion = state.questions[nextIndex];
-            nsp.to(roomKey).emit('lobby:examNext', { index: nextIndex, question: nextQuestion });
-          } else {
+          // Показываем уведомление всем игрокам
+          nsp.to(roomKey).emit('lobby:examCorrectAnswer', {
+            message: '✅ Правильный ответ! Ход переходит следующему игроку'
+          });
+          
+          // Ждем 2 секунды, затем переходим к следующему вопросу
+          setTimeout(async () => {
+            const nextIndex = state.index + 1;
+            if (nextIndex < state.questions.length) {
+              state.index = nextIndex;
+              lobbyExamState.set(lobbyId, state);
+              const nextQuestion = state.questions[nextIndex];
+              nsp.to(roomKey).emit('lobby:examNext', { index: nextIndex, question: nextQuestion });
+            } else {
             // Экзамен завершён
             lobbyExamState.delete(lobbyId);
             // Обновим точку экзамена как выполненную и известим всех
@@ -463,11 +470,15 @@ function initLobbySockets(nsp) {
             nsp.to(roomKey).emit('lobby:examComplete');
             // На всякий случай синхронно закроем любые открытые модалки
             nsp.to(roomKey).emit('lobby:closeModal');
-          }
+            }
+            
+            // Передаем ход следующему игроку после показа уведомления
+            await passTurnToNextPlayer();
+          }, 2000); // 2 секунды задержки
+        } else {
+          // При неправильном ответе сразу передаем ход
+          await passTurnToNextPlayer();
         }
-
-        // После любого ответа передаем ход следующему игроку
-        await passTurnToNextPlayer();
       } catch (err) {
         console.error('Ошибка в lobby:examAnswer:', err);
       }

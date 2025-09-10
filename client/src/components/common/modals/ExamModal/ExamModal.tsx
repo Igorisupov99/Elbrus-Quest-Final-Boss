@@ -70,10 +70,11 @@ export function ExamModal({
 
   useEffect(() => {
     setAnswer('');
-    setResult(null);
     setCorrectAnswer(null);
     setTimeLeft(30);
     setTimerActive(false);
+    
+    // НЕ сбрасываем result - уведомления показываются через сокет
     
     // Автоматически запускаем таймер для активного игрока при переходе к новому вопросу
     if (Number(currentUserId) === Number(activePlayerId) && isOpen) {
@@ -150,7 +151,7 @@ export function ExamModal({
       );
 
       if (res.data.correct) {
-        setResult("✅ Правильный ответ! (+10 очков)");
+        // Убираем локальное уведомление - оно будет показано через сокет всем игрокам
         // Переходим к следующему вопросу или завершаем экзамен
         // Сообщаем серверу, что ответ правильный, чтобы он продвинул индекс и/или завершил экзамен
         onAdvance?.(true);
@@ -198,6 +199,10 @@ export function ExamModal({
         
         {result && (
           <p className={styles.result}>{result}</p>
+        )}
+
+        {sharedResult && (
+          <p className={styles.result}>{sharedResult}</p>
         )}
 
         {correctAnswer && (
