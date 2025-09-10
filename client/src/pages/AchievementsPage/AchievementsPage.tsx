@@ -1,5 +1,4 @@
 import { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
 import styles from './AchievementsPage.module.css';
 import { AchievementCard } from '../../components/Achievement/AchievementCard/AchievementCard';
 import { achievementApi } from '../../api/achievements/achievementApi';
@@ -7,7 +6,6 @@ import type { Achievement, AchievementStats } from '../../types/achievement';
 import { ACHIEVEMENT_CATEGORIES } from '../../types/achievement';
 
 export function AchievementsPage() {
-  const navigate = useNavigate();
   const [achievements, setAchievements] = useState<Achievement[]>([]);
   const [stats, setStats] = useState<AchievementStats | null>(null);
   const [loading, setLoading] = useState(true);
