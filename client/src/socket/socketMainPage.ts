@@ -37,6 +37,7 @@ class MainSocketClient {
     // Add connection event listeners
     this._socket.on('connect', () => {
       console.log('✅ Main page socket connected');
+      console.log('🔌 Socket ID:', this._socket?.id);
       // Re-setup room update listener if it exists
       if (this._roomUpdateListener) {
         this._socket?.on('room:update', this._roomUpdateListener);
@@ -55,6 +56,11 @@ class MainSocketClient {
     // Add test response listener
     this._socket.on('test:response', (data) => {
       console.log('🎉 Received test response from server:', data);
+    });
+
+    // Add general event listener for debugging
+    this._socket.onAny((eventName, ...args) => {
+      console.log(`📡 Received event: ${eventName}`, args);
     });
   }
 
@@ -82,6 +88,17 @@ class MainSocketClient {
       }
     } else {
       console.log('❌ No socket instance available');
+    }
+    
+    // Also set up a general room:update listener for debugging
+    if (this._socket) {
+      this._socket.on('room:update', (data) => {
+        console.log('🎯 Received room:update event:', data);
+        if (this._roomUpdateListener) {
+          this._roomUpdateListener(data);
+        }
+      });
+      console.log('🔍 General room:update listener also set up for debugging');
     }
   }
 

@@ -10,6 +10,8 @@ import api from "../../api/axios";
 import { useLobbySocket } from "../../hooks/useLobbySocket";
 import { useAppDispatch, useAppSelector } from "../../store/hooks";
 import { updatePointStatus, mergeScores, openModal as openModalAction, closeModal as closeModalAction, openExamModal as openExamModalAction, closeExamModal as closeExamModalAction } from "../../store/lobbyPage/lobbySlice";
+import { AchievementNotification } from "../../components/Achievement/AchievementNotification/AchievementNotification";
+import type { Achievement } from "../../types/achievement";
 
 // УДАЛИТЬ: ExamQuestion перенесен в ExamModal
 
@@ -31,7 +33,6 @@ export function LobbyPage() {
     sendChatMessage,
     sendAnswer,
     sendTimeout,
-    sendExamComplete,
     sendOpenModal,
     sendOpenExam,
     sendExamAnswerProgress,
@@ -40,6 +41,7 @@ export function LobbyPage() {
 
   const [input, setInput] = useState("");
   const [mapNaturalSize, setMapNaturalSize] = useState<{ w: number; h: number } | null>(null);
+  const [achievementNotifications, setAchievementNotifications] = useState<Achievement[]>([]);
   
   // Состояние для модального окна действий пользователя
   const [isUserActionsModalOpen, setIsUserActionsModalOpen] = useState(false);
@@ -167,6 +169,28 @@ export function LobbyPage() {
     if (!token) { navigate("/login"); return; }
   }, [lobbyId, navigate]);
 
+  // Обработчик уведомлений о достижениях
+  useEffect(() => {
+    const handleAchievementReceived = (event: CustomEvent) => {
+      const { userId, achievements } = event.detail;
+      
+      // Показываем уведомления только для текущего пользователя
+      if (user && Number(userId) === Number(user.id)) {
+        setAchievementNotifications(achievements);
+      }
+    };
+
+    window.addEventListener('achievement:received', handleAchievementReceived as EventListener);
+    
+    return () => {
+      window.removeEventListener('achievement:received', handleAchievementReceived as EventListener);
+    };
+  }, [user]);
+
+  const handleCloseAchievementNotification = () => {
+    setAchievementNotifications([]);
+  };
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     const text = input.trim();
@@ -195,10 +219,24 @@ export function LobbyPage() {
     console.log(`Добавить в друзья: ${selectedUsername}`);
   };
 
-  const handleExamComplete = (correctAnswers: number, totalQuestions: number) => {
-    dispatch(updatePointStatus({ pointId: "exam", status: "completed" }));
-    sendExamComplete(correctAnswers, totalQuestions);
+  const handleUserClick = (username: string) => {
+    // Не открываем модальное окно для своего собственного имени
+    if (user?.username === username) return;
+    
+    setSelectedUsername(username);
+    setIsUserActionsModalOpen(true);
   };
+
+  const handleGoToProfile = () => {
+    // TODO: Реализовать переход в профиль пользователя
+    console.log(`Переход в профиль пользователя: ${selectedUsername}`);
+  };
+
+  const handleAddFriend = () => {
+    // TODO: Реализовать добавление в друзья
+    console.log(`Добавить в друзья: ${selectedUsername}`);
+  };
+
 
   const handleAnswerResult = (correct: boolean, scores: any) => {
     // Если сервер ничего не прислал про очки, не трогаем текущие значения
@@ -341,10 +379,6 @@ export function LobbyPage() {
           activePlayerName={
             usersInLobby.find(u => u.id === activePlayerId)?.username ?? ''
           }
-          onExamComplete={handleExamComplete}
-          onLocalIncorrectAnswer={handleLocalIncorrectAnswer}
-          onTimeout={handleTimeout}
-          sharedResult={modalResult}
           questions={useAppSelector(s => s.lobbyPage.examQuestions)}
           onAdvance={(correct: boolean) => {
             // Сообщаем серверу, был ли ответ правильным, чтобы он продвинул индекс
@@ -462,6 +496,14 @@ export function LobbyPage() {
         onGoToProfile={handleGoToProfile}
         onAddFriend={handleAddFriend}
       />
+
+      {/* Уведомления о достижениях */}
+      {achievementNotifications.length > 0 && (
+        <AchievementNotification
+          achievements={achievementNotifications}
+          onClose={handleCloseAchievementNotification}
+        />
+      )}
 
     </div>
   );

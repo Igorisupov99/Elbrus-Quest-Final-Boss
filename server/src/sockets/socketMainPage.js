@@ -105,14 +105,27 @@ function initMainPageSockets(nsp) {
 // Function to emit room updates to all connected clients
 function emitRoomUpdate(io, event, roomData) {
   console.log(`📡 Emitting room update: ${event}`, roomData);
-  console.log(`📊 Connected clients: ${io.engine.clientsCount}`);
+  
+  // Get the main page namespace (root namespace)
+  const mainPageNamespace = io.of('/');
+  console.log(`📊 Connected clients in main namespace: ${mainPageNamespace.sockets.size}`);
 
-  io.emit('room:update', {
+  // Emit to all clients in the main page namespace
+  mainPageNamespace.emit('room:update', {
     event,
     data: roomData,
   });
 
-  console.log('✅ Room update emitted successfully');
+  console.log('✅ Room update emitted successfully to main namespace');
+  
+  // Also try emitting to the root io instance as backup
+  console.log(`📊 Total connected clients: ${io.engine.clientsCount}`);
+  io.emit('room:update', {
+    event,
+    data: roomData,
+  });
+  
+  console.log('✅ Room update also emitted to root io instance');
 }
 
 module.exports = { initMainPageSockets, emitRoomUpdate };

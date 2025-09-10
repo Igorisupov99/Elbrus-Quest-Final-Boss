@@ -2,8 +2,7 @@ import { useState, useEffect } from "react";
 import { Button } from "../../Button/Button";
 import styles from "./ExamModal.module.css";
 import api from "../../../../api/axios";
-import { useAppSelector, useAppDispatch } from "../../../../store/hooks";
-import { setExamIndex } from "../../../../store/lobbyPage/lobbySlice";
+import { useAppSelector } from "../../../../store/hooks";
 
 interface ExamQuestion {
   id: number;
@@ -18,10 +17,6 @@ interface ExamModalProps {
   currentUserId: number;
   activePlayerId: number | null;
   activePlayerName: string;
-  onExamComplete?: (correctAnswers: number, totalQuestions: number) => void;
-  onLocalIncorrectAnswer?: () => void;
-  onTimeout?: (pointId: string) => void;
-  sharedResult?: string | null;
   questions?: ExamQuestion[];
   onAdvance?: (correct: boolean) => void;
 }
@@ -33,15 +28,10 @@ export function ExamModal({
   currentUserId,
   activePlayerId,
   activePlayerName,
-  onExamComplete,
-  onLocalIncorrectAnswer,
-  onTimeout,
-  sharedResult,
   questions,
   onAdvance,
 }: ExamModalProps) {
   // Для отправки прогресса экзамена (следующий вопрос) используем хук сокета через пропсы не получаем, поэтому просто импорт нельзя использовать напрямую.
-  const dispatch = useAppDispatch();
   const globalQuestions = useAppSelector(s => s.lobbyPage.examQuestions);
   const currentQuestionIndex = useAppSelector(s => s.lobbyPage.examIndex);
   const [examQuestions, setExamQuestions] = useState<ExamQuestion[]>(questions ?? globalQuestions ?? []);
@@ -54,7 +44,6 @@ export function ExamModal({
 
   const totalQuestions = examQuestions.length;
   const currentQuestion = examQuestions[currentQuestionIndex];
-  const isLastQuestion = currentQuestionIndex === totalQuestions - 1;
 
   useEffect(() => {
     if (questions && questions.length > 0) {

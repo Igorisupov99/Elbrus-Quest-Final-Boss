@@ -5,6 +5,7 @@ import { Register } from './pages/Register/Register';
 import { Login } from './pages/Login/Login';
 import { Profile } from './pages/ProfilePage/Profile';
 import { LobbyPage } from './pages/LobbyPage/LobbyPage';
+import { AchievementsPage } from './pages/AchievementsPage/AchievementsPage';
 import { PrivateRoute } from './components/PrivateRoute/PrivateRoute';
 import { useEffect } from 'react';
 import { initAuth } from './store/authThunks';
@@ -53,6 +54,7 @@ export function App() {
             </PrivateRoute>
           }
         />
+        <Route path="/achievements" element={<AchievementsPage />} />
       </Routes>
     </>
   );

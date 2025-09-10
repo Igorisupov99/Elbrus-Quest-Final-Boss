@@ -136,6 +136,14 @@ export function useLobbySocket(lobbyId: number) {
       console.log('🔒 [CLIENT] Получил lobby:closeModal - закрываем модалку');
       dispatch(closeModal());
     };
+
+    const onNewAchievements = (payload: any) => {
+      console.log('🏆 [CLIENT] Получил lobby:newAchievements:', payload);
+      // Эмитим кастомное событие для показа уведомления о достижениях
+      window.dispatchEvent(new CustomEvent('achievement:received', { 
+        detail: payload 
+      }));
+    };
 ;
     socket.on("connect", () => {
       console.log('✅ [SOCKET] Подключен к комнате lobby:', lobbyId);
@@ -175,6 +183,7 @@ export function useLobbySocket(lobbyId: number) {
     socket.on("lobby:examComplete", onExamComplete);
     socket.on("lobby:timeout", onTimeout);
     socket.on("lobby:closeModal", onCloseModal);
+    socket.on("lobby:newAchievements", onNewAchievements);
     
     console.log('✅ [SOCKET] Обработчик lobby:incorrectAnswer зарегистрирован');
 
@@ -200,6 +209,7 @@ export function useLobbySocket(lobbyId: number) {
       socket.off("lobby:examNext", onExamNext);
       socket.off("lobby:examComplete", onExamComplete);
       socket.off("lobby:closeModal", onCloseModal);
+      socket.off("lobby:newAchievements", onNewAchievements);
       socket.disconnect();
     };
   }, [dispatch, lobbyId, token]);

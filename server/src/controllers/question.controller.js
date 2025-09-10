@@ -1,4 +1,5 @@
 const { Phase, Topic, Question, User, UserSession } = require("../../db/models");
+const achievementController = require("./achievement.controller");
 
 // 👇 теперь ключ = lobbyId, а не userId_lobbyId
 const incorrectAnswersMap = new Map();
@@ -184,6 +185,38 @@ class QuestionController {
             message: `❌ Неправильный ответ! (-5 очков)`,
           });
         }
+      }
+
+      // Проверяем достижения после изменения очков
+      try {
+        let newAchievements = [];
+        
+        // Проверяем общие достижения пользователя
+        const userAchievements = await achievementController.checkUserAchievements(userId, lobby_id);
+        newAchievements.push(...userAchievements);
+        
+        // Проверяем достижения для конкретной сессии (если есть лобби)
+        if (lobby_id) {
+          const sessionAchievements = await achievementController.checkSessionAchievements(userId, lobby_id);
+          newAchievements.push(...sessionAchievements);
+        }
+        
+        // Проверяем достижение "Первые шаги" для первого правильного ответа
+        if (isCorrect) {
+          const firstStepsAchievement = await achievementController.awardAchievement(userId, 'first_steps', lobby_id);
+          if (firstStepsAchievement) newAchievements.push(firstStepsAchievement);
+        }
+        
+        // Если есть новые достижения, отправляем их клиенту
+        if (newAchievements.length > 0 && lobby_id) {
+          const roomName = `lobby:${lobby_id}`;
+          io.of("/lobby").to(roomName).emit("lobby:newAchievements", {
+            userId,
+            achievements: newAchievements
+          });
+        }
+      } catch (achievementError) {
+        console.error("Ошибка при проверке достижений:", achievementError);
       }
 
       return res.json({

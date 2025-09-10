@@ -1,4 +1,5 @@
 const { GameSession } = require('../../db/models');
+const achievementController = require('./achievement.controller');
 
 class RoomController {
   // отдать перечень всех комнат
@@ -65,6 +66,32 @@ class RoomController {
           emitRoomUpdate: !!global.emitRoomUpdate,
           io: !!global.io,
         });
+      }
+
+      // Проверяем достижения за создание комнаты
+      try {
+        const newAchievements = [];
+        
+        // Достижение "Создатель" - за первую созданную комнату
+        const creatorAchievement = await achievementController.awardAchievement(room_creator, 'creator', room.id);
+        if (creatorAchievement) newAchievements.push(creatorAchievement);
+        
+        // Достижение "Хозяин" - за создание 5 комнат
+        const userRoomsCount = await GameSession.count({ where: { room_creator } });
+        if (userRoomsCount >= 5) {
+          const hostAchievement = await achievementController.awardAchievement(room_creator, 'host', room.id);
+          if (hostAchievement) newAchievements.push(hostAchievement);
+        }
+        
+        // Отправляем уведомления о достижениях через основной сокет
+        if (newAchievements.length > 0 && global.io) {
+          global.io.emit('user:newAchievements', {
+            userId: room_creator,
+            achievements: newAchievements
+          });
+        }
+      } catch (achievementError) {
+        console.error("Ошибка при проверке достижений за создание комнаты:", achievementError);
       }
 
       res.status(201).json({ message: 'success', data: room });
