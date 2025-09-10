@@ -10,7 +10,7 @@ router.post('/refresh', authController.refreshToken);
 router.post('/logout', authController.logout);
 router.get('/profile', authMiddleware, authController.getProfile);
 router.delete('/delete-account', authMiddleware, authController.deleteProfile);
-router.put('/update-profile', authMiddleware, authController.deleteProfile);
+router.put('/update-profile', authMiddleware, authController.updateProfile);
 
 
 module.exports = router;

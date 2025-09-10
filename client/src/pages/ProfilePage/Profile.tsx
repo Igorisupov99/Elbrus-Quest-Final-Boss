@@ -1,4 +1,5 @@
-import React, { useEffect, useState, ChangeEvent, FormEvent } from "react";
+import { useEffect, useState } from "react";
+import type { ChangeEvent, FormEvent } from "react";
 import axios from "axios";
 import api from "../../api/axios";
 import styles from "./Profile.module.css";
@@ -75,8 +76,14 @@ export function Profile() {
   }, []);
 
   // Обработчик открытия/закрытия модалки
-  const openSettings = () => setIsSettingsOpen(true);
-  const closeSettings = () => setIsSettingsOpen(false);
+  const openSettings = () => {
+    setError(null); // очищаем ошибки при открытии модального окна
+    setIsSettingsOpen(true);
+  };
+  const closeSettings = () => {
+    setError(null); // очищаем ошибки при закрытии модального окна
+    setIsSettingsOpen(false);
+  };
 
   // Обработчик изменения полей формы
   const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
@@ -86,22 +93,53 @@ export function Profile() {
   // Обработчик отправки формы
   const handleSave = async (e: FormEvent) => {
     e.preventDefault();
-    // Здесь отправьте данные на сервер для обновления профиля
-    // Например:
-    // api.post('/api/auth/update-profile', {...formData, withCredentials:true})
+    
+    try {
+      setLoading(true);
+      setError(null);
 
-    // Для демонстрации – просто закрываем модалку и обновляем user локально
-    setUser((u) =>
-      u
-        ? {
-            ...u,
-            username: formData.username,
-            email: formData.email,
-          }
-        : u
-    );
+      // Отправляем данные на сервер для обновления профиля
+      const response = await api.put<ApiResponse<User>>('/api/auth/update-profile', {
+        username: formData.username,
+        email: formData.email,
+        currentPassword: formData.currentPassword,
+        newPassword: formData.newPassword || undefined, // отправляем только если есть новый пароль
+      }, {
+        withCredentials: true
+      });
 
-    closeSettings();
+      if (!response.data.success) {
+        throw new Error(response.data.message || "Ошибка при обновлении профиля");
+      }
+
+      // Обновляем локальное состояние пользователя с данными с сервера
+      setUser(response.data.data);
+
+      // Очищаем пароли из формы после успешного обновления
+      setFormData(prev => ({
+        ...prev,
+        currentPassword: "",
+        newPassword: "",
+        username: response.data.data.username,
+        email: response.data.data.email,
+      }));
+
+      closeSettings();
+      
+      // Можно добавить уведомление об успешном обновлении
+      alert("Профиль успешно обновлен!");
+      
+    } catch (err) {
+      let errorMessage = "Ошибка при обновлении профиля";
+      if (axios.isAxiosError(err)) {
+        errorMessage = err.response?.data?.message || err.message || errorMessage;
+      } else if (err instanceof Error) {
+        errorMessage = err.message;
+      }
+      setError(errorMessage);
+    } finally {
+      setLoading(false);
+    }
   };
 
   // Обработчик удаления аккаунта
@@ -169,6 +207,12 @@ export function Profile() {
             </button>
             <h2 className={styles.modalHeader}>Настройки профиля</h2>
 
+            {error && (
+              <div className={styles.error} style={{ marginBottom: '1rem' }}>
+                {error}
+              </div>
+            )}
+
             <form onSubmit={handleSave}>
               <div className={styles.formGroup}>
                 <label htmlFor="username">Логин</label>
@@ -195,7 +239,7 @@ export function Profile() {
               </div>
 
               <div className={styles.formGroup}>
-                <label htmlFor="currentPassword">Текущий пароль</label>
+                <label htmlFor="currentPassword">Текущий пароль *</label>
                 <input
                   id="currentPassword"
                   name="currentPassword"
@@ -203,17 +247,19 @@ export function Profile() {
                   value={formData.currentPassword}
                   onChange={handleChange}
                   required
+                  placeholder="Введите текущий пароль для подтверждения изменений"
                 />
               </div>
 
               <div className={styles.formGroup}>
-                <label htmlFor="newPassword">Новый пароль</label>
+                <label htmlFor="newPassword">Новый пароль (оставьте пустым, если не хотите менять)</label>
                 <input
                   id="newPassword"
                   name="newPassword"
                   type="password"
                   value={formData.newPassword}
                   onChange={handleChange}
+                  placeholder="Введите новый пароль или оставьте пустым"
                 />
               </div>
 
