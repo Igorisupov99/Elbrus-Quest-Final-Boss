@@ -96,14 +96,23 @@ export function ExamModal({
           if (answer.trim()) {
             handleSubmit();
           } else {
-            // Если ответ пустой, отправляем событие timeout всем игрокам
-            console.log("⏰ Пустой ответ при истечении времени в экзамене - отправляем timeout");
-            onTimeout?.("exam");
-            // Закрываем модальное окно локально
-            console.log("⏰ Закрываем ExamModal через 100ms");
-            setTimeout(() => {
-              onClose();
-            }, 100);
+            // Если ответ пустой в экзамене — считаем как неправильный ответ,
+            // отправляем на сервер для применения штрафа и НЕ закрываем модалку
+            console.log("⏰ Пустой ответ при истечении времени в экзамене - считаем как неправильный и штрафуем");
+            (async () => {
+              try {
+                await api.post(
+                  "/api/question/answerCheck",
+                  { question_id: currentQuestion.id, answer: "", lobby_id: lobbyId },
+                  { withCredentials: true }
+                );
+              } catch (e) {
+                console.error("Ошибка применения штрафа при таймауте экзамена", e);
+              } finally {
+                setResult("⏰ Время истекло. Ответ засчитан как неправильный.");
+                onAdvance?.(false);
+              }
+            })();
           }
           return 0;
         }
