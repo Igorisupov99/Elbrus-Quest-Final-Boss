@@ -392,6 +392,34 @@ function initLobbySockets(nsp) {
       }
     });
 
+    socket.on('lobby:passTurn', async () => {
+      try {
+        console.log(`🎮 [SOCKET] Передаем ход следующему игроку по запросу`);
+        await passTurnToNextPlayer();
+      } catch (err) {
+        console.error('Ошибка при передаче хода:', err);
+      }
+    });
+
+    socket.on('lobby:passTurnNotification', () => {
+      console.log('📢 [SOCKET] Отправляем уведомление о передаче хода всем игрокам');
+      nsp.to(roomKey).emit('lobby:passTurnNotification');
+    });
+
+    socket.on('lobby:incorrectCountUpdate', async ({ incorrectAnswers }) => {
+      try {
+        console.log(`📊 [SOCKET] Обновляем глобальный счетчик неправильных ответов: ${incorrectAnswers}`);
+        
+        // Обновляем глобальный счетчик неправильных ответов
+        incorrectAnswersMap.set(lobbyId, incorrectAnswers);
+        
+        // Отправляем обновленный счетчик всем игрокам в лобби
+        nsp.to(roomKey).emit('lobby:incorrectCountUpdate', { incorrectAnswers });
+      } catch (err) {
+        console.error('Ошибка при обновлении счетчика неправильных ответов:', err);
+      }
+    });
+
     socket.on('lobby:examAnswer', async (payload) => {
       try {
         const state = lobbyExamState.get(lobbyId);

@@ -24,8 +24,6 @@ export function useLobbySocket(lobbyId: number) {
 
     const socket = socketClient.socket;
 
-    console.log('🔌 [SOCKET] Регистрирую обработчики для комнаты:', lobbyId);
-
     const onConnect = () => {
       setConnected(true);
       setConnecting(false);
@@ -56,7 +54,6 @@ export function useLobbySocket(lobbyId: number) {
     const onPointStatus = ({ pointId, status}: any) => dispatch(updatePointStatus({ pointId, status }));
 
     const onInitScores = (payload: any) => {
-      console.log("ON lobby:initScores", payload);
       const nextIncorrect = payload?.incorrectAnswers ?? payload?.incorrect_answers ?? 0;
       dispatch(setScores({
         userScore: payload.userScore ?? 0,
@@ -66,35 +63,34 @@ export function useLobbySocket(lobbyId: number) {
     };
 
     const onScores = (payload: any) => {
-      console.log("ON lobby:scores", payload);
-      // Обновляем общий счёт лобби всем
       dispatch(mergeScores({ sessionScore: payload.sessionScore }));
-      // Личный счёт обновляем только тому пользователю, чьи очки пришли
       if (payload.userId && user?.id && Number(payload.userId) === Number(user.id)) {
         dispatch(mergeScores({ userScore: payload.userScore }));
       }
     };
 
+    // Убираем обработчик onCorrectAnswer - уведомления о правильных ответах показываются локально
+
     const onIncorrectAnswer = (payload: any) => {
-      console.log('🎯 [CLIENT] Получил lobby:incorrectAnswer:', payload);
-      console.log('🔍 [DEBUG] Структура payload:', payload);
-      console.log('🔍 [DEBUG] incorrectAnswers value:', payload.incorrectAnswers);
-      console.log('🔍 [DEBUG] Тип incorrectAnswers:', typeof payload.incorrectAnswers);
-      
-      // Обновляем общий счет лобби и счетчик неправильных ответов для всех
+      // Обновляем счетчик неправильных ответов у всех игроков
+      const incorrectCount = payload.incorrectAnswers || payload.incorrect_answers || 0;
       dispatch(mergeScores({
-        sessionScore: payload.sessionScore || 0,
-        incorrectAnswers: payload.incorrectAnswers || 0,
+        incorrectAnswers: incorrectCount
       }));
       
       dispatch(setModalResult('❌ Неправильный ответ!'));
-      setTimeout(() => dispatch(setModalResult(null)), 3000);
-
-      console.log('✅ [CLIENT] Redux обновлен');
+      setTimeout(() => dispatch(setModalResult(null)), 2000);
     };
 
-    const onCorrectAnswer = (payload: any) => {
-      console.log('🎯 [CLIENT] Получил lobby:correctAnswer:', payload);
+    const onIncorrectCountUpdate = (payload: { incorrectAnswers: number }) => {
+      // Обновляем только счетчик неправильных ответов без показа уведомления
+      dispatch(mergeScores({
+        incorrectAnswers: payload.incorrectAnswers
+      }));
+    };
+
+    const onCorrectAnswer = () => {
+      // Показываем уведомление о правильном ответе всем игрокам
       dispatch(setModalResult('✅ Правильный ответ! (+10 очков)'));
       setTimeout(() => {
         dispatch(setModalResult(null));
@@ -102,14 +98,22 @@ export function useLobbySocket(lobbyId: number) {
       }, 3000);
     };
 
-    const onTimeout = (payload: any) => {
-      console.log('⏰ [CLIENT] Получил lobby:timeout:', payload);
-      dispatch(setModalResult('⏰ Вы не успели ответить'));
-      dispatch(closeModal());
-      dispatch(closeExamModal());
+    const onTimeout = () => {
+      dispatch(setModalResult('Ход будет передан следующему игроку'));
       setTimeout(() => {
         dispatch(setModalResult(null));
-      }, 4000);
+        dispatch(closeModal());
+        dispatch(closeExamModal());
+      }, 2000);
+    };
+
+    const onPassTurnNotification = () => {
+      dispatch(setModalResult('Ход будет передан следующему игроку'));
+      setTimeout(() => {
+        dispatch(setModalResult(null));
+        dispatch(closeModal());
+        dispatch(closeExamModal());
+      }, 2000);
     };
     
     const onOpenModal = (payload: { questionId: number; topic: string; question: string }) => {
@@ -122,8 +126,6 @@ export function useLobbySocket(lobbyId: number) {
     };
     
     const onExamNext = (payload: { index: number; question?: any }) => {
-      // В данный момент список вопросов уже синхронизирован при старте экзамена.
-      // Мы лишь двигаем индекс. payload.question зарезервирован на будущее.
       dispatch(setExamIndex(payload.index));
     };
     const onExamComplete = () => {
@@ -133,12 +135,10 @@ export function useLobbySocket(lobbyId: number) {
     };
 
     const onCloseModal = () => {
-      console.log('🔒 [CLIENT] Получил lobby:closeModal - закрываем модалку');
       dispatch(closeModal());
     };
 ;
     socket.on("connect", () => {
-      console.log('✅ [SOCKET] Подключен к комнате lobby:', lobbyId);
       setConnected(true);
       setConnecting(false);
     });
@@ -168,15 +168,15 @@ export function useLobbySocket(lobbyId: number) {
     socket.on("lobby:initScores", onInitScores);
     socket.on("lobby:scores", onScores);
     socket.on("lobby:incorrectAnswer", onIncorrectAnswer);
+    socket.on("lobby:incorrectCountUpdate", onIncorrectCountUpdate);
     socket.on("lobby:correctAnswer", onCorrectAnswer);
     socket.on("lobby:openModal", onOpenModal);
     socket.on("lobby:examStart", onExamStart);
     socket.on("lobby:examNext", onExamNext);
     socket.on("lobby:examComplete", onExamComplete);
     socket.on("lobby:timeout", onTimeout);
+    socket.on("lobby:passTurnNotification", onPassTurnNotification);
     socket.on("lobby:closeModal", onCloseModal);
-    
-    console.log('✅ [SOCKET] Обработчик lobby:incorrectAnswer зарегистрирован');
 
     return () => {
       socket.emit("leaveLobby");
@@ -193,8 +193,10 @@ export function useLobbySocket(lobbyId: number) {
       socket.off("lobby:initScores", onInitScores);
       socket.off("lobby:scores", onScores);
       socket.off("lobby:incorrectAnswer", onIncorrectAnswer);
+      socket.off("lobby:incorrectCountUpdate", onIncorrectCountUpdate);
       socket.off("lobby:correctAnswer", onCorrectAnswer);
       socket.off("lobby:timeout", onTimeout);
+      socket.off("lobby:passTurnNotification", onPassTurnNotification);
       socket.off("lobby:openModal", onOpenModal);
       socket.off("lobby:examStart", onExamStart);
       socket.off("lobby:examNext", onExamNext);
@@ -210,8 +212,6 @@ export function useLobbySocket(lobbyId: number) {
   };
 
   const sendAnswer = (pointId: string, correct: boolean) => {
-    console.log("📡 [CLIENT] sendAnswer вызван:", { lobbyId, pointId, correct });
-    console.log("📡 [CLIENT] connected:", connected);
     socketClient.socket.emit("lobby:answer", { lobbyId, pointId, correct });
   };
 
@@ -234,8 +234,27 @@ export function useLobbySocket(lobbyId: number) {
   };
 
   const sendCloseModal = () => {
-    console.log("📡 [CLIENT] sendCloseModal вызван");
     socketClient.socket.emit("lobby:closeModal");
+  };
+
+  const sendIncorrectAnswer = (incorrectCount: number) => {
+    socketClient.socket.emit("lobby:incorrectAnswer", { incorrectAnswers: incorrectCount });
+  };
+
+  const sendPassTurn = () => {
+    socketClient.socket.emit("lobby:passTurn");
+  };
+
+  const sendIncorrectCountUpdate = (incorrectCount: number) => {
+    socketClient.socket.emit("lobby:incorrectCountUpdate", { incorrectAnswers: incorrectCount });
+  };
+
+  const sendCorrectAnswer = () => {
+    socketClient.socket.emit("lobby:correctAnswer");
+  };
+
+  const sendPassTurnNotification = () => {
+    socketClient.socket.emit("lobby:passTurnNotification");
   };
 
   return {
@@ -251,5 +270,10 @@ export function useLobbySocket(lobbyId: number) {
     sendOpenExam,
     sendExamAnswerProgress,
     sendCloseModal,
+    sendIncorrectAnswer,
+    sendPassTurn,
+    sendIncorrectCountUpdate,
+    sendCorrectAnswer,
+    sendPassTurnNotification,
   };
 };
