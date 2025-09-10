@@ -1,5 +1,6 @@
 import styles from './AchievementCard.module.css';
-import { Achievement, ACHIEVEMENT_CATEGORIES, ACHIEVEMENT_RARITIES } from '../../../types/achievement';
+import type { Achievement } from '../../../types/achievement';
+import { ACHIEVEMENT_CATEGORIES, ACHIEVEMENT_RARITIES } from '../../../types/achievement';
 
 interface AchievementCardProps {
   achievement: Achievement;

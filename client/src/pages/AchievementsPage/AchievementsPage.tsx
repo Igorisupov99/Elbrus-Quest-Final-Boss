@@ -2,9 +2,9 @@ import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import styles from './AchievementsPage.module.css';
 import { AchievementCard } from '../../components/Achievement/AchievementCard/AchievementCard';
-import { Header } from '../../components/Header/Header';
 import { achievementApi } from '../../api/achievements/achievementApi';
-import { Achievement, ACHIEVEMENT_CATEGORIES, AchievementStats } from '../../types/achievement';
+import type { Achievement, AchievementStats } from '../../types/achievement';
+import { ACHIEVEMENT_CATEGORIES } from '../../types/achievement';
 
 export function AchievementsPage() {
   const navigate = useNavigate();
@@ -75,7 +75,6 @@ export function AchievementsPage() {
   if (loading) {
     return (
       <div className={styles.achievementsPage}>
-        <Header />
         <div className={styles.container}>
           <div className={styles.loading}>Загрузка достижений...</div>
         </div>
@@ -86,7 +85,6 @@ export function AchievementsPage() {
   if (error) {
     return (
       <div className={styles.achievementsPage}>
-        <Header />
         <div className={styles.container}>
           <div className={styles.error}>{error}</div>
         </div>
@@ -96,8 +94,6 @@ export function AchievementsPage() {
 
   return (
     <div className={styles.achievementsPage}>
-      <Header />
-      
       <div className={styles.container}>
         <div className={styles.header}>
           <h1 className={styles.title}>🏆 Достижения</h1>

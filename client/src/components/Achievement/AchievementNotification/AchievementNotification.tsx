@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import styles from './AchievementNotification.module.css';
-import { Achievement } from '../../../types/achievement';
+import type { Achievement } from '../../../types/achievement';
 
 interface AchievementNotificationProps {
   achievements: Achievement[];

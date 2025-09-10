@@ -1,5 +1,5 @@
 import axios from '../axios';
-import { Achievement, UserAchievement, AchievementStats } from '../../types/achievement';
+import type { Achievement, UserAchievement, AchievementStats } from '../../types/achievement';
 
 export const achievementApi = {
   // Получить все достижения пользователя

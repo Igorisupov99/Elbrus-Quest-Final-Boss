@@ -385,24 +385,33 @@ module.exports = {
       {
         username: 'admin',
         email: 'admin@elbrusbootcamp.com',
-        password_hash: '$2b$10$examplehash',
+        password_hash: passwordHash,
         role: 'admin',
+        score: 0,
+        games_completed: 0,
+        image_url: null,
         createdAt: new Date(),
         updatedAt: new Date()
       },
       {
         username: 'student1',
         email: 'student1@example.com',
-        password_hash: '$2b$10$examplehash',
+        password_hash: passwordHash,
         role: 'user',
+        score: 150,
+        games_completed: 2,
+        image_url: null,
         createdAt: new Date(),
         updatedAt: new Date()
       },
       {
         username: 'testuser',
         email: 'testuser@example.com',
-        password_hash: '1234Oo',
+        password_hash: passwordHash,
         role: 'user',
+        score: 0,
+        games_completed: 0,
+        image_url: null,
         createdAt: new Date(),
         updatedAt: new Date()
       }
@@ -412,16 +421,22 @@ module.exports = {
     const gameSessions = await queryInterface.bulkInsert('GameSessions', [
       {
         phase_id: 1,
+        current_topic_id: 1,
+        current_question_id: 1,
         room_code: 'TEST123',
         room_name: 'Тестовая комната',
+        room_creator: 'student1',
         is_active: true,
         createdAt: new Date(),
         updatedAt: new Date()
       },
       {
         phase_id: 1,
+        current_topic_id: 2,
+        current_question_id: 4,
         room_code: 'USER123',
         room_name: 'Комната TestUser',
+        room_creator: 'testuser',
         is_active: true,
         createdAt: new Date(),
         updatedAt: new Date()
@@ -449,6 +464,12 @@ module.exports = {
         updatedAt: new Date()
       }
     ], {});
+
+    // 7. Achievements will be seeded by the dedicated achievements seeder
+    // Remove duplicate achievements from test seeder to avoid conflicts
+
+    // UserAchievements will be handled separately or by the achievements seeder
+    // to avoid foreign key constraint issues with achievement_id references
   },
 
   async down(queryInterface, Sequelize) {
