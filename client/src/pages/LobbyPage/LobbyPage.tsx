@@ -68,7 +68,7 @@ export function LobbyPage() {
     if (pointId !== "exam" && point.status !== "available") return;
 
     try {
-      if (pointId !== "exam") {
+      if (pointId !== "exam" && pointId !== "exam2") {
         console.log("📡 Запрашиваю вопрос:", {
           phase_id: point.phaseId,
           topic_id: point.topicId,
@@ -93,13 +93,14 @@ export function LobbyPage() {
         sendOpenModal(payload);
       } else {
         // Для экзамена инициатор загружает вопросы и рассылает всем
+        const phaseId = pointId === "exam" ? 1 : 2;
         const res = await api.get("/api/exam/examQuestion", {
-          params: { phase_id: 1, count: usersInLobby.length + incorrectAnswers },
+          params: { phase_id: phaseId, count: usersInLobby.length + incorrectAnswers },
           withCredentials: true,
         });
         const questions = res.data?.questions ?? [];
         dispatch(openExamModalAction());
-        sendOpenExam({ questions });
+        sendOpenExam({ questions, examId: pointId });
       }
     } catch (err) {
       console.error("Ошибка при получении вопроса:", err);
@@ -113,12 +114,31 @@ export function LobbyPage() {
   };
 
   useEffect(() => {
-    const allRegular = points.filter(p => p.id !== "exam");
-    const exam = points.find(p => p.id === "exam");
-    const shouldUnlock = allRegular.every(p => p.status === "completed") && exam?.status !== "available";
-    const shouldLock = !allRegular.every(p => p.status === "completed") && exam?.status !== "locked";
-    if (shouldUnlock) updatePoint("exam", "available");
-    if (shouldLock) updatePoint("exam", "locked");
+    // Фаза 1: разблокировать экзамен, когда все 1-4 выполнены, но НЕ трогать если уже completed
+    const phase1 = points.filter(p => p.phaseId === 1 && p.id !== "exam");
+    const exam1 = points.find(p => p.id === "exam");
+    const phase1AllDone = phase1.every(p => p.status === "completed");
+    if (exam1 && exam1.status !== "completed") {
+      if (phase1AllDone && exam1.status === "locked") updatePoint("exam", "available");
+      if (!phase1AllDone && exam1.status === "available") updatePoint("exam", "locked");
+    }
+
+    // После завершения экзамена 1 — разблокировать темы 5-8 (фаза 2)
+    const exam1Completed = exam1?.status === "completed";
+    const phase2 = points.filter(p => p.phaseId === 2 && p.id !== "exam2");
+    if (exam1Completed) {
+      phase2.forEach(p => {
+        if (p.status === "locked") updatePoint(p.id, "available");
+      });
+    }
+
+    // Фаза 2: экзамен 2 становится доступен, когда темы 5-8 выполнены
+    const exam2 = points.find(p => p.id === "exam2");
+    const phase2AllDone = phase2.every(p => p.status === "completed");
+    if (exam2 && exam2.status !== "completed") {
+      if (phase2AllDone && exam2.status === "locked") updatePoint("exam2", "available");
+      if (!phase2AllDone && exam2.status === "available") updatePoint("exam2", "locked");
+    }
   }, [points]);
 
   useEffect(() => {

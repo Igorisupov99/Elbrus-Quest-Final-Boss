@@ -24,7 +24,7 @@ export const Point = memo(function Point({
   status = 'available',
   onClick,
 }: PointProps) {
-  const isExam = id === "exam";
+  const isExam = id === "exam" || id === "exam2";
 
   const getStarIcon = () => {
     switch (status) {
@@ -45,10 +45,12 @@ export const Point = memo(function Point({
       type="button"
       className={`${styles.poi} ${styles[status]}`}
       style={{ top: `${top}%`, left: `${left}%` }}
-      onClick={() => onClick?.(id)}
+      onClick={() => {
+        if (status === 'available') onClick?.(id);
+      }}
       data-point-id={id}
       aria-label={title}
-      disabled={status === 'locked'}
+      disabled={status === 'locked' || status === 'completed'}
     >
       {isExam && starIconSrc ? (
         <div className={styles.marker}>

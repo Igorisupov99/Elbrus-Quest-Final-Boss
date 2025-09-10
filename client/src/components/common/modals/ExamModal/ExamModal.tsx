@@ -176,11 +176,15 @@ export function ExamModal({
     setTimerActive(false);
     setTimeLeft(30);
     // Не трогаем общий список вопросов и индекс — это ломает синхронизацию
+    // В экзамене закрытие активным игроком трактуем как неправильный ответ (передаём ход),
+    // но НЕ трогаем обычные точки карты и НЕ закрываем модалку
     if (Number(currentUserId) === Number(activePlayerId)) {
-      onLocalIncorrectAnswer?.();
-    } else {
-      onClose();
+      setResult('❌ Ответ не отправлен. Ход передан следующему игроку.');
+      onAdvance?.(false);
+      return;
     }
+    // Неактивный игрок просто закрывает у себя
+    onClose();
   };
 
   if (!isOpen) return null;
