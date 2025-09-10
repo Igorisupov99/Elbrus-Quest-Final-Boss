@@ -7,7 +7,6 @@ import {
   setUsers,
   setPoints,
   updatePointStatus,
-  incrementIncorrectAnswers,
 } from "../store/lobbyPage/lobbySlice";
 
 export function useLobbySocket(lobbyId: number) {
@@ -81,7 +80,13 @@ export function useLobbySocket(lobbyId: number) {
       console.log('🔍 [DEBUG] Структура payload:', payload);
       console.log('🔍 [DEBUG] incorrectAnswers value:', payload.incorrectAnswers);
       console.log('🔍 [DEBUG] Тип incorrectAnswers:', typeof payload.incorrectAnswers);
-      dispatch(incrementIncorrectAnswers());
+      
+      // Обновляем общий счет лобби и счетчик неправильных ответов для всех
+      dispatch(mergeScores({
+        sessionScore: payload.sessionScore || 0,
+        incorrectAnswers: payload.incorrectAnswers || 0,
+      }));
+      
       dispatch(setModalResult('❌ Неправильный ответ!'));
       setTimeout(() => dispatch(setModalResult(null)), 3000);
 
@@ -96,6 +101,16 @@ export function useLobbySocket(lobbyId: number) {
         dispatch(closeModal());
       }, 3000);
     };
+
+    const onTimeout = (payload: any) => {
+      console.log('⏰ [CLIENT] Получил lobby:timeout:', payload);
+      dispatch(setModalResult('⏰ Вы не успели ответить'));
+      dispatch(closeModal());
+      dispatch(closeExamModal());
+      setTimeout(() => {
+        dispatch(setModalResult(null));
+      }, 4000);
+    };
     
     const onOpenModal = (payload: { questionId: number; topic: string; question: string }) => {
       dispatch(openModal(payload));
@@ -105,13 +120,21 @@ export function useLobbySocket(lobbyId: number) {
       dispatch(setExamIndex(payload.index));
       dispatch(openExamModal());
     };
-    const onExamNext = (payload: { index: number }) => {
+    
+    const onExamNext = (payload: { index: number; question?: any }) => {
+      // В данный момент список вопросов уже синхронизирован при старте экзамена.
+      // Мы лишь двигаем индекс. payload.question зарезервирован на будущее.
       dispatch(setExamIndex(payload.index));
     };
     const onExamComplete = () => {
       dispatch(closeExamModal());
       dispatch(clearExamQuestions());
       dispatch(setExamIndex(0));
+    };
+
+    const onCloseModal = () => {
+      console.log('🔒 [CLIENT] Получил lobby:closeModal - закрываем модалку');
+      dispatch(closeModal());
     };
 ;
     socket.on("connect", () => {
@@ -150,6 +173,8 @@ export function useLobbySocket(lobbyId: number) {
     socket.on("lobby:examStart", onExamStart);
     socket.on("lobby:examNext", onExamNext);
     socket.on("lobby:examComplete", onExamComplete);
+    socket.on("lobby:timeout", onTimeout);
+    socket.on("lobby:closeModal", onCloseModal);
     
     console.log('✅ [SOCKET] Обработчик lobby:incorrectAnswer зарегистрирован');
 
@@ -169,10 +194,12 @@ export function useLobbySocket(lobbyId: number) {
       socket.off("lobby:scores", onScores);
       socket.off("lobby:incorrectAnswer", onIncorrectAnswer);
       socket.off("lobby:correctAnswer", onCorrectAnswer);
+      socket.off("lobby:timeout", onTimeout);
       socket.off("lobby:openModal", onOpenModal);
       socket.off("lobby:examStart", onExamStart);
       socket.off("lobby:examNext", onExamNext);
       socket.off("lobby:examComplete", onExamComplete);
+      socket.off("lobby:closeModal", onCloseModal);
       socket.disconnect();
     };
   }, [dispatch, lobbyId, token]);
@@ -183,7 +210,13 @@ export function useLobbySocket(lobbyId: number) {
   };
 
   const sendAnswer = (pointId: string, correct: boolean) => {
+    console.log("📡 [CLIENT] sendAnswer вызван:", { lobbyId, pointId, correct });
+    console.log("📡 [CLIENT] connected:", connected);
     socketClient.socket.emit("lobby:answer", { lobbyId, pointId, correct });
+  };
+
+  const sendTimeout = (pointId: string) => {
+    socketClient.socket.emit("lobby:timeout", { lobbyId, pointId });
   };
 
   const sendExamComplete = (correctAnswers: number, totalQuestions: number) => {
@@ -196,8 +229,13 @@ export function useLobbySocket(lobbyId: number) {
   const sendOpenExam = (payload?: { questions?: any[] }) => {
     socketClient.socket.emit("lobby:openExam", payload ?? {});
   };
-  const sendExamAnswerProgress = () => {
-    socketClient.socket.emit("lobby:examAnswer");
+  const sendExamAnswerProgress = (correct?: boolean) => {
+    socketClient.socket.emit("lobby:examAnswer", { correct: Boolean(correct) });
+  };
+
+  const sendCloseModal = () => {
+    console.log("📡 [CLIENT] sendCloseModal вызван");
+    socketClient.socket.emit("lobby:closeModal");
   };
 
   return {
@@ -207,9 +245,11 @@ export function useLobbySocket(lobbyId: number) {
     currentUserId: user?.id ?? 0,
     sendChatMessage,
     sendAnswer,
+    sendTimeout,
     sendExamComplete,
     sendOpenModal,
     sendOpenExam,
     sendExamAnswerProgress,
+    sendCloseModal,
   };
 };

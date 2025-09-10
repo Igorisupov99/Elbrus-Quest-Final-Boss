@@ -28,6 +28,7 @@ interface LobbyModal {
   questionId: number | null;
   topic: string;
   question: string;
+  mentor_tip?: string;
 }
 
 interface LobbyState {
@@ -132,12 +133,12 @@ const lobbyPageReducer = createSlice({
     },
     openModal(
       state,
-      action: PayloadAction<{ questionId: number; topic: string; question: string }>
+      action: PayloadAction<{ questionId: number; topic: string; question: string; mentor_tip?: string }>
     ) {
       state.modal = { isOpen: true, ...action.payload };
     },
     closeModal(state) {
-      state.modal = { isOpen: false, questionId: null, topic: "", question: "" };
+      state.modal = { isOpen: false, questionId: null, topic: "", question: "", mentor_tip: undefined };
     },
     openExamModal(state) {
       state.examModalOpen = true;

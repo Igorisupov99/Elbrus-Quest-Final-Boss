@@ -276,23 +276,52 @@ function initLobbySockets(nsp) {
 
     socket.on('lobby:answer', async ({ pointId, correct }) => {
       try {
+        console.log(`🎯 [SOCKET] Получен lobby:answer: pointId=${pointId}, correct=${correct}, userId=${socket.user.id}`);
+        
         const activeUserSession = await db.UserSession.findOne({
           where: { game_session_id: lobbyId, is_user_active: true },
         });
 
         if (!activeUserSession || activeUserSession.user_id !== socket.user.id) {
+          console.log(`❌ [SOCKET] Неправильный игрок пытается ответить: active=${activeUserSession?.user_id}, current=${socket.user.id}`);
           socket.emit('error', { message: 'Сейчас отвечает другой игрок' });
           return;
         }
 
-        const status = correct ? 'completed' : 'locked';
+        console.log(`✅ [SOCKET] Активный игрок отвечает: ${socket.user.username}`);
+
+        const status = correct ? 'completed' : 'available';
         const points = lobbyPoints.get(lobbyId);
         if (points) {
           const point = points.find((p) => p.id === pointId);
           if (point) point.status = status;
         }
 
+        // Если ответ неправильный, увеличиваем счетчик неправильных ответов
+        if (!correct) {
+          const current = incorrectAnswersMap.get(lobbyId) || 0;
+          const newCount = current + 1;
+          incorrectAnswersMap.set(lobbyId, newCount);
+          
+          console.log(`📊 [SOCKET] Увеличиваем счетчик неправильных ответов: ${current} -> ${newCount}`);
+          
+          // Отправляем обновленный счетчик всем игрокам
+          const allSessions = await db.UserSession.findAll({ where: { game_session_id: lobbyId } });
+          const lobbyTotalScore = allSessions.reduce((sum, s) => sum + Number(s.score || 0), 0);
+          
+          const payload = {
+            userId: socket.user.id,
+            userScore: activeUserSession.score || 0,
+            sessionScore: lobbyTotalScore,
+            incorrectAnswers: newCount,
+          };
+          
+          console.log(`📡 [SOCKET] Отправляем lobby:incorrectAnswer:`, payload);
+          nsp.to(roomKey).emit('lobby:incorrectAnswer', payload);
+        }
+
         nsp.to(roomKey).emit('lobby:updatePointStatus', { pointId, status });
+        console.log(`🔄 [SOCKET] Передаем ход следующему игроку`);
         await passTurnToNextPlayer();
       } catch (err) {
         console.error('Ошибка в обработке ответа:', err);
@@ -309,6 +338,31 @@ function initLobbySockets(nsp) {
       
       nsp.to(roomKey).emit('lobby:incorrectAnswer', payload);
       console.log('📡 [SOCKET] Событие переслано в комнату:', roomKey);
+    });
+
+    // Уведомление о истечении времени
+    socket.on('lobby:timeout', async (payload) => {
+      console.log('📡 [SOCKET] Получено lobby:timeout, пересылаю:', payload);
+      
+      // Проверяем, что timeout отправляет активный игрок
+      const activeUserSession = await db.UserSession.findOne({
+        where: { game_session_id: lobbyId, is_user_active: true },
+      });
+
+      if (activeUserSession && activeUserSession.user_id === socket.user.id) {
+        console.log('⏰ [SOCKET] Timeout от активного игрока, передаем ход следующему');
+        await passTurnToNextPlayer();
+      }
+      
+      nsp.to(roomKey).emit('lobby:timeout', payload);
+      console.log('📡 [SOCKET] Событие timeout переслано в комнату:', roomKey);
+    });
+
+    // Синхронное закрытие модалки всем в лобби
+    socket.on('lobby:closeModal', () => {
+      console.log('🔒 [SOCKET] Получено lobby:closeModal, пересылаю всем игрокам');
+      nsp.to(roomKey).emit('lobby:closeModal');
+      console.log('🔒 [SOCKET] Событие closeModal переслано в комнату:', roomKey);
     });
 
     // Синхронное открытие модалки всем в лобби
@@ -331,29 +385,37 @@ function initLobbySockets(nsp) {
       }
     });
 
-    socket.on('lobby:examAnswer', async () => {
+    socket.on('lobby:examAnswer', async (payload) => {
       try {
         const state = lobbyExamState.get(lobbyId);
         if (!state) return;
-        const nextIndex = state.index + 1;
-        if (nextIndex < state.questions.length) {
-          state.index = nextIndex;
-          lobbyExamState.set(lobbyId, state);
-          nsp.to(roomKey).emit('lobby:examNext', { index: nextIndex });
-          await passTurnToNextPlayer();
-        } else {
-          // Экзамен завершён
-          lobbyExamState.delete(lobbyId);
-          // Обновим точку экзамена как выполненную и известим всех
-          const points = lobbyPoints.get(lobbyId);
-          if (points) {
-            const examPoint = points.find((p) => p.id === 'exam');
-            if (examPoint) examPoint.status = 'completed';
+        const isCorrect = Boolean(payload && payload.correct);
+
+        if (isCorrect) {
+          const nextIndex = state.index + 1;
+          if (nextIndex < state.questions.length) {
+            state.index = nextIndex;
+            lobbyExamState.set(lobbyId, state);
+            const nextQuestion = state.questions[nextIndex];
+            nsp.to(roomKey).emit('lobby:examNext', { index: nextIndex, question: nextQuestion });
+          } else {
+            // Экзамен завершён
+            lobbyExamState.delete(lobbyId);
+            // Обновим точку экзамена как выполненную и известим всех
+            const points = lobbyPoints.get(lobbyId);
+            if (points) {
+              const examPoint = points.find((p) => p.id === 'exam');
+              if (examPoint) examPoint.status = 'completed';
+            }
+            nsp.to(roomKey).emit('lobby:updatePointStatus', { pointId: 'exam', status: 'completed' });
+            nsp.to(roomKey).emit('lobby:examComplete');
+            // На всякий случай синхронно закроем любые открытые модалки
+            nsp.to(roomKey).emit('lobby:closeModal');
           }
-          nsp.to(roomKey).emit('lobby:updatePointStatus', { pointId: 'exam', status: 'completed' });
-          nsp.to(roomKey).emit('lobby:examComplete');
-          await passTurnToNextPlayer();
         }
+
+        // После любого ответа передаем ход следующему игроку
+        await passTurnToNextPlayer();
       } catch (err) {
         console.error('Ошибка в lobby:examAnswer:', err);
       }

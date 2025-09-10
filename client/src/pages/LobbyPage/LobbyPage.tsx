@@ -8,7 +8,7 @@ import { ExamModal } from "../../components/common/modals/ExamModal/ExamModal";
 import api from "../../api/axios";
 import { useLobbySocket } from "../../hooks/useLobbySocket";
 import { useAppDispatch, useAppSelector } from "../../store/hooks";
-import { updatePointStatus, mergeScores, openModal as openModalAction, closeModal as closeModalAction, openExamModal as openExamModalAction } from "../../store/lobbyPage/lobbySlice";
+import { updatePointStatus, mergeScores, openModal as openModalAction, closeModal as closeModalAction, openExamModal as openExamModalAction, closeExamModal as closeExamModalAction } from "../../store/lobbyPage/lobbySlice";
 
 // УДАЛИТЬ: ExamQuestion перенесен в ExamModal
 
@@ -29,10 +29,12 @@ export function LobbyPage() {
     connecting,
     sendChatMessage,
     sendAnswer,
+    sendTimeout,
     sendExamComplete,
     sendOpenModal,
     sendOpenExam,
     sendExamAnswerProgress,
+    sendCloseModal,
   } = useLobbySocket(lobbyId);
 
   const [input, setInput] = useState("");
@@ -40,10 +42,10 @@ export function LobbyPage() {
 
   // локальная модалка (для обратной совместимости). Также используем redux.modal для синхронизации через сокет
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [isExamModalOpen, setIsExamModalOpen] = useState(false);
   const [currentTopic, setCurrentTopic] = useState("");
   const [currentQuestion, setCurrentQuestion] = useState("");
   const [currentQuestionId, setCurrentQuestionId] = useState<number | null>(null);
+  const [currentMentorTip, setCurrentMentorTip] = useState<string | null>(null);
   const [currentPointId, setCurrentPointId] = useState<string | null>(null);
   const modal = useAppSelector(s => s.lobbyPage.modal);
   const examModalOpenGlobal = useAppSelector(s => s.lobbyPage.examModalOpen);
@@ -54,6 +56,7 @@ export function LobbyPage() {
   const effectiveTopic = modal.isOpen ? modal.topic : currentTopic;
   const effectiveQuestion = modal.isOpen ? modal.question : currentQuestion;
   const effectiveQuestionId = modal.isOpen ? modal.questionId : currentQuestionId;
+  const effectiveMentorTip = modal.isOpen ? modal.mentor_tip : currentMentorTip;
 
   // УДАЛИТЬ: состояние для экзамена перенесено в ExamModal
 
@@ -77,19 +80,24 @@ export function LobbyPage() {
         setCurrentTopic(res.data.topic_title || "Без названия");
         setCurrentQuestion(res.data.question_text);
         setCurrentQuestionId(res.data.question_id);
+        setCurrentMentorTip(res.data.mentor_tip || null);
         setCurrentPointId(pointId);
         setIsModalOpen(true);
-        const payload = { questionId: res.data.question_id, topic: res.data.topic_title || "Без названия", question: res.data.question_text };
+        const payload = { 
+          questionId: res.data.question_id, 
+          topic: res.data.topic_title || "Без названия", 
+          question: res.data.question_text,
+          mentor_tip: res.data.mentor_tip || null
+        };
         dispatch(openModalAction(payload));
         sendOpenModal(payload);
       } else {
         // Для экзамена инициатор загружает вопросы и рассылает всем
         const res = await api.get("/api/exam/examQuestion", {
-          params: { phase_id: 1, count: 2 + incorrectAnswers },
+          params: { phase_id: 1, count: usersInLobby.length + incorrectAnswers },
           withCredentials: true,
         });
         const questions = res.data?.questions ?? [];
-        setIsExamModalOpen(true);
         dispatch(openExamModalAction());
         sendOpenExam({ questions });
       }
@@ -135,7 +143,6 @@ export function LobbyPage() {
   const handleExitLobby = () => navigate("/");
 
   const handleExamComplete = (correctAnswers: number, totalQuestions: number) => {
-    setIsExamModalOpen(false);
     dispatch(updatePointStatus({ pointId: "exam", status: "completed" }));
     sendExamComplete(correctAnswers, totalQuestions);
   };
@@ -179,9 +186,56 @@ export function LobbyPage() {
         setIsModalOpen(false);
         dispatch(closeModalAction());
       }, 3000);
-    } else {
-      console.log("Неправильный ответ, точка остается доступной");
+    } else if (currentPointId) {
+      // При неправильном ответе меняем роль, точка остается доступной для других игроков
+      console.log("Неправильный ответ, меняем роль, точка остается доступной");
+      sendAnswer(currentPointId, false);
+      // Закрываем модалку локально для отвечающего игрока через 3 секунды
+      setTimeout(() => {
+        setIsModalOpen(false);
+        dispatch(closeModalAction());
+      }, 3000);
     }
+  };
+
+  // Локальная обработка неправильного ответа без запроса к серверу
+  const handleLocalIncorrectAnswer = () => {
+    console.log("🔍 [CLIENT] handleLocalIncorrectAnswer вызван");
+    console.log("🔍 [CLIENT] currentPointId:", currentPointId);
+    console.log("🔍 [CLIENT] user?.id:", user?.id);
+    console.log("🔍 [CLIENT] activePlayerId:", activePlayerId);
+    
+    if (!currentPointId) {
+      console.log("❌ [CLIENT] currentPointId не установлен, не можем отправить неправильный ответ");
+      return;
+    }
+    
+    console.log("❌ [CLIENT] Локальная обработка неправильного ответа (пустой ответ или закрытие модалки)");
+    console.log("❌ [CLIENT] Отправляем sendAnswer с pointId:", currentPointId, "correct: false");
+    
+    // Сохраняем pointId перед отправкой
+    const pointIdToSend = currentPointId;
+    
+    // Отправляем неправильный ответ на сервер - он сам обновит счетчики и передаст ход
+    sendAnswer(pointIdToSend, false);
+    
+    // Отправляем событие закрытия модалки всем игрокам
+    console.log("🔒 [CLIENT] Отправляем событие закрытия модалки всем игрокам");
+    sendCloseModal();
+    
+    // Закрываем модалку локально
+    setTimeout(() => {
+      console.log("❌ [CLIENT] Закрываем модалку локально");
+      setIsModalOpen(false);
+      dispatch(closeModalAction());
+      setCurrentPointId(null);
+    }, 1000);
+  };
+
+  // Обработка timeout - отправка события всем игрокам
+  const handleTimeout = (pointId: string) => {
+    console.log("⏰ Отправляем timeout событие для точки:", pointId);
+    sendTimeout(pointId);
   };
 
   return (
@@ -199,6 +253,49 @@ export function LobbyPage() {
             onClick={openModal}
           />
         ))}
+        
+        {/* Модальные окна рендерятся внутри области карты */}
+         <QuestionModal
+           isOpen={effectiveIsOpen}
+           onClose={() => { setIsModalOpen(false); dispatch(closeModalAction()); }}
+           topic={effectiveTopic}
+           question={effectiveQuestion}
+           questionId={effectiveQuestionId}
+           pointId={currentPointId || undefined}
+           lobbyId={lobbyId}
+           onAnswerResult={handleAnswerResult}
+           onLocalIncorrectAnswer={handleLocalIncorrectAnswer}
+           onTimeout={handleTimeout}
+           currentUserId={user?.id ?? 0}
+           activePlayerId={activePlayerId}
+           activePlayerName={
+             usersInLobby.find(u => u.id === activePlayerId)?.username ?? ''
+           }
+           mentor_tip={effectiveMentorTip}
+           sharedResult={modalResult}
+         />
+
+        <ExamModal
+          isOpen={examModalOpenGlobal}
+          onClose={() => {
+            dispatch(closeExamModalAction());
+          }}
+          lobbyId={lobbyId}
+          currentUserId={user?.id ?? 0}
+          activePlayerId={activePlayerId}
+          activePlayerName={
+            usersInLobby.find(u => u.id === activePlayerId)?.username ?? ''
+          }
+          onExamComplete={handleExamComplete}
+          onLocalIncorrectAnswer={handleLocalIncorrectAnswer}
+          onTimeout={handleTimeout}
+          sharedResult={modalResult}
+          questions={useAppSelector(s => s.lobbyPage.examQuestions)}
+          onAdvance={(correct: boolean) => {
+            // Сообщаем серверу, был ли ответ правильным, чтобы он продвинул индекс
+            (sendExamAnswerProgress as any)?.(correct);
+          }}
+        />
       </div>
 
       <div className={styles.sidebar}>
@@ -297,40 +394,6 @@ export function LobbyPage() {
         </div>
       </div>
 
-      <QuestionModal
-        isOpen={effectiveIsOpen}
-        onClose={() => { setIsModalOpen(false); dispatch(closeModalAction()); }}
-        topic={effectiveTopic}
-        question={effectiveQuestion}
-        questionId={effectiveQuestionId}
-        lobbyId={lobbyId}
-        onAnswerResult={handleAnswerResult}
-        currentUserId={user?.id ?? 0}
-        activePlayerId={activePlayerId}
-        activePlayerName={
-          usersInLobby.find(u => u.id === activePlayerId)?.username ?? ''
-        }
-        sharedResult={modalResult}
-      />
-
-      <ExamModal
-        isOpen={isExamModalOpen || examModalOpenGlobal}
-        onClose={() => setIsExamModalOpen(false)}
-        lobbyId={lobbyId}
-        currentUserId={user?.id ?? 0}
-        activePlayerId={activePlayerId}
-        activePlayerName={
-          usersInLobby.find(u => u.id === activePlayerId)?.username ?? ''
-        }
-        incorrectAnswers={incorrectAnswers}
-        onExamComplete={handleExamComplete}
-        sharedResult={modalResult}
-        questions={useAppSelector(s => s.lobbyPage.examQuestions)}
-        onAdvance={() => {
-          // дергаем из сокет-хука
-          (sendExamAnswerProgress as any)?.();
-        }}
-      />
     </div>
   );
 }

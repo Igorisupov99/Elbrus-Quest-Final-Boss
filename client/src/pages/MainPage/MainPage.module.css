@@ -1,131 +1,425 @@
-:root{
-  --rpg-bg:#1c130b;
-  --rpg-surface:#24170e;
-  --rpg-surface-2:#2c1b10;
-  --rpg-border:#4f311b;
-  --rpg-text:#f7f4ef;
-  --rpg-muted:#c9b9a4;
-  --rpg-gold:#fefdf8;      /* same tone as header text */
-  --rpg-gold-2:#b8922d;
+:root {
+  --fantasy-bg: #d6b37a;
+  --fantasy-surface: #f5deb3;
+  --fantasy-surface-2: #fff8dc;
+  --fantasy-border: #8b5a2b;
+  --fantasy-text: #4b2e05;
+  --fantasy-muted: #5c3b09;
+  --fantasy-gold: #d4a017;
+  --fantasy-gold-2: #a97400;
+  --fantasy-accent: #6b3e15;
+}
+
+/* Main page container */
+.mainPage {
+  min-height: 100vh;
+  background: linear-gradient(135deg, #f4e1c1, #e6d2b5, #d8c3a5);
+  font-family: 'Cinzel', serif;
+  padding: 20px;
+  display: flex;
+  gap: 20px;
+  box-sizing: border-box;
+}
+
+/* Main content area */
+.mainContent {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+}
+
+/* Chat sidebar */
+.chatSidebar {
+  width: 340px;
+  display: flex;
+  flex-direction: column;
+  height: calc(100vh - 100px);
 }
 
 /* page title */
-.pageTitle{
-  color:var(--rpg-gold);
-  font-weight:800;
-  font-size:16px;        /* a bit smaller */
-  margin:14px 0 8px;
+.pageTitle {
+  color: var(--fantasy-text);
+  font-weight: 700;
+  font-size: 2rem;
+  margin: 0 0 20px 0;
+  text-align: center;
+  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.1);
+  letter-spacing: 1px;
 }
 
-.error{ color:#ef4444; margin:6px 0 10px; }
-
-/* rooms list — smaller + lighter */
-.rooms{
-  list-style:none;
-  padding:0;
-  margin:10px 0 18px;
-  display:grid;
-  gap:6px;
-}
-.roomRow{
-  display:flex;
-  align-items:center;
-  justify-content:space-between;
-  background:linear-gradient(180deg,var(--rpg-surface),var(--rpg-surface-2));
-  color:var(--rpg-muted);
-  border:1px solid var(--rpg-border);
-  border-radius:10px;          /* smaller radius */
-  padding:8px 10px;            /* tighter */
-  transition:transform 80ms ease, box-shadow 120ms ease, border-color 120ms ease, background 120ms ease;
-  box-shadow:0 6px 16px rgba(0,0,0,.22);
-}
-.roomRow:hover{
-  transform:translateY(-1px);
-  box-shadow:0 10px 20px rgba(0,0,0,.26);
-  border-color:var(--rpg-gold-2);
+.loading {
+  color: var(--fantasy-muted);
+  margin: 10px 0;
+  font-weight: 600;
+  text-align: center;
+  font-size: 1.1rem;
 }
 
-/* clickable room name — gold like header & a touch smaller/lighter */
-.roomItem{
-  cursor:pointer;
-  color:var(--rpg-gold);
-  font-weight:600;
-  font-size:14.5px;
-  letter-spacing:.2px;
-}
-.roomItem:hover{ text-decoration:underline; }
-
-/* edit/delete buttons — smaller */
-.actions{ display:flex; gap:6px; }
-.actions button{
-  appearance:none;
-  border:1px solid var(--rpg-border);
-  background:#20150d;
-  color:#bba989;
-  border-radius:8px;
-  padding:4px 7px;
-  font-size:12px;
-  cursor:pointer;
-  transition:background 120ms ease, border-color 120ms ease, transform 80ms ease;
-}
-.actions button:hover{
-  background:#2a1b10;
-  border-color:var(--rpg-gold-2);
-  color:var(--rpg-text);
-}
-.actions button:active{ transform:scale(.98); }
-
-/* create-room button — smaller */
-.createBtn{
-  appearance:none;
-  border:1px solid #8a6b1e;
-  background:linear-gradient(180deg,var(--rpg-gold),var(--rpg-gold-2));
-  color:#1b1208;
-  font-weight:700;
-  border-radius:10px;
-  padding:8px 12px;        /* tighter */
-  font-size:14px;
-  cursor:pointer;
-  box-shadow:0 5px 12px rgba(212,175,55,.22);
-  transition:transform 80ms ease, box-shadow 120ms ease, filter 120ms ease;
-}
-.createBtn:hover{
-  transform:translateY(-1px);
-  box-shadow:0 8px 16px rgba(212,175,55,.28);
-  filter:saturate(1.03);
+.error {
+  color: #d32f2f;
+  margin: 6px 0 10px;
+  font-weight: 600;
+  text-align: center;
 }
 
-/* ===== shared modal overlay kept the same for centering ===== */
-.modalOverlay{
-  position:fixed; inset:0;
-  background:rgba(0,0,0,.45);
-  backdrop-filter:blur(1.5px);
-  display:flex; align-items:center; justify-content:center;
-  z-index:1000; min-height:100dvh;
+/* rooms list — fantasy scroll */
+.rooms {
+  list-style: none;
+  padding: 0;
+  margin: 20px auto;
+  display: grid;
+  gap: 12px;
+  width: 100%;
+  max-width: 1200px;
 }
-.modalContent{
-  position:relative; width:min(520px,92vw); max-height:85vh; overflow:auto;
-  background:linear-gradient(180deg,var(--rpg-surface),var(--rpg-surface-2));
-  color:var(--rpg-text);
-  border:1px solid var(--rpg-border);
-  border-radius:16px; padding:18px 18px 22px;
-  box-shadow:0 28px 60px rgba(0,0,0,.45), 0 10px 22px rgba(0,0,0,.25);
-  animation:modal-pop 120ms ease-out;
+.roomRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: linear-gradient(
+    180deg,
+    var(--fantasy-surface),
+    var(--fantasy-surface-2)
+  );
+  color: var(--fantasy-text);
+  border: 2px solid var(--fantasy-border);
+  border-radius: 12px;
+  padding: 20px 24px;
+  transition: all 0.2s ease-in-out;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  position: relative;
+  overflow: hidden;
+  min-height: 60px;
 }
-@keyframes modal-pop{ from{ transform:translateY(6px); opacity:.92 } to{ transform:translateY(0); opacity:1 } }
-.closeBtn{
-  position:absolute; top:10px; right:12px; width:28px; height:28px;
-  border:1px solid var(--rpg-border); border-radius:999px;
-  background:#2a1b10; color:var(--rpg-text);
-  cursor:pointer; font-size:18px; line-height:1; display:grid; place-items:center;
-  transition:background-color 120ms ease, transform 80ms ease, border-color 120ms ease;
+.roomRow::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: linear-gradient(
+    90deg,
+    var(--fantasy-gold),
+    var(--fantasy-gold-2)
+  );
 }
-.closeBtn:hover{ background:#352214; border-color:var(--rpg-gold-2); transform:scale(1.03); }
-.closeBtn:active{ transform:scale(1); }
+.roomRow:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
+  border-color: var(--fantasy-gold);
+  background: linear-gradient(180deg, #fff8dc, #f5deb3);
+}
 
-.roomRow { cursor: pointer; }
+/* clickable room name — fantasy style */
+.roomItem {
+  cursor: pointer;
+  color: var(--fantasy-text);
+  font-weight: 700;
+  font-size: 1.3rem;
+  letter-spacing: 0.5px;
+  text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.1);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.roomItem:hover {
+  color: var(--fantasy-gold);
+  text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.2);
+}
+
+/* lock icon for password-protected rooms */
+.lockIcon {
+  font-size: 16px;
+  opacity: 0.8;
+  transition: all 0.2s ease;
+  filter: drop-shadow(1px 1px 2px rgba(0, 0, 0, 0.2));
+}
+.roomItem:hover .lockIcon {
+  opacity: 1;
+  transform: scale(1.1);
+}
+
+/* edit/delete buttons — fantasy style */
+.actions {
+  display: flex;
+  gap: 10px;
+}
+.actions button {
+  appearance: none;
+  border: 2px solid var(--fantasy-accent);
+  background: linear-gradient(
+    180deg,
+    var(--fantasy-gold),
+    var(--fantasy-gold-2)
+  );
+  color: #2c1810;
+  border-radius: 8px;
+  padding: 10px 14px;
+  font-size: 16px;
+  font-weight: bold;
+  cursor: pointer;
+  transition: all 0.2s ease-in-out;
+  box-shadow: 0 3px 6px rgba(0, 0, 0, 0.2);
+  text-shadow: 0 1px 0 #f3e0c0;
+  min-width: 40px;
+  min-height: 40px;
+}
+.actions button:hover {
+  background: linear-gradient(180deg, #f0c33b, #c48a00);
+  transform: translateY(-1px);
+  box-shadow: 0 5px 10px rgba(0, 0, 0, 0.3);
+}
+.actions button:active {
+  transform: translateY(1px);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+/* create-room button — fantasy style */
+.createBtn {
+  appearance: none;
+  border: 2px solid var(--fantasy-accent);
+  background: linear-gradient(
+    180deg,
+    var(--fantasy-gold),
+    var(--fantasy-gold-2)
+  );
+  color: #2c1810;
+  font-weight: bold;
+  font-size: 1.3rem;
+  border-radius: 12px;
+  padding: 16px 32px;
+  cursor: pointer;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+  transition: all 0.2s ease-in-out;
+  text-shadow: 0 1px 0 #f3e0c0;
+  letter-spacing: 0.5px;
+  display: block;
+  margin: 20px auto;
+  max-width: 250px;
+  min-height: 50px;
+  text-align: center;
+}
+.createBtn:hover {
+  background: linear-gradient(180deg, #f0c33b, #c48a00);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.3);
+}
+.createBtn:active {
+  transform: translateY(0);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+}
+
+/* ===== brown RPG modal overlay ===== */
+.modalOverlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.6);
+  backdrop-filter: blur(3px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  min-height: 100dvh;
+}
+.modalContent {
+  position: relative;
+  width: min(520px, 92vw);
+  max-height: 85vh;
+  overflow: auto;
+  background: linear-gradient(180deg, #24170e, #2c1b10);
+  color: #f7f4ef;
+  border: 2px solid #4f311b;
+  border-radius: 16px;
+  padding: 24px;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4), 0 8px 16px rgba(0, 0, 0, 0.3);
+  animation: modal-pop 0.3s ease-out;
+}
+@keyframes modal-pop {
+  from {
+    transform: translateY(20px) scale(0.95);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0) scale(1);
+    opacity: 1;
+  }
+}
+.closeBtn {
+  position: absolute;
+  top: 12px;
+  right: 16px;
+  width: 32px;
+  height: 32px;
+  border: 2px solid #4f311b;
+  border-radius: 50%;
+  background: #2a1b10;
+  color: #f7f4ef;
+  cursor: pointer;
+  font-size: 18px;
+  font-weight: bold;
+  line-height: 1;
+  display: grid;
+  place-items: center;
+  transition: all 0.2s ease;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
+}
+.closeBtn:hover {
+  background: #352214;
+  border-color: #b8922d;
+  transform: scale(1.1);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.4);
+}
+.closeBtn:active {
+  transform: scale(0.95);
+}
+
+.roomRow {
+  cursor: pointer;
+}
 .roomRow:focus-visible {
   outline: 2px solid var(--rpg-gold);
   outline-offset: 2px;
 }
-.actions button { cursor: pointer; }
+.actions button {
+  cursor: pointer;
+}
+
+/* ===== Chat styling (matching lobby page) ===== */
+.chat {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  background: #f5deb3; /* пергамент */
+  border-radius: 12px;
+  padding: 12px;
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.25);
+  min-height: 0; /* чтобы chatList не ломал высоту */
+}
+
+.chatTitle {
+  margin: 0 0 8px 0;
+  font-weight: 700;
+  color: #5c3d2e;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.connectionIndicator {
+  display: inline-block;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 30% 30%, #6df56d, #2d7a2d);
+  box-shadow: 0 0 6px #3ed93e, 0 0 10px rgba(62, 217, 62, 0.6);
+}
+
+.connectionIndicator.connecting {
+  background: radial-gradient(circle at 30% 30%, #ffa726, #f57c00);
+  box-shadow: 0 0 6px #ff9800, 0 0 10px rgba(255, 152, 0, 0.6);
+}
+
+.connectionIndicator.offline {
+  background: radial-gradient(circle at 30% 30%, #ff6b6b, #7a1f1f);
+  box-shadow: 0 0 6px #e63e3e, 0 0 10px rgba(230, 62, 62, 0.6);
+}
+
+.chatList {
+  flex: 1;
+  padding: 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  border: 1px solid rgba(0, 0, 0, 0.1);
+  border-radius: 8px;
+  background: rgba(255, 248, 220, 0.6);
+  overflow-y: auto; /* скролл только для сообщений */
+  min-height: calc(100vh - 320px);
+}
+
+.message {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 6px;
+  line-height: 1.35;
+  padding: 6px 10px;
+  border-radius: 8px;
+  background: #fff8dc;
+  color: #5c3d2e;
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  box-shadow: 1px 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.systemMessage {
+  align-self: center;
+  font-size: 0.85rem;
+  color: #7f8c8d;
+  font-style: italic;
+}
+
+.author {
+  font-weight: 700;
+  color: #8b4513;
+}
+
+.text {
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+.chatForm {
+  display: flex;
+  gap: 8px;
+  margin-top: 10px;
+  align-items: center;
+}
+
+.chatInput {
+  flex: 1;
+  height: 40px;
+  border-radius: 10px;
+  border: 1px solid rgba(0, 0, 0, 0.2);
+  background: #fffaf0;
+  outline: none;
+  padding: 0 12px;
+  color: #5c3d2e;
+  font-family: inherit;
+}
+
+.chatInput::placeholder {
+  color: #a0522d;
+}
+
+.sendButton {
+  background: linear-gradient(180deg, #d8a35d, #b0752d);
+  border: 2px solid #6b3e15;
+  border-radius: 8px;
+  padding: 10px 14px;
+  font-weight: bold;
+  font-size: 1rem;
+  color: #2c1810;
+  text-shadow: 0 1px 0 #f3e0c0;
+  box-shadow: 0 4px 0 #6b3e15, 0 6px 10px rgba(0, 0, 0, 0.25);
+  cursor: pointer;
+  transition: all 0.2s ease-in-out;
+  font-family: inherit;
+}
+
+.sendButton:hover {
+  background: linear-gradient(180deg, #e8b76d, #c6853d);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 0 #6b3e15, 0 8px 12px rgba(0, 0, 0, 0.3);
+}
+
+.sendButton:active {
+  transform: translateY(2px);
+  box-shadow: 0 2px 0 #6b3e15, 0 3px 6px rgba(0, 0, 0, 0.2);
+}
+
+.sendButton:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none;
+}

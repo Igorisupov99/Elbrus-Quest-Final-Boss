@@ -47,7 +47,7 @@ class QuestionController {
       const randomOffset = Math.floor(Math.random() * questionsCount);
       const randomQuestion = await Question.findOne({
         where: { topic_id: topicId },
-        attributes: ["question_text", "id"],
+        attributes: ["question_text", "id", "mentor_tip"],
         order: [["id", "ASC"]],
         offset: randomOffset,
         limit: 1,
@@ -61,6 +61,7 @@ class QuestionController {
         question_text: randomQuestion.question_text,
         question_id: randomQuestion.id,
         topic_title: topic.title,
+        mentor_tip: randomQuestion.mentor_tip,
       });
     } catch (error) {
       console.error("Ошибка на сервере:", error);
@@ -75,12 +76,12 @@ class QuestionController {
       const userId = req.user.id;
       const io = req.io;
 
-      if (!question_id || !answer) {
-        return res.status(400).json({ error: "Параметры question_id и answer обязательны" });
+      if (!question_id) {
+        return res.status(400).json({ error: "Параметр question_id обязателен" });
       }
 
       const question = await Question.findByPk(question_id, {
-        attributes: ["correct_answer"],
+        attributes: ["correct_answer", "question_text"],
       });
 
       if (!question) {
@@ -122,11 +123,34 @@ class QuestionController {
         }
 
         
-      } else if (lobby_id) {
-        // 👇 увеличиваем общий счётчик ошибок лобби
-        const current = incorrectAnswersMap.get(lobby_id) || 0;
-        incorrectAnswersCount = current + 1;
-        incorrectAnswersMap.set(lobby_id, incorrectAnswersCount);
+      } else {
+        // Неправильный ответ - вычитаем баллы
+        const penaltyPoints = 5; // Штраф за неправильный ответ
+        
+        updatedUser = await User.findByPk(userId);
+        if (updatedUser) {
+          updatedUser.score = Math.max(0, Number(updatedUser.score || 0) - penaltyPoints);
+          await updatedUser.save();
+        }
+
+        if (lobby_id) {
+          // 👇 увеличиваем общий счётчик ошибок лобби
+          const current = incorrectAnswersMap.get(lobby_id) || 0;
+          incorrectAnswersCount = current + 1;
+          incorrectAnswersMap.set(lobby_id, incorrectAnswersCount);
+          
+          // Вычитаем баллы из сессии лобби
+          updatedSession = await UserSession.findOne({
+            where: { user_id: userId, game_session_id: lobby_id },
+          });
+          if (updatedSession) {
+            updatedSession.score = Math.max(0, Number(updatedSession.score || 0) - penaltyPoints);
+            await updatedSession.save();
+          }
+          // Пересчитываем общий счёт лобби
+          const allSessions = await UserSession.findAll({ where: { game_session_id: lobby_id } });
+          lobbyTotalScore = allSessions.reduce((sum, s) => sum + Number(s.score || 0), 0);
+        }
       }
 
       if (lobby_id) {
@@ -151,21 +175,20 @@ class QuestionController {
         }
 
         if (!isCorrect) {
-          const currentUser = await User.findByPk(userId);
-          const allSessions = await UserSession.findAll({ where: { game_session_id: lobby_id } });
-          lobbyTotalScore = allSessions.reduce((sum, s) => sum + Number(s.score || 0), 0);
-
           io.of("/lobby").to(roomName).emit("lobby:incorrectAnswer", {
             userId,
-            userScore: currentUser?.score || 0,
+            userScore: updatedUser?.score || 0,
             sessionScore: lobbyTotalScore,
             incorrectAnswers: incorrectAnswersCount, // общий счётчик по лобби
+            correctAnswer: question.correct_answer, // Добавляем правильный ответ
+            message: `❌ Неправильный ответ! (-5 очков)`,
           });
         }
       }
 
       return res.json({
         correct: isCorrect,
+        correctAnswer: question.correct_answer, // Добавляем правильный ответ в ответ сервера
         scores: {
           userScore: updatedUser?.score || 0,
           sessionScore: lobbyTotalScore,
