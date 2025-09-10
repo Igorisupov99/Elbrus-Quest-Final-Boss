@@ -32,6 +32,9 @@ export function Header() {
           ) : user ? (
             <>
               <span className={styles.username}>Привет, {user.username}!</span>
+              <Link to="/achievements" className={styles.profileLink}>
+                🏆 Достижения
+              </Link>
               <Link to="/profile" className={styles.profileLink}>
                 Профиль
               </Link>

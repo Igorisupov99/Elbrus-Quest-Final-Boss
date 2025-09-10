@@ -9,6 +9,8 @@ import api from "../../api/axios";
 import { useLobbySocket } from "../../hooks/useLobbySocket";
 import { useAppDispatch, useAppSelector } from "../../store/hooks";
 import { updatePointStatus, mergeScores, openModal as openModalAction, closeModal as closeModalAction, openExamModal as openExamModalAction, closeExamModal as closeExamModalAction } from "../../store/lobbyPage/lobbySlice";
+import { AchievementNotification } from "../../components/Achievement/AchievementNotification/AchievementNotification";
+import type { Achievement } from "../../types/achievement";
 
 // УДАЛИТЬ: ExamQuestion перенесен в ExamModal
 
@@ -38,6 +40,7 @@ export function LobbyPage() {
 
   const [input, setInput] = useState("");
   const [mapNaturalSize, setMapNaturalSize] = useState<{ w: number; h: number } | null>(null);
+  const [achievementNotifications, setAchievementNotifications] = useState<Achievement[]>([]);
   useEffect(() => {
     const img = new Image();
     img.src = '/map.png';
@@ -160,6 +163,28 @@ export function LobbyPage() {
     const token = localStorage.getItem("accessToken");
     if (!token) { navigate("/login"); return; }
   }, [lobbyId, navigate]);
+
+  // Обработчик уведомлений о достижениях
+  useEffect(() => {
+    const handleAchievementReceived = (event: CustomEvent) => {
+      const { userId, achievements } = event.detail;
+      
+      // Показываем уведомления только для текущего пользователя
+      if (user && Number(userId) === Number(user.id)) {
+        setAchievementNotifications(achievements);
+      }
+    };
+
+    window.addEventListener('achievement:received', handleAchievementReceived as EventListener);
+    
+    return () => {
+      window.removeEventListener('achievement:received', handleAchievementReceived as EventListener);
+    };
+  }, [user]);
+
+  const handleCloseAchievementNotification = () => {
+    setAchievementNotifications([]);
+  };
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -416,6 +441,14 @@ export function LobbyPage() {
           </form>
         </div>
       </div>
+
+      {/* Уведомления о достижениях */}
+      {achievementNotifications.length > 0 && (
+        <AchievementNotification
+          achievements={achievementNotifications}
+          onClose={handleCloseAchievementNotification}
+        />
+      )}
 
     </div>
   );

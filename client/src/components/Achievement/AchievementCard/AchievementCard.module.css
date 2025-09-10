@@ -1,0 +1,143 @@
+.achievementCard {
+  background: linear-gradient(145deg, #ffffff, #f5f5f5);
+  border-radius: 12px;
+  padding: 16px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  transition: all 0.3s ease;
+  position: relative;
+  overflow: hidden;
+  border: 2px solid transparent;
+}
+
+.achievementCard:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.15);
+}
+
+.earned {
+  border-color: #10b981;
+  background: linear-gradient(145deg, #ecfdf5, #d1fae5);
+}
+
+.earned::before {
+  content: "";
+  position: absolute;
+  top: -2px;
+  right: -2px;
+  width: 20px;
+  height: 20px;
+  background: #10b981;
+  clip-path: polygon(0 0, 100% 0, 100% 100%);
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 8px;
+}
+
+.icon {
+  font-size: 32px;
+  width: 48px;
+  height: 48px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.8);
+  backdrop-filter: blur(4px);
+}
+
+.titleContainer {
+  flex: 1;
+}
+
+.title {
+  font-size: 16px;
+  font-weight: 700;
+  margin: 0;
+  color: #1f2937;
+}
+
+.points {
+  font-size: 12px;
+  font-weight: 600;
+  color: #059669;
+  margin: 0;
+}
+
+.description {
+  font-size: 14px;
+  color: #6b7280;
+  margin: 0 0 12px 0;
+  line-height: 1.4;
+}
+
+.footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 8px;
+}
+
+.category {
+  font-size: 12px;
+  padding: 4px 8px;
+  border-radius: 12px;
+  background: #f3f4f6;
+  color: #374151;
+  font-weight: 500;
+}
+
+.rarity {
+  font-size: 12px;
+  padding: 4px 8px;
+  border-radius: 12px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.rarity.common {
+  background: #f3f4f6;
+  color: #6b7280;
+}
+
+.rarity.rare {
+  background: #dbeafe;
+  color: #3b82f6;
+}
+
+.rarity.epic {
+  background: #ede9fe;
+  color: #8b5cf6;
+}
+
+.rarity.legendary {
+  background: #fef3c7;
+  color: #f59e0b;
+}
+
+.earnedDate {
+  font-size: 11px;
+  color: #10b981;
+  font-weight: 500;
+  margin-top: 4px;
+}
+
+.notEarned {
+  opacity: 0.6;
+}
+
+.notEarned .icon {
+  filter: grayscale(100%);
+}
+
+.checkmark {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  color: #10b981;
+  font-size: 16px;
+}

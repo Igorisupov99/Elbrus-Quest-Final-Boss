@@ -50,6 +50,19 @@ module.exports = (sequelize, DataTypes) => {
         otherKey: 'user_id',
         as: 'friend_of'
       });
+
+      // Связи для достижений
+      User.belongsToMany(models.Achievement, {
+        through: models.UserAchievement,
+        foreignKey: 'user_id',
+        otherKey: 'achievement_id',
+        as: 'achievements'
+      });
+
+      User.hasMany(models.UserAchievement, {
+        foreignKey: 'user_id',
+        as: 'user_achievements'
+      });
     }
   }
   User.init({
