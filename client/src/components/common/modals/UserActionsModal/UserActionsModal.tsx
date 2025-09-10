@@ -14,7 +14,7 @@ export default function UserActionsModal({
   isOpen,
   onClose,
   username,
-  onGoToProfile,
+  //onGoToProfile,
   onAddFriend,
 }: UserActionsModalProps) {
   const [isProfileModalOpen, setIsProfileModalOpen] = useState(false);
