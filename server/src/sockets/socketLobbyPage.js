@@ -181,12 +181,18 @@ function initLobbySockets(nsp) {
     // инициализация точек
     if (!lobbyPoints.has(lobbyId)) {
       lobbyPoints.set(lobbyId, [
-      { id: '1', status: 'available', phase_id: 1, topic_id: 1 },
-      { id: '2', status: 'available', phase_id: 1, topic_id: 2 },
-      { id: '3', status: 'available', phase_id: 1, topic_id: 3 },
-      { id: '4', status: 'available', phase_id: 1, topic_id: 4 },
-      { id: 'exam', status: 'available', phase_id: 1, topic_id: 4 },
-    ]);
+        { id: '1', status: 'available', phase_id: 1, topic_id: 1 },
+        { id: '2', status: 'available', phase_id: 1, topic_id: 2 },
+        { id: '3', status: 'available', phase_id: 1, topic_id: 3 },
+        { id: '4', status: 'available', phase_id: 1, topic_id: 4 },
+        { id: 'exam', status: 'locked', phase_id: 1, topic_id: 0 },
+        // Фаза 2 (заблокировано до завершения экзамена 1)
+        { id: '5', status: 'locked', phase_id: 2, topic_id: 6 },
+        { id: '6', status: 'locked', phase_id: 2, topic_id: 7 },
+        { id: '7', status: 'locked', phase_id: 2, topic_id: 8 },
+        { id: '8', status: 'locked', phase_id: 2, topic_id: 9 },
+        { id: 'exam2', status: 'locked', phase_id: 2, topic_id: 0 },
+      ]);
     }
     socket.emit('lobby:initPoints', lobbyPoints.get(lobbyId));
 
@@ -378,7 +384,8 @@ function initLobbySockets(nsp) {
     socket.on('lobby:openExam', (payload) => {
       try {
         const questions = payload?.questions || [];
-        lobbyExamState.set(lobbyId, { questions, index: 0 });
+        const examId = payload?.examId === 'exam2' ? 'exam2' : 'exam';
+        lobbyExamState.set(lobbyId, { questions, index: 0, examId });
         nsp.to(roomKey).emit('lobby:examStart', { questions, index: 0 });
       } catch (err) {
         console.error('Ошибка в lobby:openExam:', err);
@@ -404,10 +411,27 @@ function initLobbySockets(nsp) {
             // Обновим точку экзамена как выполненную и известим всех
             const points = lobbyPoints.get(lobbyId);
             if (points) {
-              const examPoint = points.find((p) => p.id === 'exam');
+              const examKey = state.examId === 'exam2' ? 'exam2' : 'exam';
+              const examPoint = points.find((p) => p.id === examKey);
               if (examPoint) examPoint.status = 'completed';
+              if (examKey === 'exam') {
+                // Разблокируем темы фазы 2 только после первого экзамена
+                points.forEach(p => {
+                  if (p.phase_id === 2 && p.id !== 'exam2' && p.status === 'locked') {
+                    p.status = 'available';
+                  }
+                });
+              }
             }
-            nsp.to(roomKey).emit('lobby:updatePointStatus', { pointId: 'exam', status: 'completed' });
+            const examKey = state.examId === 'exam2' ? 'exam2' : 'exam';
+            nsp.to(roomKey).emit('lobby:updatePointStatus', { pointId: examKey, status: 'completed' });
+            // Разослать новые статусы по фазе 2
+            const updatedPoints = lobbyPoints.get(lobbyId) || [];
+            updatedPoints.forEach(p => {
+              if (p.phase_id === 2 && p.id !== 'exam2') {
+                nsp.to(roomKey).emit('lobby:updatePointStatus', { pointId: p.id, status: p.status });
+              }
+            });
             nsp.to(roomKey).emit('lobby:examComplete');
             // На всякий случай синхронно закроем любые открытые модалки
             nsp.to(roomKey).emit('lobby:closeModal');

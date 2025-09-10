@@ -54,8 +54,8 @@ export const initialState: LobbyState = {
     {
       id: "1",
       title: "Тема 1",
-      top: 81,
-      left: 32.3,
+      top: 49,
+      left: 38,
       status: "available",
       phaseId: 1,
       topicId: 1
@@ -63,8 +63,8 @@ export const initialState: LobbyState = {
     {
       id: "2",
       title: "Тема 2",
-      top: 70.5,
-      left: 32,
+      top: 56,
+      left: 35,
       status: "available",
       phaseId: 1,
       topicId: 2
@@ -72,7 +72,7 @@ export const initialState: LobbyState = {
     {
       id: "3",
       title: "Тема 3",
-      top: 65,
+      top: 62,
       left: 26.5,
       status: "available",
       phaseId: 1,
@@ -81,8 +81,8 @@ export const initialState: LobbyState = {
     {
       id: "4",
       title: "Тема 4",
-      top: 55,
-      left: 36,
+      top: 69,
+      left: 33,
       status: "available",
       phaseId: 1,
       topicId: 4
@@ -90,10 +90,56 @@ export const initialState: LobbyState = {
     {
       id: "exam",
       title: "Экзамен",
-      top: 90,
-      left: 24,
+      top: 77,
+      left: 32.8,
       status: "locked",
       phaseId: 1,
+      topicId: 0
+    },
+    // Фаза 2 — четыре точки и экзамен 2 (изначально заблокированы)
+    {
+      id: "5",
+      title: "Тема 5",
+      top: 83,
+      left: 24,
+      status: "locked",
+      phaseId: 2,
+      topicId: 6
+    },
+    {
+      id: "6",
+      title: "Тема 6",
+      top: 90.5,
+      left: 30,
+      status: "locked",
+      phaseId: 2,
+      topicId: 7
+    },
+    {
+      id: "7",
+      title: "Тема 7",
+      top: 95.47,
+      left: 42,
+      status: "locked",
+      phaseId: 2,
+      topicId: 8
+    },
+    {
+      id: "8",
+      title: "Тема 8",
+      top: 95.4,
+      left: 57,
+      status: "locked",
+      phaseId: 2,
+      topicId: 9
+    },
+    {
+      id: "exam2",
+      title: "Экзамен 2",
+      top: 87,
+      left: 56.44,
+      status: "locked",
+      phaseId: 2,
       topicId: 0
     }
   ],

@@ -226,7 +226,7 @@ export function useLobbySocket(lobbyId: number) {
   const sendOpenModal = (payload: { questionId: number; topic: string; question: string }) => {
     socketClient.socket.emit("lobby:openModal", payload);
   };
-  const sendOpenExam = (payload?: { questions?: any[] }) => {
+  const sendOpenExam = (payload?: { questions?: any[]; examId?: string }) => {
     socketClient.socket.emit("lobby:openExam", payload ?? {});
   };
   const sendExamAnswerProgress = (correct?: boolean) => {
