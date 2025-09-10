@@ -18,12 +18,17 @@ html, body {
   position: relative;
   border-radius: 16px;
   box-shadow: 0 6px 16px rgba(0, 0, 0, 0.25);
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  display: block;
   overflow: hidden;
+  /* aspect-ratio задаётся инлайн-стилем по фактическому naturalWidth/Height */
+  max-width: 100%;
+  margin: 0;
   /* Для правильного позиционирования модальных окон */
   isolation: isolate;
+  background-image: url('/map.png');
+  background-repeat: no-repeat;
+  background-position: top left;
+  background-size: 100% 100%;
 }
 
 .sidebar {
@@ -152,12 +157,7 @@ html, body {
   cursor: pointer;
 }
 
-.gameMap {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  border-radius: 12px;
-}
+/* Картинка карты больше не используется как <img>, рендерится как фон */
 
 .connectionIndicator {
   display: inline-block;

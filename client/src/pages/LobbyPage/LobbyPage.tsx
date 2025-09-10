@@ -38,6 +38,16 @@ export function LobbyPage() {
   } = useLobbySocket(lobbyId);
 
   const [input, setInput] = useState("");
+  const [mapNaturalSize, setMapNaturalSize] = useState<{ w: number; h: number } | null>(null);
+  useEffect(() => {
+    const img = new Image();
+    img.src = '/map.png';
+    img.onload = () => {
+      if (img.naturalWidth && img.naturalHeight) {
+        setMapNaturalSize({ w: img.naturalWidth, h: img.naturalHeight });
+      }
+    };
+  }, []);
   const listRef = useRef<HTMLDivElement | null>(null);
 
   // локальная модалка (для обратной совместимости). Также используем redux.modal для синхронизации через сокет
@@ -260,8 +270,10 @@ export function LobbyPage() {
 
   return (
     <div className={styles.lobbyPage}>
-      <div className={styles.gameArea}>
-        <img src="/map.png" alt="Игровая карта" className={styles.gameMap} />
+      <div
+        className={styles.gameArea}
+        style={mapNaturalSize ? ({ aspectRatio: `${mapNaturalSize.w} / ${mapNaturalSize.h}` } as React.CSSProperties) : undefined}
+      >
         {points.map(point => (
           <Point
             key={point.id}

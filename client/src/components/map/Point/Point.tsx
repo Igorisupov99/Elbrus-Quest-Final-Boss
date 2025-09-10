@@ -60,9 +60,6 @@ export const Point = memo(function Point({
         <span className={styles.marker} />
       )}
       
-      {status === 'locked' && (
-        <span className={styles.lockIcon}>🔒</span>
-      )}
       {/* <span className={styles.badge}>{title}</span> */}
     </button>
   );
