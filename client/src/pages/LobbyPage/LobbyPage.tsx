@@ -30,7 +30,6 @@ export function LobbyPage() {
     sendChatMessage,
     sendAnswer,
     sendTimeout,
-    sendExamComplete,
     sendOpenModal,
     sendOpenExam,
     sendExamAnswerProgress,
@@ -172,10 +171,6 @@ export function LobbyPage() {
 
   const handleExitLobby = () => navigate("/");
 
-  const handleExamComplete = (correctAnswers: number, totalQuestions: number) => {
-    dispatch(updatePointStatus({ pointId: "exam", status: "completed" }));
-    sendExamComplete(correctAnswers, totalQuestions);
-  };
 
   const handleAnswerResult = (correct: boolean, scores: any) => {
     // Если сервер ничего не прислал про очки, не трогаем текущие значения
@@ -318,10 +313,6 @@ export function LobbyPage() {
           activePlayerName={
             usersInLobby.find(u => u.id === activePlayerId)?.username ?? ''
           }
-          onExamComplete={handleExamComplete}
-          onLocalIncorrectAnswer={handleLocalIncorrectAnswer}
-          onTimeout={handleTimeout}
-          sharedResult={modalResult}
           questions={useAppSelector(s => s.lobbyPage.examQuestions)}
           onAdvance={(correct: boolean) => {
             // Сообщаем серверу, был ли ответ правильным, чтобы он продвинул индекс
