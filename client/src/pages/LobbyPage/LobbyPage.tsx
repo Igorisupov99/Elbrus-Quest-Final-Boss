@@ -42,11 +42,19 @@ export function LobbyPage() {
     sendIncorrectCountUpdate,
     sendCorrectAnswer,
     sendPassTurnNotification,
-  } = useLobbySocket(lobbyId);
+    sendAnswerInput,
+    sendExamAnswerInput,
+  } = useLobbySocket(
+    lobbyId,
+    (answer: string) => setSyncedAnswer(answer),
+    (answer: string) => setSyncedExamAnswer(answer)
+  );
 
   const [input, setInput] = useState("");
   const [mapNaturalSize, setMapNaturalSize] = useState<{ w: number; h: number } | null>(null);
   const [currentPointId, setCurrentPointId] = useState<string | null>(null);
+  const [syncedAnswer, setSyncedAnswer] = useState("");
+  const [syncedExamAnswer, setSyncedExamAnswer] = useState("");
   
   const modal = useAppSelector(s => s.lobbyPage.modal);
   const examModalOpenGlobal = useAppSelector(s => s.lobbyPage.examModalOpen);
@@ -148,6 +156,7 @@ export function LobbyPage() {
     if (!token) { navigate("/login"); return; }
   }, [lobbyId, navigate]);
 
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     const text = input.trim();
@@ -163,7 +172,7 @@ export function LobbyPage() {
     sendExamComplete(correctAnswers, totalQuestions);
   };
 
-  const handleAnswerResult = (correct: boolean, scores: any) => {
+  const handleAnswerResult = (correct: boolean, scores: any, answer?: string) => {
     if (correct && scores) {
       // При правильном ответе обновляем очки из сервера
       const nested = (scores as any)?.scores;
@@ -193,7 +202,7 @@ export function LobbyPage() {
     
     if (correct && currentPointId) {
       dispatch(updatePointStatus({ pointId: currentPointId, status: "completed" }));
-      sendAnswer(currentPointId, true);
+      sendAnswer(currentPointId, true, answer);
       
       // Отправляем уведомление о правильном ответе всем игрокам
       sendCorrectAnswer();
@@ -321,6 +330,12 @@ export function LobbyPage() {
            }
            mentor_tip={modal.mentor_tip}
            sharedResult={modalResult}
+           onAnswerSync={(answer: string, activePlayerName: string) => {
+             // Синхронизируем ответ активного игрока
+             console.log('🔄 Синхронизация ответа:', { answer, activePlayerName });
+             sendAnswerInput(answer, activePlayerName);
+           }}
+           syncedAnswer={syncedAnswer}
          />
 
         <ExamModal
@@ -339,14 +354,20 @@ export function LobbyPage() {
           onTimeout={handleTimeout}
           sharedResult={modalResult}
           questions={useAppSelector(s => s.lobbyPage.examQuestions)}
-          onAdvance={(correct: boolean, isTimeout?: boolean) => {
+          onAdvance={(correct: boolean, isTimeout?: boolean, answer?: string) => {
             // Сообщаем серверу, был ли ответ правильным, чтобы он продвинул индекс
-            (sendExamAnswerProgress as any)?.(correct, isTimeout);
+            (sendExamAnswerProgress as any)?.(correct, isTimeout, answer);
           }}
           onTimerReset={(timeLeft: number) => {
             // Синхронизируем таймер при получении события с сервера
             console.log('⏰ Синхронизация таймера:', timeLeft);
           }}
+          onAnswerSync={(answer: string, activePlayerName: string) => {
+            // Синхронизируем ответ активного игрока
+            console.log('🔄 Синхронизация ответа:', { answer, activePlayerName });
+            sendExamAnswerInput(answer, activePlayerName);
+          }}
+          syncedAnswer={syncedExamAnswer}
         />
 
         <PhaseTransitionModal

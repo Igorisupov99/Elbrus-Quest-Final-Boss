@@ -17,11 +17,14 @@ interface QuestionModalProps {
   mentor_tip?: string | null;     // 👈 подсказка от ментора
   onAnswerResult?: (
     correct: boolean,
-    scores?: { userScore?: number; sessionScore?: number; incorrectAnswers?: number }
+    scores?: { userScore?: number; sessionScore?: number; incorrectAnswers?: number },
+    answer?: string
   ) => void;
   onCloseModal?: () => void;
   onTimeoutClose?: () => void;
   sharedResult?: string | null;
+  onAnswerSync?: (answer: string, activePlayerName: string) => void;
+  syncedAnswer?: string;          // 👈 синхронизированный ввод от активного игрока
 }
 
 export function QuestionModal({
@@ -39,6 +42,8 @@ export function QuestionModal({
   onCloseModal,
   onTimeoutClose,
   sharedResult,
+  onAnswerSync,
+  syncedAnswer,
 }: QuestionModalProps) {
   const [answer, setAnswer] = useState("");
   const [loading, setLoading] = useState(false);
@@ -105,7 +110,33 @@ export function QuestionModal({
     }
   }, [isOpen, loading]);
 
+  // Синхронизация ответа активного игрока
+  useEffect(() => {
+    if (onAnswerSync) {
+      // Здесь можно добавить слушатель события, если нужно
+      // Пока просто используем пропс для синхронизации
+    }
+  }, [onAnswerSync]);
+
+  // Синхронизация ввода от активного игрока
+  useEffect(() => {
+    if (syncedAnswer !== undefined && Number(currentUserId) !== Number(activePlayerId)) {
+      // Обновляем ввод только для неактивных игроков
+      setAnswer(syncedAnswer);
+    }
+  }, [syncedAnswer, currentUserId, activePlayerId]);
+
   if (!isOpen) return null;
+
+  const handleAnswerChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const newAnswer = e.target.value;
+    setAnswer(newAnswer);
+    
+    // Отправляем изменения инпута через сокет, если это активный игрок
+    if (Number(currentUserId) === Number(activePlayerId) && onAnswerSync) {
+      onAnswerSync(newAnswer, activePlayerName);
+    }
+  };
 
   const handleSubmit = async () => {
     if (!questionId || answerSubmitted) return;
@@ -130,7 +161,7 @@ export function QuestionModal({
           userScore: s.userScore ?? s.user_score ?? s.total ?? s.value,
           sessionScore: s.sessionScore ?? s.session_score ?? s.session ?? s.value,
           incorrectAnswers: s.incorrectAnswers ?? s.incorrect_answers,
-        });
+        }, answer);
       } else {
         // При неправильном ответе НЕ останавливаем таймер - модалка должна остаться открытой до истечения времени
         // Таймер продолжает работать, модалка закроется автоматически по истечении времени
@@ -229,34 +260,33 @@ export function QuestionModal({
               </div>
             )}
 
-            {Number(currentUserId) === Number(activePlayerId) ? (
-              <>
-                <input
-                  type="text"
-                  className={styles.input}
-                  placeholder="Ваш ответ... (пустой ответ = неправильный)"
-                  value={answer}
-                  onChange={(e) => setAnswer(e.target.value)}
-                  disabled={loading}
-                />
+            <input
+              type="text"
+              className={styles.input}
+              placeholder={
+                Number(currentUserId) === Number(activePlayerId)
+                  ? "Ваш ответ... (пустой ответ = неправильный)"
+                  : `Отвечает ${activePlayerName}...`
+              }
+              value={answer}
+              onChange={handleAnswerChange}
+              disabled={loading || Number(currentUserId) !== Number(activePlayerId)}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' && !e.shiftKey && Number(currentUserId) === Number(activePlayerId)) {
+                  e.preventDefault();
+                  handleSubmit();
+                }
+              }}
+            />
 
-                <div className={styles.actions}>
-                  <Button onClick={handleClose}>Закрыть</Button>
-                  <Button onClick={handleSubmit} disabled={loading || answerSubmitted}>
-                    {answerSubmitted ? 'Ответ отправлен' : 'Отправить'}
-                  </Button>
-                </div>
-              </>
-            ) : (
-              <div className={styles.waitingBlock}>
-                <p className={styles.waiting}>
-                  Сейчас отвечает <strong>{activePlayerName}</strong>
-                </p>
-                <div className={styles.actions}>
-                  <Button onClick={handleClose}>Закрыть</Button>
-                </div>
-              </div>
-            )}
+            <div className={styles.actions}>
+              <Button onClick={handleClose}>Закрыть</Button>
+              {Number(currentUserId) === Number(activePlayerId) && (
+                <Button onClick={handleSubmit} disabled={loading || answerSubmitted}>
+                  {answerSubmitted ? 'Ответ отправлен' : 'Отправить'}
+                </Button>
+              )}
+            </div>
           </>
         )}
       </div>

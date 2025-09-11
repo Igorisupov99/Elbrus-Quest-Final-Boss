@@ -9,7 +9,7 @@ import {
   updatePointStatus,
 } from "../store/lobbyPage/lobbySlice";
 
-export function useLobbySocket(lobbyId: number) {
+export function useLobbySocket(lobbyId: number, onAnswerInputSync?: (answer: string) => void, onExamAnswerInputSync?: (answer: string) => void) {
   const dispatch = useAppDispatch();
   const token = localStorage.getItem("accessToken");
   const { user } = useAppSelector((state: RootState) => state.auth);
@@ -217,6 +217,30 @@ export function useLobbySocket(lobbyId: number) {
       }, 2000);
     };
 
+    const onExamAnswerSync = (payload: { answer: string; activePlayerName: string }) => {
+      console.log('🔄 [EXAM] Синхронизация ответа:', payload);
+      // Это событие будет обработано в ExamModal через пропсы
+    };
+
+    const onAnswerSync = (payload: { answer: string; activePlayerName: string }) => {
+      console.log('🔄 [QUESTION] Синхронизация ответа:', payload);
+      // Это событие будет обработано в QuestionModal через пропсы
+    };
+
+    const onAnswerInput = (payload: { answer: string; activePlayerName: string }) => {
+      console.log('🔄 [QUESTION] Синхронизация ввода:', payload);
+      if (onAnswerInputSync) {
+        onAnswerInputSync(payload.answer);
+      }
+    };
+
+    const onExamAnswerInput = (payload: { answer: string; activePlayerName: string }) => {
+      console.log('🔄 [EXAM] Синхронизация ввода:', payload);
+      if (onExamAnswerInputSync) {
+        onExamAnswerInputSync(payload.answer);
+      }
+    };
+
     const onExamTimerReset = (payload: { timeLeft: number }) => {
       // Синхронизируем таймер для всех игроков
       // Это событие будет обработано в ExamModal через пропсы
@@ -262,6 +286,10 @@ export function useLobbySocket(lobbyId: number) {
     socket.on("lobby:examReward", onExamReward);
     socket.on("lobby:examFailed", onExamFailed);
     socket.on("lobby:examIncorrectAnswer", onExamIncorrectAnswer);
+    socket.on("lobby:examAnswerSync", onExamAnswerSync);
+    socket.on("lobby:answerSync", onAnswerSync);
+    socket.on("lobby:answerInput", onAnswerInput);
+    socket.on("lobby:examAnswerInput", onExamAnswerInput);
     socket.on("lobby:examTimerReset", onExamTimerReset);
     socket.on("lobby:timeout", onTimeout);
     socket.on("lobby:passTurnNotification", onPassTurnNotification);
@@ -293,6 +321,10 @@ export function useLobbySocket(lobbyId: number) {
       socket.off("lobby:examNext", onExamNext);
       socket.off("lobby:examComplete", onExamComplete);
       socket.off("lobby:examReward", onExamReward);
+      socket.off("lobby:examAnswerSync", onExamAnswerSync);
+      socket.off("lobby:answerSync", onAnswerSync);
+      socket.off("lobby:answerInput", onAnswerInput);
+      socket.off("lobby:examAnswerInput", onExamAnswerInput);
       socket.off("lobby:examTimerReset", onExamTimerReset);
       socket.off("lobby:closeModal", onCloseModal);
       socket.disconnect();
@@ -304,8 +336,8 @@ export function useLobbySocket(lobbyId: number) {
     socketClient.socket.emit("chat:message", { text });
   };
 
-  const sendAnswer = (pointId: string, correct: boolean) => {
-    socketClient.socket.emit("lobby:answer", { lobbyId, pointId, correct });
+  const sendAnswer = (pointId: string, correct: boolean, answer?: string) => {
+    socketClient.socket.emit("lobby:answer", { lobbyId, pointId, correct, answer });
   };
 
   const sendTimeout = (pointId: string) => {
@@ -322,8 +354,12 @@ export function useLobbySocket(lobbyId: number) {
   const sendOpenExam = (payload?: { questions?: any[]; examId?: string }) => {
     socketClient.socket.emit("lobby:openExam", payload ?? {});
   };
-  const sendExamAnswerProgress = (correct?: boolean, isTimeout?: boolean) => {
-    socketClient.socket.emit("lobby:examAnswer", { correct: Boolean(correct), isTimeout: Boolean(isTimeout) });
+  const sendExamAnswerProgress = (correct?: boolean, isTimeout?: boolean, answer?: string) => {
+    socketClient.socket.emit("lobby:examAnswer", { 
+      correct: Boolean(correct), 
+      isTimeout: Boolean(isTimeout),
+      answer: answer 
+    });
   };
 
   const sendCloseModal = () => {
@@ -350,6 +386,14 @@ export function useLobbySocket(lobbyId: number) {
     socketClient.socket.emit("lobby:passTurnNotification");
   };
 
+  const sendAnswerInput = (answer: string, activePlayerName: string) => {
+    socketClient.socket.emit("lobby:answerInput", { answer, activePlayerName });
+  };
+
+  const sendExamAnswerInput = (answer: string, activePlayerName: string) => {
+    socketClient.socket.emit("lobby:examAnswerInput", { answer, activePlayerName });
+  };
+
   return {
     history,
     connected,
@@ -368,5 +412,7 @@ export function useLobbySocket(lobbyId: number) {
     sendIncorrectCountUpdate,
     sendCorrectAnswer,
     sendPassTurnNotification,
+    sendAnswerInput,
+    sendExamAnswerInput,
   };
 };

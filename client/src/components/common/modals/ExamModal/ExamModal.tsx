@@ -23,8 +23,10 @@ interface ExamModalProps {
   onTimeout?: (pointId: string) => void;
   sharedResult?: string | null;
   questions?: ExamQuestion[];
-  onAdvance?: (correct: boolean, isTimeout?: boolean) => void;
+  onAdvance?: (correct: boolean, isTimeout?: boolean, answer?: string) => void;
   onTimerReset?: (timeLeft: number) => void;
+  onAnswerSync?: (answer: string, activePlayerName: string) => void;
+  syncedAnswer?: string;          // 👈 синхронизированный ввод от активного игрока
 }
 
 export function ExamModal({
@@ -41,6 +43,8 @@ export function ExamModal({
   questions,
   onAdvance,
   onTimerReset,
+  onAnswerSync,
+  syncedAnswer,
 }: ExamModalProps) {
   // Для отправки прогресса экзамена (следующий вопрос) используем хук сокета через пропсы не получаем, поэтому просто импорт нельзя использовать напрямую.
   const dispatch = useAppDispatch();
@@ -142,7 +146,37 @@ export function ExamModal({
     }
   }, [onTimerReset]);
 
+  // Синхронизация ответа активного игрока
+  useEffect(() => {
+    if (onAnswerSync) {
+      const handleAnswerSync = (answer: string, activePlayerName: string) => {
+        setAnswer(answer);
+      };
+      
+      // Здесь можно добавить слушатель события, если нужно
+      // Пока просто используем пропс для синхронизации
+    }
+  }, [onAnswerSync]);
+
+  // Синхронизация ввода от активного игрока
+  useEffect(() => {
+    if (syncedAnswer !== undefined && Number(currentUserId) !== Number(activePlayerId)) {
+      // Обновляем ввод только для неактивных игроков
+      setAnswer(syncedAnswer);
+    }
+  }, [syncedAnswer, currentUserId, activePlayerId]);
+
   // Загрузка перенесена в инициатора и рассылается по сокету
+
+  const handleAnswerChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const newAnswer = e.target.value;
+    setAnswer(newAnswer);
+    
+    // Отправляем изменения инпута через сокет, если это активный игрок
+    if (Number(currentUserId) === Number(activePlayerId) && onAnswerSync) {
+      onAnswerSync(newAnswer, activePlayerName);
+    }
+  };
 
   const handleSubmit = async () => {
     if (!currentQuestion) return;
@@ -168,12 +202,12 @@ export function ExamModal({
         // Убираем локальное уведомление - оно будет показано через сокет всем игрокам
         // Переходим к следующему вопросу или завершаем экзамен
         // Сообщаем серверу, что ответ правильный, чтобы он продвинул индекс и/или завершил экзамен
-        onAdvance?.(true);
+        onAdvance?.(true, false, answer);
       } else {
         // Убираем локальное уведомление - оно будет показано через сокет всем игрокам
         setCorrectAnswer(res.data.correctAnswer);
         // При неправильном ответе не продвигаем индекс, просто передаём ход следующему игроку
-        onAdvance?.(false, false);
+        onAdvance?.(false, false, answer);
       }
       
     } catch (err) {
@@ -256,34 +290,33 @@ export function ExamModal({
               </div>
             )}
 
-            {Number(currentUserId) === Number(activePlayerId) ? (
-              <>
-                <input
-                  type="text"
-                  className={styles.input}
-                  placeholder="Ваш ответ... (пустой ответ = неправильный)"
-                  value={answer}
-                  onChange={(e) => setAnswer(e.target.value)}
-                  disabled={loading}
-                />
+            <input
+              type="text"
+              className={styles.input}
+              placeholder={
+                Number(currentUserId) === Number(activePlayerId)
+                  ? "Ваш ответ... (пустой ответ = неправильный)"
+                  : `Отвечает ${activePlayerName}...`
+              }
+              value={answer}
+              onChange={handleAnswerChange}
+              disabled={loading || Number(currentUserId) !== Number(activePlayerId)}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' && !e.shiftKey && Number(currentUserId) === Number(activePlayerId)) {
+                  e.preventDefault();
+                  handleSubmit();
+                }
+              }}
+            />
 
-                <div className={styles.actions}>
-                  <Button onClick={handleClose}>Закрыть</Button>
-                  <Button onClick={handleSubmit} disabled={loading}>
-                    Отправить
-                  </Button>
-                </div>
-              </>
-            ) : (
-              <div className={styles.waitingBlock}>
-                <p className={styles.waiting}>
-                  Сейчас отвечает <strong>{activePlayerName}</strong>
-                </p>
-                <div className={styles.actions}>
-                  <Button onClick={handleClose}>Закрыть</Button>
-                </div>
-              </div>
-            )}
+            <div className={styles.actions}>
+              <Button onClick={handleClose}>Закрыть</Button>
+              {Number(currentUserId) === Number(activePlayerId) && (
+                <Button onClick={handleSubmit} disabled={loading}>
+                  Отправить
+                </Button>
+              )}
+            </div>
           </>
         )}
 

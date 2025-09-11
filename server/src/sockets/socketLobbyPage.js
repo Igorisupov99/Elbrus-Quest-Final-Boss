@@ -280,7 +280,7 @@ function initLobbySockets(nsp) {
       });
     });
 
-    socket.on('lobby:answer', async ({ pointId, correct }) => {
+    socket.on('lobby:answer', async ({ pointId, correct, answer }) => {
       try {
         console.log(`🎯 [SOCKET] Получен lobby:answer: pointId=${pointId}, correct=${correct}, userId=${socket.user.id}`);
         
@@ -295,6 +295,14 @@ function initLobbySockets(nsp) {
         }
 
         console.log(`✅ [SOCKET] Активный игрок отвечает: ${socket.user.username}`);
+
+        // Синхронизируем ответ активного игрока со всеми игроками
+        if (answer !== undefined) {
+          nsp.to(roomKey).emit('lobby:answerSync', { 
+            answer: answer,
+            activePlayerName: socket.user.username 
+          });
+        }
 
         const status = correct ? 'completed' : 'available';
         const points = lobbyPoints.get(lobbyId);
@@ -426,11 +434,31 @@ function initLobbySockets(nsp) {
       }
     });
 
+    // Обработчик синхронизации ввода в обычных вопросах
+    socket.on('lobby:answerInput', ({ answer, activePlayerName }) => {
+      console.log('🔄 [SOCKET] Синхронизация ввода в вопросе:', { answer, activePlayerName });
+      nsp.to(roomKey).emit('lobby:answerInput', { answer, activePlayerName });
+    });
+
+    // Обработчик синхронизации ввода в экзамене
+    socket.on('lobby:examAnswerInput', ({ answer, activePlayerName }) => {
+      console.log('🔄 [SOCKET] Синхронизация ввода в экзамене:', { answer, activePlayerName });
+      nsp.to(roomKey).emit('lobby:examAnswerInput', { answer, activePlayerName });
+    });
+
     socket.on('lobby:examAnswer', async (payload) => {
       try {
         const state = lobbyExamState.get(lobbyId);
         if (!state) return;
         const isCorrect = Boolean(payload && payload.correct);
+        
+        // Синхронизируем ответ активного игрока со всеми игроками
+        if (payload.answer !== undefined) {
+          nsp.to(roomKey).emit('lobby:examAnswerSync', { 
+            answer: payload.answer,
+            activePlayerName: socket.user.username 
+          });
+        }
 
         if (isCorrect) {
           // Увеличиваем счетчик правильных ответов
