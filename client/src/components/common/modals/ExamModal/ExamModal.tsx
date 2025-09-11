@@ -131,25 +131,16 @@ export function ExamModal({
   // Синхронизация таймера через сокеты
   useEffect(() => {
     if (onTimerReset) {
-      const _handleTimerReset = (timeLeft: number) => {
-        setTimeLeft(timeLeft);
-        setTimerActive(true);
-      };
-      
-      // Здесь можно добавить слушатель события, если нужно
       // Пока просто используем пропс для синхронизации
+      // Можно добавить слушатель события при необходимости
     }
   }, [onTimerReset]);
 
   // Синхронизация ответа активного игрока
   useEffect(() => {
     if (onAnswerSync) {
-      const _handleAnswerSync = (answer: string, _activePlayerName: string) => {
-        setAnswer(answer);
-      };
-      
-      // Здесь можно добавить слушатель события, если нужно
       // Пока просто используем пропс для синхронизации
+      // Можно добавить слушатель события при необходимости
     }
   }, [onAnswerSync]);
 

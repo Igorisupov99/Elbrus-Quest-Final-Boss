@@ -17,6 +17,9 @@ import { AchievementCard } from "../../components/Achievement/AchievementCard/Ac
 import type { Achievement } from "../../types/achievement";
 import { favoriteApi } from "../../api/favorites/favoriteApi";
 import type { FavoriteQuestion } from "../../types/favorite";
+import { useAppDispatch, useAppSelector } from "../../store/hooks";
+import { fetchCurrentAvatar } from "../../store/avatarSlice";
+import { Link } from "react-router-dom";
 import styles from "./Profile.module.css";
 
 interface User {
@@ -204,10 +207,10 @@ export function Profile() {
 
   // Загрузка текущего аватара
   useEffect(() => {
-    if (user.id) {
-      dispatch(fetchCurrentAvatar(user.id));
+    if (user?.id) {
+      dispatch(fetchCurrentAvatar());
     }
-  }, [dispatch, user.id]);
+  }, [dispatch, user?.id]);
 
   // Обработчик открытия/закрытия модалки
   const openSettings = () => {
