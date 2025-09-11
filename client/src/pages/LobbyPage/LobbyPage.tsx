@@ -337,9 +337,9 @@ export function LobbyPage() {
           onTimeout={handleTimeout}
           sharedResult={modalResult}
           questions={useAppSelector(s => s.lobbyPage.examQuestions)}
-          onAdvance={(correct: boolean) => {
+          onAdvance={(correct: boolean, isTimeout?: boolean) => {
             // Сообщаем серверу, был ли ответ правильным, чтобы он продвинул индекс
-            (sendExamAnswerProgress as any)?.(correct);
+            (sendExamAnswerProgress as any)?.(correct, isTimeout);
           }}
           onTimerReset={(timeLeft: number) => {
             // Синхронизируем таймер при получении события с сервера

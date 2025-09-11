@@ -201,6 +201,18 @@ export function useLobbySocket(lobbyId: number) {
       }, 7000);
     };
 
+    const onExamIncorrectAnswer = (payload: { message: string }) => {
+      console.log('❌ [EXAM] Неправильный ответ в экзамене:', payload);
+      
+      // Показываем уведомление о неправильном ответе всем игрокам
+      dispatch(setModalResult(payload.message));
+      
+      // Закрываем уведомление через 2 секунды
+      setTimeout(() => {
+        dispatch(setModalResult(null));
+      }, 2000);
+    };
+
     const onExamTimerReset = (payload: { timeLeft: number }) => {
       // Синхронизируем таймер для всех игроков
       // Это событие будет обработано в ExamModal через пропсы
@@ -245,6 +257,7 @@ export function useLobbySocket(lobbyId: number) {
     socket.on("lobby:examComplete", onExamComplete);
     socket.on("lobby:examReward", onExamReward);
     socket.on("lobby:examFailed", onExamFailed);
+    socket.on("lobby:examIncorrectAnswer", onExamIncorrectAnswer);
     socket.on("lobby:examTimerReset", onExamTimerReset);
     socket.on("lobby:timeout", onTimeout);
     socket.on("lobby:passTurnNotification", onPassTurnNotification);
@@ -304,8 +317,8 @@ export function useLobbySocket(lobbyId: number) {
   const sendOpenExam = (payload?: { questions?: any[]; examId?: string }) => {
     socketClient.socket.emit("lobby:openExam", payload ?? {});
   };
-  const sendExamAnswerProgress = (correct?: boolean) => {
-    socketClient.socket.emit("lobby:examAnswer", { correct: Boolean(correct) });
+  const sendExamAnswerProgress = (correct?: boolean, isTimeout?: boolean) => {
+    socketClient.socket.emit("lobby:examAnswer", { correct: Boolean(correct), isTimeout: Boolean(isTimeout) });
   };
 
   const sendCloseModal = () => {

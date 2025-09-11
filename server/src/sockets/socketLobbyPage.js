@@ -601,6 +601,16 @@ function initLobbySockets(nsp) {
             await passTurnToNextPlayer();
           }, 2000); // 2 секунды задержки
         } else {
+          // При неправильном ответе в экзамене показываем уведомление всем игрокам
+          const isTimeout = payload && payload.isTimeout;
+          const message = isTimeout 
+            ? '⏰ Время истекло. Ответ засчитан как неправильный.'
+            : '❌ Неправильный ответ! Ход переходит следующему игроку';
+            
+          nsp.to(roomKey).emit('lobby:examIncorrectAnswer', {
+            message
+          });
+          
           // При неправильном ответе в экзамене переходим к следующему вопросу
           const nextIndex = state.index + 1;
           if (nextIndex < state.questions.length) {

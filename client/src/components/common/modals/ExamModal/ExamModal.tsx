@@ -23,7 +23,7 @@ interface ExamModalProps {
   onTimeout?: (pointId: string) => void;
   sharedResult?: string | null;
   questions?: ExamQuestion[];
-  onAdvance?: (correct: boolean) => void;
+  onAdvance?: (correct: boolean, isTimeout?: boolean) => void;
   onTimerReset?: (timeLeft: number) => void;
 }
 
@@ -104,8 +104,8 @@ export function ExamModal({
               // Если ответ пустой в экзамене — считаем как неправильный ответ
               // Используем сокетную логику для корректного перехода к следующему вопросу
               console.log("⏰ Пустой ответ при истечении времени в экзамене - считаем как неправильный");
-              setResult("⏰ Время истекло. Ответ засчитан как неправильный.");
-              onAdvance?.(false);
+              // Убираем локальное уведомление - оно будет показано через сокет всем игрокам
+              onAdvance?.(false, true); // Передаем true для указания таймаута
             }
           } else {
             // Если неактивный игрок - просто сбрасываем таймер
@@ -170,10 +170,10 @@ export function ExamModal({
         // Сообщаем серверу, что ответ правильный, чтобы он продвинул индекс и/или завершил экзамен
         onAdvance?.(true);
       } else {
-        setResult("❌ Неправильный ответ! Ход переходит следующему игроку");
+        // Убираем локальное уведомление - оно будет показано через сокет всем игрокам
         setCorrectAnswer(res.data.correctAnswer);
         // При неправильном ответе не продвигаем индекс, просто передаём ход следующему игроку
-        onAdvance?.(false);
+        onAdvance?.(false, false);
       }
       
     } catch (err) {
@@ -195,7 +195,7 @@ export function ExamModal({
     // но НЕ трогаем обычные точки карты и НЕ закрываем модалку
     if (Number(currentUserId) === Number(activePlayerId)) {
       setResult('❌ Ответ не отправлен. Ход передан следующему игроку.');
-      onAdvance?.(false);
+      onAdvance?.(false, false);
       return;
     }
     // Неактивный игрок просто закрывает у себя
