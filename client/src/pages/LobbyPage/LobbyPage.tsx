@@ -8,7 +8,8 @@ import { ExamModal } from "../../components/common/modals/ExamModal/ExamModal";
 import api from "../../api/axios";
 import { useLobbySocket } from "../../hooks/useLobbySocket";
 import { useAppDispatch, useAppSelector } from "../../store/hooks";
-import { updatePointStatus, mergeScores, openModal as openModalAction, closeModal as closeModalAction, openExamModal as openExamModalAction, closeExamModal as closeExamModalAction, setModalResult } from "../../store/lobbyPage/lobbySlice";
+import { updatePointStatus, mergeScores, openModal as openModalAction, closeModal as closeModalAction, openExamModal as openExamModalAction, closeExamModal as closeExamModalAction, setModalResult, closePhaseTransitionModal } from "../../store/lobbyPage/lobbySlice";
+import PhaseTransitionModal from "../../components/common/modals/PhaseTransitionModal";
 
 export function LobbyPage() {
   const { id } = useParams<{ id: string }>();
@@ -21,6 +22,7 @@ export function LobbyPage() {
   const points = useAppSelector(s => s.lobbyPage.points);
   const { user } = useAppSelector(s => s.auth)
   const { userScore, sessionScore, incorrectAnswers } = useAppSelector(s => s.lobbyPage.scores);
+  const phaseTransitionModal = useAppSelector(s => s.lobbyPage.phaseTransitionModal);
   const {
     history,
     connected,
@@ -339,6 +341,13 @@ export function LobbyPage() {
             // Сообщаем серверу, был ли ответ правильным, чтобы он продвинул индекс
             (sendExamAnswerProgress as any)?.(correct);
           }}
+        />
+
+        <PhaseTransitionModal
+          isOpen={phaseTransitionModal.isOpen}
+          onClose={() => dispatch(closePhaseTransitionModal())}
+          phaseNumber={phaseTransitionModal.phaseNumber}
+          rewardPoints={phaseTransitionModal.rewardPoints}
         />
       </div>
 

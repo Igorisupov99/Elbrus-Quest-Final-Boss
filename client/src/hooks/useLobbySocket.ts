@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { useAppDispatch, useAppSelector } from "../store/hooks";
 import type { RootState } from "../store/store";
 import { type ChatHistoryItem, type IncomingChatMessage, socketClient, type SystemEvent } from "../socket/socketLobbyPage";
-import { initialState, setScores, mergeScores, openModal, setModalResult, closeModal, openExamModal, closeExamModal, setExamQuestions, setExamIndex, clearExamQuestions } from "../store/lobbyPage/lobbySlice";
+import { initialState, setScores, mergeScores, openModal, setModalResult, closeModal, openExamModal, closeExamModal, setExamQuestions, setExamIndex, clearExamQuestions, openPhaseTransitionModal } from "../store/lobbyPage/lobbySlice";
 import {
   setUsers,
   setPoints,
@@ -154,12 +154,6 @@ export function useLobbySocket(lobbyId: number) {
       sessionScore: number; 
       userScores?: Array<{ userId: number; userScore: number }> 
     }) => {
-      // Показываем уведомление о награде за экзамен
-      dispatch(setModalResult(payload.message));
-      setTimeout(() => {
-        dispatch(setModalResult(null));
-      }, 4000);
-      
       // Обновляем общий счет лобби
       dispatch(mergeScores({
         sessionScore: payload.sessionScore
@@ -179,6 +173,14 @@ export function useLobbySocket(lobbyId: number) {
           }));
         }
       }
+
+      // Открываем модальное окно поздравления с переходом на новую фазу
+      // Определяем номер фазы на основе награды (30 очков = фаза 2, 60 очков = фаза 3)
+      const phaseNumber = payload.rewardPoints === 30 ? 2 : 3;
+      dispatch(openPhaseTransitionModal({
+        phaseNumber,
+        rewardPoints: payload.rewardPoints
+      }));
     };
     socket.on("connect", () => {
       setConnected(true);

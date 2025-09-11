@@ -45,6 +45,11 @@ interface LobbyState {
     incorrectAnswers: number;
   };
   modalResult: string | null;
+  phaseTransitionModal: {
+    isOpen: boolean;
+    phaseNumber: number;
+    rewardPoints: number;
+  };
 }
 
 export const initialState: LobbyState = {
@@ -154,6 +159,11 @@ export const initialState: LobbyState = {
   examIndex: 0,
   modalResult: null,
   scores: { userScore: 0, sessionScore: 0, incorrectAnswers: 0},
+  phaseTransitionModal: {
+    isOpen: false,
+    phaseNumber: 1,
+    rewardPoints: 0,
+  },
 };
 
 const lobbyPageReducer = createSlice({
@@ -224,11 +234,24 @@ const lobbyPageReducer = createSlice({
     },
     setIncorrectAnswers(state, action: PayloadAction<number>) {
       state.scores.incorrectAnswers = action.payload;
+    },
+    openPhaseTransitionModal(
+      state,
+      action: PayloadAction<{ phaseNumber: number; rewardPoints: number }>
+    ) {
+      state.phaseTransitionModal = {
+        isOpen: true,
+        phaseNumber: action.payload.phaseNumber,
+        rewardPoints: action.payload.rewardPoints,
+      };
+    },
+    closePhaseTransitionModal(state) {
+      state.phaseTransitionModal.isOpen = false;
     }
   },
 });
 
-export const { setUsers, setPoints, updatePointStatus, openModal, closeModal, openExamModal, closeExamModal, setExamQuestions, clearExamQuestions, setExamIndex, setScores, mergeScores, incrementIncorrectAnswers, setIncorrectAnswers, setModalResult } =
+export const { setUsers, setPoints, updatePointStatus, openModal, closeModal, openExamModal, closeExamModal, setExamQuestions, clearExamQuestions, setExamIndex, setScores, mergeScores, incrementIncorrectAnswers, setIncorrectAnswers, setModalResult, openPhaseTransitionModal, closePhaseTransitionModal } =
   lobbyPageReducer.actions;
 
 export default lobbyPageReducer.reducer;
