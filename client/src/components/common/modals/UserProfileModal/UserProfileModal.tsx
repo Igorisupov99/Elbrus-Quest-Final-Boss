@@ -65,6 +65,7 @@ export default function UserProfileModal({
   }, [isOpen, username]);
 
   const handleAddFriend = () => {
+    // Просто вызываем переданную функцию из родительского компонента
     onAddFriend?.();
     onClose();
   };

@@ -27,6 +27,7 @@ export default function UserActionsModal({
   };
 
   const handleAddFriend = () => {
+    // Просто вызываем переданную функцию из родительского компонента
     onAddFriend?.();
     onClose();
   };
