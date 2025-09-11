@@ -36,6 +36,8 @@ export function ExamModal({
   activePlayerName,
   questions,
   onAdvance,
+  onTimerReset,
+  onAnswerSync,
   syncedAnswer,
   onExamFail,
 }: ExamModalProps) {
