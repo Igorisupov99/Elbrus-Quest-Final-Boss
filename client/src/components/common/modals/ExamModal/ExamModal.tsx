@@ -9,6 +9,8 @@ interface ExamQuestion {
   id: number;
   question_text: string;
   topic_title: string;
+  phase_id?: number;
+  topic_id?: number;
 }
 
 interface ExamModalProps {
@@ -29,14 +31,11 @@ interface ExamModalProps {
 export function ExamModal({
   isOpen,
   onClose,
-  lobbyId,
   currentUserId,
   activePlayerId,
   activePlayerName,
   questions,
   onAdvance,
-  onTimerReset,
-  onAnswerSync,
   syncedAnswer,
   onExamFail,
 }: ExamModalProps) {
@@ -126,30 +125,15 @@ export function ExamModal({
     }
   }, [isOpen, loading]);
 
-  // Синхронизация таймера через сокеты
-  useEffect(() => {
-    if (onTimerReset) {
-      const handleTimerReset = (timeLeft: number) => {
-        setTimeLeft(timeLeft);
-        setTimerActive(true);
-      };
-      
-      // Здесь можно добавить слушатель события, если нужно
-      // Пока просто используем пропс для синхронизации
-    }
-  }, [onTimerReset]);
+  // Синхронизация таймера через сокеты (в будущем)
+  // useEffect(() => {
+  //   // Здесь можно добавить слушатель события, если нужно
+  // }, []);
 
-  // Синхронизация ответа активного игрока
-  useEffect(() => {
-    if (onAnswerSync) {
-      const handleAnswerSync = (answer: string, activePlayerName: string) => {
-        setAnswer(answer);
-      };
-      
-      // Здесь можно добавить слушатель события, если нужно
-      // Пока просто используем пропс для синхронизации
-    }
-  }, [onAnswerSync]);
+  // Синхронизация ответа активного игрока (в будущем)
+  // useEffect(() => {
+  //   // Здесь можно добавить слушатель события, если нужно
+  // }, []);
 
   // Синхронизация ввода от активного игрока
   useEffect(() => {
@@ -166,9 +150,10 @@ export function ExamModal({
     setAnswer(newAnswer);
     
     // Отправляем изменения инпута через сокет, если это активный игрок
-    if (Number(currentUserId) === Number(activePlayerId) && onAnswerSync) {
-      onAnswerSync(newAnswer, activePlayerName);
-    }
+    // Функциональность синхронизации будет добавлена позже
+    // if (Number(currentUserId) === Number(activePlayerId) && onAnswerSync) {
+    //   onAnswerSync(newAnswer, activePlayerName);
+    // }
   };
 
   const handleSubmit = async () => {
@@ -244,9 +229,6 @@ export function ExamModal({
           <p className={styles.result}>{result}</p>
         )}
 
-        {sharedResult && (
-          <p className={styles.result}>{sharedResult}</p>
-        )}
 
         {correctAnswer && (
           <div className={styles.correctAnswerSection}>

@@ -36,7 +36,6 @@ export function LobbyPage() {
     connecting,
     sendChatMessage,
     sendAnswer,
-    sendTimeout,
     sendOpenModal,
     sendOpenExam,
     sendExamAnswerProgress,
@@ -270,17 +269,6 @@ export function LobbyPage() {
     }
   };
 
-  const handleLocalIncorrectAnswer = () => {
-    if (!currentPointId) return;
-    
-    const newIncorrectCount = (incorrectAnswers || 0) + 1;
-    dispatch(mergeScores({
-      incorrectAnswers: newIncorrectCount
-    }));
-    
-    // Отправляем обновление счетчика всем игрокам
-    sendIncorrectAnswer(newIncorrectCount);
-  };
 
   const handleCloseModal = () => {
     if (!currentPointId) return;
@@ -309,9 +297,6 @@ export function LobbyPage() {
     }, 2000);
   };
 
-  const handleTimeout = (pointId: string) => {
-    sendTimeout(pointId);
-  };
 
   const handleTimeoutClose = () => {
     if (!currentPointId) return;
