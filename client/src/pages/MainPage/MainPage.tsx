@@ -59,6 +59,19 @@ export function MainPage(): JSX.Element {
     name: string;
   } | null>(null);
 
+  // Filter states
+  const [isFilterOpen, setIsFilterOpen] = useState(false);
+  const [nameFilter, setNameFilter] = useState('');
+  const [privacyFilter, setPrivacyFilter] = useState<
+    'all' | 'public' | 'private'
+  >('all');
+  const [playerCountFilter, setPlayerCountFilter] = useState<{
+    min: number;
+    max: number;
+  }>({ min: 0, max: 100 });
+  const [minInputValue, setMinInputValue] = useState('');
+  const [maxInputValue, setMaxInputValue] = useState('');
+
   useEffect(() => {
     // if no user in state, redirect to login
     if (!userId) {
@@ -133,6 +146,30 @@ export function MainPage(): JSX.Element {
     }
   }, [dispatch, navigate, userId]);
 
+  // Close filter dropdown when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (isFilterOpen) {
+        const target = event.target as Element;
+        if (!target.closest(`.${styles.filterContainer}`)) {
+          setIsFilterOpen(false);
+        }
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [isFilterOpen]);
+
+  // Handle Enter key press in filter inputs
+  const handleKeyDown = (event: React.KeyboardEvent) => {
+    if (event.key === 'Enter') {
+      setIsFilterOpen(false);
+    }
+  };
+
   const handleEdit = (id: number, currentName: string) => {
     setEditingRoom({ id, name: currentName });
     setIsEditModalOpen(true);
@@ -187,6 +224,58 @@ export function MainPage(): JSX.Element {
     }
   };
 
+  // Filter rooms based on current filter states
+  const filteredRooms = items.filter((room) => {
+    // Filter by name
+    if (
+      nameFilter &&
+      !room.title.toLowerCase().includes(nameFilter.toLowerCase())
+    ) {
+      return false;
+    }
+
+    // Filter by privacy
+    if (privacyFilter === 'public' && room.room_code) {
+      return false;
+    }
+    if (privacyFilter === 'private' && !room.room_code) {
+      return false;
+    }
+
+    // Filter by player count (assuming we'll add this field later)
+    const playerCount = 0; // Placeholder for now
+    if (
+      playerCount < playerCountFilter.min ||
+      playerCount > playerCountFilter.max
+    ) {
+      return false;
+    }
+
+    return true;
+  });
+
+  // SVG Filter Icon Component
+  const FilterIcon = () => (
+    <svg
+      width="20"
+      height="20"
+      viewBox="0 0 24 24"
+      fill="none"
+      xmlns="http://www.w3.org/2000/svg"
+    >
+      <path
+        d="M3 7H21M9 12H21M17 17H21"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+      <circle cx="6" cy="7" r="2" fill="currentColor" />
+      <circle cx="12" cy="12" r="2" fill="currentColor" />
+      <circle cx="18" cy="17" r="2" fill="currentColor" />
+    </svg>
+  );
+
   async function handleRoomClick(id: number) {
     setSelectedRoomId(id);
     try {
@@ -211,7 +300,147 @@ export function MainPage(): JSX.Element {
         {error && <p className={styles.error}>❌ Ошибка: {error}</p>}
 
         <ul className={styles.rooms}>
-          {items.map((item) => (
+          {/* Filter Button positioned above first room */}
+          <div className={styles.filterContainer}>
+            <button
+              className={styles.filterButton}
+              onClick={() => setIsFilterOpen(!isFilterOpen)}
+            >
+              Фильтр
+              <FilterIcon />
+            </button>
+
+            {isFilterOpen && (
+              <div className={styles.filterDropdown}>
+                <div className={styles.filterSection}>
+                  <h3 className={styles.filterSectionTitle}>
+                    🔍 Поиск по названию
+                  </h3>
+                  <input
+                    type="text"
+                    value={nameFilter}
+                    onChange={(e) => setNameFilter(e.target.value)}
+                    onKeyDown={handleKeyDown}
+                    placeholder="Введите название комнаты..."
+                    className={styles.filterInput}
+                  />
+                </div>
+
+                <div className={styles.filterSection}>
+                  <h3 className={styles.filterSectionTitle}>🔒 Приватность</h3>
+                  <div className={styles.filterOptions}>
+                    <label className={styles.filterOption}>
+                      <input
+                        type="radio"
+                        name="privacy"
+                        value="all"
+                        checked={privacyFilter === 'all'}
+                        onChange={(e) =>
+                          setPrivacyFilter(
+                            e.target.value as 'all' | 'public' | 'private'
+                          )
+                        }
+                      />
+                      <span>Все комнаты</span>
+                    </label>
+                    <label className={styles.filterOption}>
+                      <input
+                        type="radio"
+                        name="privacy"
+                        value="public"
+                        checked={privacyFilter === 'public'}
+                        onChange={(e) =>
+                          setPrivacyFilter(
+                            e.target.value as 'all' | 'public' | 'private'
+                          )
+                        }
+                      />
+                      <span>Публичные</span>
+                    </label>
+                    <label className={styles.filterOption}>
+                      <input
+                        type="radio"
+                        name="privacy"
+                        value="private"
+                        checked={privacyFilter === 'private'}
+                        onChange={(e) =>
+                          setPrivacyFilter(
+                            e.target.value as 'all' | 'public' | 'private'
+                          )
+                        }
+                      />
+                      <span>Приватные</span>
+                    </label>
+                  </div>
+                </div>
+
+                <div className={styles.filterSection}>
+                  <h3 className={styles.filterSectionTitle}>
+                    👥 Количество игроков
+                  </h3>
+                  <div className={styles.playerCountRange}>
+                    <input
+                      type="text"
+                      value={minInputValue}
+                      onChange={(e) => {
+                        const value = e.target.value;
+                        if (value === '' || /^\d+$/.test(value)) {
+                          setMinInputValue(value);
+                          setPlayerCountFilter((prev) => ({
+                            ...prev,
+                            min: value === '' ? 0 : parseInt(value),
+                          }));
+                        }
+                      }}
+                      onKeyDown={handleKeyDown}
+                      className={styles.filterInput}
+                      placeholder="Мин"
+                    />
+                    <span className={styles.rangeSeparator}>-</span>
+                    <input
+                      type="text"
+                      value={maxInputValue}
+                      onChange={(e) => {
+                        const value = e.target.value;
+                        if (value === '' || /^\d+$/.test(value)) {
+                          setMaxInputValue(value);
+                          setPlayerCountFilter((prev) => ({
+                            ...prev,
+                            max: value === '' ? 100 : parseInt(value),
+                          }));
+                        }
+                      }}
+                      onKeyDown={handleKeyDown}
+                      className={styles.filterInput}
+                      placeholder="Макс"
+                    />
+                  </div>
+                </div>
+
+                <div className={styles.filterActions}>
+                  <button
+                    onClick={() => {
+                      setNameFilter('');
+                      setPrivacyFilter('all');
+                      setPlayerCountFilter({ min: 0, max: 100 });
+                      setMinInputValue('');
+                      setMaxInputValue('');
+                    }}
+                    className={styles.clearButton}
+                  >
+                    Очистить
+                  </button>
+                  <button
+                    onClick={() => setIsFilterOpen(false)}
+                    className={styles.applyButton}
+                  >
+                    Применить
+                  </button>
+                </div>
+              </div>
+            )}
+          </div>
+          {filteredRooms.map((item) => (
             <li
               key={item.id}
               className={styles.roomRow}
