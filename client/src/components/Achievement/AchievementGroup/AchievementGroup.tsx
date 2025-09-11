@@ -1,4 +1,3 @@
-import { useState } from 'react';
 import styles from './AchievementGroup.module.css';
 import { AchievementCard } from '../AchievementCard/AchievementCard';
 import type { Achievement } from '../../../types/achievement';
