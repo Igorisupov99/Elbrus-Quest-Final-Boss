@@ -4,7 +4,7 @@ const { incorrectAnswersMap } = require("../controllers/question.controller");
 const lobbyUsers = new Map();
 const lobbyPoints = new Map();
 const lobbyTimeouts = new Map();
-const lobbyExamState = new Map(); // lobbyId -> { questions: any[], index: number }
+const lobbyExamState = new Map(); // lobbyId -> { questions: any[], index: number, correctAnswers: number, totalQuestions: number, examId: string }
 
 function initLobbySockets(nsp) {
   nsp.on('connection', async (socket) => {
@@ -385,7 +385,13 @@ function initLobbySockets(nsp) {
       try {
         const questions = payload?.questions || [];
         const examId = payload?.examId === 'exam2' ? 'exam2' : 'exam';
-        lobbyExamState.set(lobbyId, { questions, index: 0, examId });
+        lobbyExamState.set(lobbyId, { 
+          questions, 
+          index: 0, 
+          correctAnswers: 0, 
+          totalQuestions: questions.length, 
+          examId 
+        });
         nsp.to(roomKey).emit('lobby:examStart', { questions, index: 0 });
       } catch (err) {
         console.error('Ошибка в lobby:openExam:', err);
@@ -427,6 +433,10 @@ function initLobbySockets(nsp) {
         const isCorrect = Boolean(payload && payload.correct);
 
         if (isCorrect) {
+          // Увеличиваем счетчик правильных ответов
+          state.correctAnswers += 1;
+          lobbyExamState.set(lobbyId, state);
+          
           // Показываем уведомление всем игрокам
           nsp.to(roomKey).emit('lobby:examCorrectAnswer', {
             message: '✅ Правильный ответ! Ход переходит следующему игроку'
@@ -444,103 +454,308 @@ function initLobbySockets(nsp) {
               // Синхронизируем таймер для всех игроков
               nsp.to(roomKey).emit('lobby:examTimerReset', { timeLeft: 30 });
             } else {
-            // Экзамен завершён
-            lobbyExamState.delete(lobbyId);
-            
-            // Обнуляем счётчик неправильных ответов после успешной сдачи экзамена
-            incorrectAnswersMap.set(lobbyId, 0);
-            console.log(`🎯 [SOCKET] Счётчик неправильных ответов обнулён для лобби ${lobbyId}`);
-            
-            // Начисляем 30 очков каждому игроку в лобби за успешную сдачу экзамена
-            try {
-              const { User, UserSession } = require("../../db/models");
-              const rewardPoints = 30;
+              // Экзамен завершён - проверяем успешность
+              const successRate = state.correctAnswers / state.totalQuestions;
+              const isExamPassed = successRate >= 0.6; // 60% минимум
               
-              // Получаем всех игроков в лобби
-              const allSessions = await UserSession.findAll({ 
-                where: { game_session_id: lobbyId } 
-              });
+              console.log(`📊 [EXAM] Результат экзамена: ${state.correctAnswers}/${state.totalQuestions} (${(successRate * 100).toFixed(1)}%)`);
               
-              // Начисляем очки каждому игроку
-              for (const session of allSessions) {
-                const user = await User.findByPk(session.user_id);
-                if (user) {
-                  user.score = Number(user.score || 0) + rewardPoints;
-                  await user.save();
+              if (isExamPassed) {
+                // Экзамен сдан успешно
+                lobbyExamState.delete(lobbyId);
+                
+                // Обнуляем счётчик неправильных ответов после успешной сдачи экзамена
+                incorrectAnswersMap.set(lobbyId, 0);
+                console.log(`🎯 [SOCKET] Счётчик неправильных ответов обнулён для лобби ${lobbyId}`);
+                
+                // Начисляем 30 очков каждому игроку в лобби за успешную сдачу экзамена
+                try {
+                  const { User, UserSession } = require("../../db/models");
+                  const rewardPoints = 30;
+                  
+                  // Получаем всех игроков в лобби
+                  const allSessions = await UserSession.findAll({ 
+                    where: { game_session_id: lobbyId } 
+                  });
+                  
+                  // Начисляем очки каждому игроку
+                  for (const session of allSessions) {
+                    const user = await User.findByPk(session.user_id);
+                    if (user) {
+                      user.score = Number(user.score || 0) + rewardPoints;
+                      await user.save();
+                    }
+                    
+                    session.score = Number(session.score || 0) + rewardPoints;
+                    await session.save();
+                  }
+                  
+                  // Пересчитываем общий счёт лобби
+                  const updatedSessions = await UserSession.findAll({ 
+                    where: { game_session_id: lobbyId } 
+                  });
+                  const lobbyTotalScore = updatedSessions.reduce((sum, s) => sum + Number(s.score || 0), 0);
+                  
+                  // Получаем обновленные очки пользователей из базы данных
+                  const userScores = [];
+                  for (const session of updatedSessions) {
+                    const user = await User.findByPk(session.user_id);
+                    if (user) {
+                      console.log(`🎯 Пользователь ${session.user_id}: session.score=${session.score}, user.score=${user.score}`);
+                      userScores.push({
+                        userId: session.user_id,
+                        userScore: user.score
+                      });
+                    }
+                  }
+                  
+                  // Отправляем обновленные очки всем игрокам
+                  nsp.to(roomKey).emit('lobby:examReward', {
+                    message: '🎉 Экзамен успешно сдан! Каждый игрок получил +30 очков!',
+                    rewardPoints,
+                    sessionScore: lobbyTotalScore,
+                    userScores: userScores
+                  });
+                  
+                  // Отправляем обновление счётчика неправильных ответов (обнуляем после экзамена)
+                  nsp.to(roomKey).emit('lobby:incorrectCountUpdate', { incorrectAnswers: 0 });
+                  
+                } catch (error) {
+                  console.error('Ошибка при начислении очков за экзамен:', error);
                 }
                 
-                session.score = Number(session.score || 0) + rewardPoints;
-                await session.save();
-              }
-              
-              // Пересчитываем общий счёт лобби
-              const updatedSessions = await UserSession.findAll({ 
-                where: { game_session_id: lobbyId } 
-              });
-              const lobbyTotalScore = updatedSessions.reduce((sum, s) => sum + Number(s.score || 0), 0);
-              
-              // Получаем обновленные очки пользователей из базы данных
-              const userScores = [];
-              for (const session of updatedSessions) {
-                const user = await User.findByPk(session.user_id);
-                if (user) {
-                  console.log(`🎯 Пользователь ${session.user_id}: session.score=${session.score}, user.score=${user.score}`);
-                  userScores.push({
-                    userId: session.user_id,
-                    userScore: user.score
-                  });
+                // Обновим точку экзамена как выполненную и известим всех
+                const points = lobbyPoints.get(lobbyId);
+                if (points) {
+                  const examKey = state.examId === 'exam2' ? 'exam2' : 'exam';
+                  const examPoint = points.find((p) => p.id === examKey);
+                  if (examPoint) examPoint.status = 'completed';
+                  if (examKey === 'exam') {
+                    // Разблокируем темы фазы 2 только после первого экзамена
+                    points.forEach(p => {
+                      if (p.phase_id === 2 && p.id !== 'exam2' && p.status === 'locked') {
+                        p.status = 'available';
+                      }
+                    });
+                  }
                 }
-              }
-              
-              // Отправляем обновленные очки всем игрокам
-              nsp.to(roomKey).emit('lobby:examReward', {
-                message: '🎉 Экзамен успешно сдан! Каждый игрок получил +30 очков!',
-                rewardPoints,
-                sessionScore: lobbyTotalScore,
-                userScores: userScores
-              });
-              
-              // Отправляем обновление счётчика неправильных ответов (обнуляем после экзамена)
-              nsp.to(roomKey).emit('lobby:incorrectCountUpdate', { incorrectAnswers: 0 });
-              
-            } catch (error) {
-              console.error('Ошибка при начислении очков за экзамен:', error);
-            }
-            
-            // Обновим точку экзамена как выполненную и известим всех
-            const points = lobbyPoints.get(lobbyId);
-            if (points) {
-              const examKey = state.examId === 'exam2' ? 'exam2' : 'exam';
-              const examPoint = points.find((p) => p.id === examKey);
-              if (examPoint) examPoint.status = 'completed';
-              if (examKey === 'exam') {
-                // Разблокируем темы фазы 2 только после первого экзамена
-                points.forEach(p => {
-                  if (p.phase_id === 2 && p.id !== 'exam2' && p.status === 'locked') {
-                    p.status = 'available';
+                const examKey = state.examId === 'exam2' ? 'exam2' : 'exam';
+                nsp.to(roomKey).emit('lobby:updatePointStatus', { pointId: examKey, status: 'completed' });
+                // Разослать новые статусы по фазе 2
+                const updatedPoints = lobbyPoints.get(lobbyId) || [];
+                updatedPoints.forEach(p => {
+                  if (p.phase_id === 2 && p.id !== 'exam2') {
+                    nsp.to(roomKey).emit('lobby:updatePointStatus', { pointId: p.id, status: p.status });
                   }
                 });
+                nsp.to(roomKey).emit('lobby:examComplete');
+                // На всякий случай синхронно закроем любые открытые модалки
+                nsp.to(roomKey).emit('lobby:closeModal');
+              } else {
+                // Экзамен провален - сбрасываем фазу для повторного прохождения
+                console.log(`❌ [EXAM] Экзамен провален! Сбрасываем фазу ${state.examId} для повторного прохождения`);
+                lobbyExamState.delete(lobbyId);
+                
+                // Обнуляем счётчик неправильных ответов при провале экзамена
+                incorrectAnswersMap.set(lobbyId, 0);
+                console.log(`🎯 [SOCKET] Счётчик неправильных ответов обнулён при провале экзамена для лобби ${lobbyId}`);
+                
+                // Сбрасываем фазу - делаем все точки текущей фазы доступными для повторного прохождения
+                const points = lobbyPoints.get(lobbyId);
+                if (points) {
+                  const currentPhaseId = state.examId === 'exam2' ? 2 : 1;
+                  
+                  // Сбрасываем все точки текущей фазы в состояние "доступно" для повторного прохождения
+                  points.forEach(p => {
+                    if (p.phase_id === currentPhaseId) {
+                      p.status = 'available';
+                    }
+                  });
+                  
+                  // Обновляем статусы точек на клиентах
+                  points.forEach(p => {
+                    if (p.phase_id === currentPhaseId) {
+                      nsp.to(roomKey).emit('lobby:updatePointStatus', { pointId: p.id, status: p.status });
+                    }
+                  });
+                }
+                
+                // Отправляем уведомление о провале экзамена
+                nsp.to(roomKey).emit('lobby:examFailed', {
+                  message: `❌ Экзамен провален! Правильных ответов: ${state.correctAnswers}/${state.totalQuestions} (${(successRate * 100).toFixed(1)}%). Фаза ${state.examId === 'exam2' ? '2' : '1'} сброшена для повторного прохождения.`,
+                  correctAnswers: state.correctAnswers,
+                  totalQuestions: state.totalQuestions,
+                  successRate: successRate,
+                  phaseId: state.examId === 'exam2' ? 2 : 1
+                });
+                
+                // Отправляем обновление счётчика неправильных ответов (обнуляем при провале)
+                nsp.to(roomKey).emit('lobby:incorrectCountUpdate', { incorrectAnswers: 0 });
+                
+                // Закрываем модалку экзамена
+                nsp.to(roomKey).emit('lobby:closeModal');
               }
-            }
-            const examKey = state.examId === 'exam2' ? 'exam2' : 'exam';
-            nsp.to(roomKey).emit('lobby:updatePointStatus', { pointId: examKey, status: 'completed' });
-            // Разослать новые статусы по фазе 2
-            const updatedPoints = lobbyPoints.get(lobbyId) || [];
-            updatedPoints.forEach(p => {
-              if (p.phase_id === 2 && p.id !== 'exam2') {
-                nsp.to(roomKey).emit('lobby:updatePointStatus', { pointId: p.id, status: p.status });
-              }
-            });
-            nsp.to(roomKey).emit('lobby:examComplete');
-            // На всякий случай синхронно закроем любые открытые модалки
-            nsp.to(roomKey).emit('lobby:closeModal');
             }
             
             // Передаем ход следующему игроку после показа уведомления
             await passTurnToNextPlayer();
           }, 2000); // 2 секунды задержки
         } else {
-          // При неправильном ответе сразу передаем ход
+          // При неправильном ответе в экзамене переходим к следующему вопросу
+          const nextIndex = state.index + 1;
+          if (nextIndex < state.questions.length) {
+            state.index = nextIndex;
+            lobbyExamState.set(lobbyId, state);
+            const nextQuestion = state.questions[nextIndex];
+            nsp.to(roomKey).emit('lobby:examNext', { index: nextIndex, question: nextQuestion });
+            
+            // Синхронизируем таймер для всех игроков
+            nsp.to(roomKey).emit('lobby:examTimerReset', { timeLeft: 30 });
+          } else {
+            // Экзамен завершён - проверяем успешность
+            const successRate = state.correctAnswers / state.totalQuestions;
+            const isExamPassed = successRate >= 0.6; // 60% минимум
+            
+            console.log(`📊 [EXAM] Результат экзамена: ${state.correctAnswers}/${state.totalQuestions} (${(successRate * 100).toFixed(1)}%)`);
+            
+            if (isExamPassed) {
+              // Экзамен сдан успешно
+              lobbyExamState.delete(lobbyId);
+              
+              // Обнуляем счётчик неправильных ответов после успешной сдачи экзамена
+              incorrectAnswersMap.set(lobbyId, 0);
+              console.log(`🎯 [SOCKET] Счётчик неправильных ответов обнулён для лобби ${lobbyId}`);
+              
+              // Начисляем 30 очков каждому игроку в лобби за успешную сдачу экзамена
+              try {
+                const { User, UserSession } = require("../../db/models");
+                const rewardPoints = 30;
+                
+                // Получаем всех игроков в лобби
+                const allSessions = await UserSession.findAll({ 
+                  where: { game_session_id: lobbyId } 
+                });
+                
+                // Начисляем очки каждому игроку
+                for (const session of allSessions) {
+                  const user = await User.findByPk(session.user_id);
+                  if (user) {
+                    user.score = Number(user.score || 0) + rewardPoints;
+                    await user.save();
+                  }
+                  
+                  session.score = Number(session.score || 0) + rewardPoints;
+                  await session.save();
+                }
+                
+                // Пересчитываем общий счёт лобби
+                const updatedSessions = await UserSession.findAll({ 
+                  where: { game_session_id: lobbyId } 
+                });
+                const lobbyTotalScore = updatedSessions.reduce((sum, s) => sum + Number(s.score || 0), 0);
+                
+                // Получаем обновленные очки пользователей из базы данных
+                const userScores = [];
+                for (const session of updatedSessions) {
+                  const user = await User.findByPk(session.user_id);
+                  if (user) {
+                    console.log(`🎯 Пользователь ${session.user_id}: session.score=${session.score}, user.score=${user.score}`);
+                    userScores.push({
+                      userId: session.user_id,
+                      userScore: user.score
+                    });
+                  }
+                }
+                
+                // Отправляем обновленные очки всем игрокам
+                nsp.to(roomKey).emit('lobby:examReward', {
+                  message: '🎉 Экзамен успешно сдан! Каждый игрок получил +30 очков!',
+                  rewardPoints,
+                  sessionScore: lobbyTotalScore,
+                  userScores: userScores
+                });
+                
+                // Отправляем обновление счётчика неправильных ответов (обнуляем после экзамена)
+                nsp.to(roomKey).emit('lobby:incorrectCountUpdate', { incorrectAnswers: 0 });
+                
+              } catch (error) {
+                console.error('Ошибка при начислении очков за экзамен:', error);
+              }
+              
+              // Обновим точку экзамена как выполненную и известим всех
+              const points = lobbyPoints.get(lobbyId);
+              if (points) {
+                const examKey = state.examId === 'exam2' ? 'exam2' : 'exam';
+                const examPoint = points.find((p) => p.id === examKey);
+                if (examPoint) examPoint.status = 'completed';
+                if (examKey === 'exam') {
+                  // Разблокируем темы фазы 2 только после первого экзамена
+                  points.forEach(p => {
+                    if (p.phase_id === 2 && p.id !== 'exam2' && p.status === 'locked') {
+                      p.status = 'available';
+                    }
+                  });
+                }
+              }
+              const examKey = state.examId === 'exam2' ? 'exam2' : 'exam';
+              nsp.to(roomKey).emit('lobby:updatePointStatus', { pointId: examKey, status: 'completed' });
+              // Разослать новые статусы по фазе 2
+              const updatedPoints = lobbyPoints.get(lobbyId) || [];
+              updatedPoints.forEach(p => {
+                if (p.phase_id === 2 && p.id !== 'exam2') {
+                  nsp.to(roomKey).emit('lobby:updatePointStatus', { pointId: p.id, status: p.status });
+                }
+              });
+              nsp.to(roomKey).emit('lobby:examComplete');
+              // На всякий случай синхронно закроем любые открытые модалки
+              nsp.to(roomKey).emit('lobby:closeModal');
+            } else {
+              // Экзамен провален - сбрасываем фазу для повторного прохождения
+              console.log(`❌ [EXAM] Экзамен провален! Сбрасываем фазу ${state.examId} для повторного прохождения`);
+              lobbyExamState.delete(lobbyId);
+              
+              // Обнуляем счётчик неправильных ответов при провале экзамена
+              incorrectAnswersMap.set(lobbyId, 0);
+              console.log(`🎯 [SOCKET] Счётчик неправильных ответов обнулён при провале экзамена для лобби ${lobbyId}`);
+              
+              // Сбрасываем фазу - делаем все точки текущей фазы доступными для повторного прохождения
+              const points = lobbyPoints.get(lobbyId);
+              if (points) {
+                const currentPhaseId = state.examId === 'exam2' ? 2 : 1;
+                
+                // Сбрасываем все точки текущей фазы в состояние "доступно" для повторного прохождения
+                points.forEach(p => {
+                  if (p.phase_id === currentPhaseId) {
+                    p.status = 'available';
+                  }
+                });
+                
+                // Обновляем статусы точек на клиентах
+                points.forEach(p => {
+                  if (p.phase_id === currentPhaseId) {
+                    nsp.to(roomKey).emit('lobby:updatePointStatus', { pointId: p.id, status: p.status });
+                  }
+                });
+              }
+              
+              // Отправляем уведомление о провале экзамена
+              nsp.to(roomKey).emit('lobby:examFailed', {
+                message: `❌ Экзамен провален! Правильных ответов: ${state.correctAnswers}/${state.totalQuestions} (${(successRate * 100).toFixed(1)}%). Фаза ${state.examId === 'exam2' ? '2' : '1'} сброшена для повторного прохождения.`,
+                correctAnswers: state.correctAnswers,
+                totalQuestions: state.totalQuestions,
+                successRate: successRate,
+                phaseId: state.examId === 'exam2' ? 2 : 1
+              });
+              
+              // Отправляем обновление счётчика неправильных ответов (обнуляем при провале)
+              nsp.to(roomKey).emit('lobby:incorrectCountUpdate', { incorrectAnswers: 0 });
+              
+              // Закрываем модалку экзамена
+              nsp.to(roomKey).emit('lobby:closeModal');
+            }
+          }
+          
+          // Передаем ход следующему игроку
           await passTurnToNextPlayer();
         }
       } catch (err) {

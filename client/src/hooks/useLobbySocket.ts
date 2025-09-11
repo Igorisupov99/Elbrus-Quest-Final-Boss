@@ -183,6 +183,24 @@ export function useLobbySocket(lobbyId: number) {
       }));
     };
 
+    const onExamFailed = (payload: {
+      message: string;
+      correctAnswers: number;
+      totalQuestions: number;
+      successRate: number;
+      phaseId: number;
+    }) => {
+      console.log('❌ [EXAM] Экзамен провален:', payload);
+      
+      // Показываем уведомление о провале экзамена с информацией о повторном прохождении
+      dispatch(setModalResult(payload.message));
+      
+      // Закрываем уведомление через 7 секунд (больше времени для чтения)
+      setTimeout(() => {
+        dispatch(setModalResult(null));
+      }, 7000);
+    };
+
     const onExamTimerReset = (payload: { timeLeft: number }) => {
       // Синхронизируем таймер для всех игроков
       // Это событие будет обработано в ExamModal через пропсы
@@ -226,6 +244,7 @@ export function useLobbySocket(lobbyId: number) {
     socket.on("lobby:examNext", onExamNext);
     socket.on("lobby:examComplete", onExamComplete);
     socket.on("lobby:examReward", onExamReward);
+    socket.on("lobby:examFailed", onExamFailed);
     socket.on("lobby:examTimerReset", onExamTimerReset);
     socket.on("lobby:timeout", onTimeout);
     socket.on("lobby:passTurnNotification", onPassTurnNotification);
