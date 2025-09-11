@@ -1,6 +1,7 @@
 const jwt = require('jsonwebtoken');
 const db = require('../../db/models');
 
+
 function withAuth(nsp) {
   nsp.use(async (socket, next) => {
     try {

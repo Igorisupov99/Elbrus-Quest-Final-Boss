@@ -43,8 +43,32 @@
 
 .actions {
   display: flex;
-  justify-content: flex-end;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1rem;
+}
+
+.leftActions {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.rightActions {
+  display: flex;
   gap: 12px;
+  justify-content: flex-end;
+}
+
+.favoriteButton {
+  background-color: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 0.5rem;
+  color: white;
+}
+
+.favoriteButton:hover {
+  background-color: rgba(255, 255, 255, 0.2);
 }
 
 .timer {
@@ -189,4 +213,16 @@
     opacity: 1;
     transform: translateY(0);
   }
+}
+
+.result {
+  font-size: 18px;
+  font-weight: bold;
+  text-align: center;
+  padding: 20px;
+  margin: 0;
+  border-radius: 8px;
+  background: #f8f9fa;
+  border: 2px solid #e9ecef;
+  color: #495057;
 }

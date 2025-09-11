@@ -15,6 +15,67 @@ module.exports = (sequelize, DataTypes) => {
         foreignKey: 'user_id',
         as: 'global_chat_messages'
       });
+      
+      // Связи для системы друзей
+      // Друзья, которых добавил этот пользователь
+      User.hasMany(models.Friendship, {
+        foreignKey: 'user_id',
+        as: 'sent_friendships'
+      });
+      
+      // Друзья, которые добавили этого пользователя
+      User.hasMany(models.Friendship, {
+        foreignKey: 'friend_id',
+        as: 'received_friendships'
+      });
+      
+      // Друзья через связь many-to-many
+      User.belongsToMany(models.User, {
+        through: {
+          model: models.Friendship,
+          unique: false
+        },
+        foreignKey: 'user_id',
+        otherKey: 'friend_id',
+        as: 'friends'
+      });
+      
+      // Обратная связь для друзей
+      User.belongsToMany(models.User, {
+        through: {
+          model: models.Friendship,
+          unique: false
+        },
+        foreignKey: 'friend_id',
+        otherKey: 'user_id',
+        as: 'friend_of'
+      });
+
+      // Связи для достижений
+      User.belongsToMany(models.Achievement, {
+        through: models.UserAchievement,
+        foreignKey: 'user_id',
+        otherKey: 'achievement_id',
+        as: 'achievements'
+      });
+
+      User.hasMany(models.UserAchievement, {
+        foreignKey: 'user_id',
+        as: 'user_achievements'
+      });
+
+      // Связи для избранных вопросов
+      User.belongsToMany(models.Question, {
+        through: models.UserFavoriteQuestion,
+        foreignKey: 'user_id',
+        otherKey: 'question_id',
+        as: 'favorite_questions'
+      });
+
+      User.hasMany(models.UserFavoriteQuestion, {
+        foreignKey: 'user_id',
+        as: 'user_favorite_questions'
+      });
     }
   }
   User.init({
@@ -24,6 +85,11 @@ module.exports = (sequelize, DataTypes) => {
     image_url: DataTypes.TEXT,
     role: DataTypes.TEXT,
     score: DataTypes.BIGINT,
+    games_completed: {
+      type: DataTypes.INTEGER,
+      allowNull: false,
+      defaultValue: 0
+    },
   }, {
     sequelize,
     modelName: 'User',

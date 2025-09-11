@@ -72,6 +72,7 @@
   gap: 12px;
   width: 100%;
   max-width: 1200px;
+  position: relative;
 }
 .roomRow {
   display: flex;
@@ -284,6 +285,252 @@
 }
 .actions button {
   cursor: pointer;
+}
+
+/* ===== Filter Button and Dropdown Styling ===== */
+.filterContainer {
+  position: absolute;
+  top: -35px;
+  left: 0;
+  z-index: 10;
+  display: flex;
+  justify-content: flex-end;
+}
+
+.filterButton {
+  appearance: none;
+  border: 2px solid var(--fantasy-accent);
+  background: linear-gradient(
+    180deg,
+    var(--fantasy-gold),
+    var(--fantasy-gold-2)
+  );
+  color: #2c1810;
+  border-radius: 8px;
+  /* padding: 12px 20px; */
+  font-size: 1rem;
+  font-weight: bold;
+  cursor: pointer;
+  transition: all 0.2s ease-in-out;
+  box-shadow: 0 3px 6px rgba(0, 0, 0, 0.2);
+  text-shadow: 0 1px 0 #f3e0c0;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-family: inherit;
+}
+
+.filterButton:hover {
+  background: linear-gradient(180deg, #f0c33b, #c48a00);
+  transform: translateY(-1px);
+  box-shadow: 0 5px 10px rgba(0, 0, 0, 0.3);
+}
+
+.filterButton:active {
+  transform: translateY(1px);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+.filterDropdown {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  background: linear-gradient(180deg, #24170e, #2c1b10);
+  color: #f7f4ef;
+  border: 2px solid #4f311b;
+  border-radius: 12px;
+  padding: 20px;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4), 0 8px 16px rgba(0, 0, 0, 0.3);
+  z-index: 1000;
+  min-width: 320px;
+  animation: dropdown-pop 0.3s ease-out;
+}
+
+@keyframes dropdown-pop {
+  from {
+    transform: translateY(-10px) scale(0.95);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0) scale(1);
+    opacity: 1;
+  }
+}
+
+.filterSection {
+  margin-bottom: 20px;
+}
+
+.filterSection:last-of-type {
+  margin-bottom: 0;
+}
+
+.filterSectionTitle {
+  color: #f7f4ef;
+  font-weight: 700;
+  font-size: 1rem;
+  margin: 0 0 12px 0;
+  text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.3);
+}
+
+.filterInput {
+  appearance: none;
+  border: 2px solid #4f311b;
+  background: #2a1b10;
+  color: #f7f4ef;
+  border-radius: 8px;
+  padding: 10px 12px;
+  font-size: 1rem;
+  font-family: inherit;
+  transition: all 0.2s ease-in-out;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.filterInput:focus {
+  outline: none;
+  border-color: #b8922d;
+  box-shadow: 0 0 0 3px rgba(184, 146, 45, 0.2);
+}
+
+.filterInput::placeholder {
+  color: #8b7355;
+  opacity: 0.7;
+}
+
+/* Hide number input spinners */
+.filterInput[type='number']::-webkit-outer-spin-button,
+.filterInput[type='number']::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+.filterInput[type='number'] {
+  -moz-appearance: textfield;
+}
+
+.filterOptions {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.filterOption {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  padding: 8px;
+  border-radius: 6px;
+  transition: background-color 0.2s ease;
+}
+
+.filterOption:hover {
+  background: rgba(184, 146, 45, 0.1);
+}
+
+.filterOption input[type='radio'] {
+  appearance: none;
+  width: 16px;
+  height: 16px;
+  border: 2px solid #4f311b;
+  border-radius: 50%;
+  background: #2a1b10;
+  cursor: pointer;
+  position: relative;
+  transition: all 0.2s ease;
+}
+
+.filterOption input[type='radio']:checked {
+  border-color: #b8922d;
+  background: #b8922d;
+}
+
+.filterOption input[type='radio']:checked::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #2a1b10;
+}
+
+.filterOption span {
+  color: #f7f4ef;
+  font-weight: 500;
+}
+
+.playerCountRange {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.playerCountRange .filterInput {
+  flex: 1;
+  min-width: 80px;
+}
+
+.rangeSeparator {
+  color: #f7f4ef;
+  font-weight: bold;
+  font-size: 1.2rem;
+}
+
+.filterActions {
+  display: flex;
+  gap: 12px;
+  justify-content: flex-end;
+  margin-top: 20px;
+  padding-top: 16px;
+  border-top: 1px solid #4f311b;
+}
+
+.clearButton {
+  appearance: none;
+  border: 2px solid #4f311b;
+  background: #2a1b10;
+  color: #f7f4ef;
+  border-radius: 6px;
+  padding: 8px 16px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease-in-out;
+  font-family: inherit;
+}
+
+.clearButton:hover {
+  background: #352214;
+  border-color: #b8922d;
+}
+
+.applyButton {
+  appearance: none;
+  border: 2px solid #4f311b;
+  background: linear-gradient(180deg, #b8922d, #8b6914);
+  color: #2a1b10;
+  border-radius: 6px;
+  padding: 8px 16px;
+  font-size: 0.9rem;
+  font-weight: bold;
+  cursor: pointer;
+  transition: all 0.2s ease-in-out;
+  font-family: inherit;
+  text-shadow: 0 1px 0 #f3e0c0;
+}
+
+.applyButton:hover {
+  background: linear-gradient(180deg, #c8a235, #9d7a1a);
+  transform: translateY(-1px);
+}
+
+.applyButton:active {
+  transform: translateY(1px);
 }
 
 /* ===== Chat styling (matching lobby page) ===== */

@@ -207,6 +207,35 @@ class AuthController {
     }
   }
 
+  async getUserProfileByUsername(req, res) {
+    try {
+      const { username } = req.params;
+
+      const user = await User.findOne({
+        where: { username },
+        attributes: { exclude: ['password_hash'] },
+      });
+
+      if (!user) {
+        return res.status(404).json({
+          success: false,
+          message: 'Пользователь не найден',
+        });
+      }
+
+      res.setHeader('Cache-Control', 'no-store');
+      res.json({
+        success: true,
+        data: user,
+      });
+    } catch (error) {
+      res.status(500).json({
+        success: false,
+        message: 'Ошибка сервера',
+      });
+    }
+  }
+
   async deleteProfile(req, res) {
     try {
       const userId = req.user.id;

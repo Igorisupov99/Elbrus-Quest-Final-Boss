@@ -1,5 +1,7 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Button } from "../../Button/Button";
+import { FavoriteButton } from "../../FavoriteButton";
+import { ConfirmCloseModal } from "../ConfirmCloseModal/ConfirmCloseModal";
 import styles from "./QuestionModal.module.css";
 import api from "../../../../api/axios";
 
@@ -9,7 +11,6 @@ interface QuestionModalProps {
   topic: string;
   question: string;
   questionId: number | null;
-  pointId?: string;
   lobbyId?: number;
   currentUserId: number;          // 👈 id текущего игрока
   activePlayerId: number | null;  // 👈 id активного игрока
@@ -17,11 +18,14 @@ interface QuestionModalProps {
   mentor_tip?: string | null;     // 👈 подсказка от ментора
   onAnswerResult?: (
     correct: boolean,
-    scores?: { userScore?: number; sessionScore?: number; incorrectAnswers?: number }
+    scores?: { userScore?: number; sessionScore?: number; incorrectAnswers?: number },
+    answer?: string
   ) => void;
-  onLocalIncorrectAnswer?: () => void;
-  onTimeout?: (pointId: string) => void;
+  onCloseModal?: () => void;
+  onTimeoutClose?: () => void;
   sharedResult?: string | null;
+  onAnswerSync?: (answer: string, activePlayerName: string) => void;
+  syncedAnswer?: string;          // 👈 синхронизированный ввод от активного игрока
 }
 
 export function QuestionModal({
@@ -30,16 +34,17 @@ export function QuestionModal({
   topic,
   question,
   questionId,
-  pointId,
   lobbyId,
   currentUserId,
   activePlayerId,
   activePlayerName,
   mentor_tip,
   onAnswerResult,
-  onLocalIncorrectAnswer,
-  onTimeout,
+  onCloseModal,
+  onTimeoutClose,
   sharedResult,
+  onAnswerSync,
+  syncedAnswer,
 }: QuestionModalProps) {
   const [answer, setAnswer] = useState("");
   const [loading, setLoading] = useState(false);
@@ -47,6 +52,9 @@ export function QuestionModal({
   const [timeLeft, setTimeLeft] = useState(30);
   const [timerActive, setTimerActive] = useState(false);
   const [showHint, setShowHint] = useState(false);
+  const [showConfirmClose, setShowConfirmClose] = useState(false);
+  const [answerSubmitted, setAnswerSubmitted] = useState(false);
+  const closeTimeoutRef = useRef<number | null>(null);
 
   useEffect(() => {
     setAnswer('');
@@ -54,11 +62,28 @@ export function QuestionModal({
     setTimeLeft(30);
     setTimerActive(false);
     setShowHint(false);
+    setShowConfirmClose(false);
+    setAnswerSubmitted(false);
+    
+    // Очищаем таймер при смене вопроса
+    if (closeTimeoutRef.current) {
+      clearTimeout(closeTimeoutRef.current);
+      closeTimeoutRef.current = null;
+    }
   }, [questionId]);
 
-  // Таймер для активного игрока
+  // Очистка таймера при размонтировании
   useEffect(() => {
-    if (!isOpen || !timerActive || Number(currentUserId) !== Number(activePlayerId)) {
+    return () => {
+      if (closeTimeoutRef.current) {
+        clearTimeout(closeTimeoutRef.current);
+      }
+    };
+  }, []);
+
+  // Таймер для всех игроков - синхронизированный
+  useEffect(() => {
+    if (!isOpen || !timerActive) {
       return;
     }
 
@@ -66,24 +91,8 @@ export function QuestionModal({
       setTimeLeft((prev) => {
         if (prev <= 1) {
           setTimerActive(false);
-          // Автоматически отправляем ответ при истечении времени
-          console.log("⏰ Время истекло, автоматически отправляем ответ:", answer.trim() || "пустой");
-          if (answer.trim()) {
-            handleSubmit();
-          } else {
-            // Если ответ пустой, отправляем событие timeout всем игрокам
-            console.log("⏰ Пустой ответ при истечении времени - отправляем timeout");
-            if (pointId) {
-              onTimeout?.(pointId);
-              // Закрываем модальное окно локально
-              console.log("⏰ Закрываем QuestionModal через 100ms");
-              setTimeout(() => {
-                onClose();
-              }, 100);
-            } else {
-              onLocalIncorrectAnswer?.();
-            }
-          }
+          // При истечении времени закрываем модалку у всех игроков
+          onTimeoutClose?.();
           return 0;
         }
         return prev - 1;
@@ -91,27 +100,52 @@ export function QuestionModal({
     }, 1000);
 
     return () => clearInterval(timer);
-  }, [isOpen, timerActive, currentUserId, activePlayerId, answer]);
+  }, [isOpen, timerActive]);
 
-  // Запускаем таймер когда модальное окно открывается для активного игрока
+  // Запускаем таймер когда модальное окно открывается
   useEffect(() => {
-    if (isOpen && Number(currentUserId) === Number(activePlayerId) && !loading) {
+    if (isOpen && !loading) {
       setTimerActive(true);
     } else {
       setTimerActive(false);
     }
-  }, [isOpen, currentUserId, activePlayerId, loading]);
+  }, [isOpen, loading]);
+
+  // Синхронизация ответа активного игрока
+  useEffect(() => {
+    if (onAnswerSync) {
+      // Здесь можно добавить слушатель события, если нужно
+      // Пока просто используем пропс для синхронизации
+    }
+  }, [onAnswerSync]);
+
+  // Синхронизация ввода от активного игрока
+  useEffect(() => {
+    if (syncedAnswer !== undefined && Number(currentUserId) !== Number(activePlayerId)) {
+      // Обновляем ввод только для неактивных игроков
+      setAnswer(syncedAnswer);
+    }
+  }, [syncedAnswer, currentUserId, activePlayerId]);
 
   if (!isOpen) return null;
 
-  const handleSubmit = async () => {
-    if (!questionId) return;
+  const handleAnswerChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const newAnswer = e.target.value;
+    setAnswer(newAnswer);
+    
+    // Отправляем изменения инпута через сокет, если это активный игрок
+    if (Number(currentUserId) === Number(activePlayerId) && onAnswerSync) {
+      onAnswerSync(newAnswer, activePlayerName);
+    }
+  };
 
-    setTimerActive(false); // Останавливаем таймер при отправке ответа
+  const handleSubmit = async () => {
+    if (!questionId || answerSubmitted) return;
 
     try {
       setLoading(true);
       setResult(null);
+      setAnswerSubmitted(true);
 
       const res = await api.post(
         "/api/question/answerCheck",
@@ -120,49 +154,50 @@ export function QuestionModal({
       );
 
       if (res.data.correct) {
-        // Локально не показываем текст, он придёт по сокету как общее сообщение
+        // При правильном ответе передаем очки с сервера, но НЕ останавливаем таймер сразу
+        // Таймер остановится после показа уведомления в LobbyPage
         setResult(null);
         const s = res.data?.scores ?? {};
         onAnswerResult?.(true, {
           userScore: s.userScore ?? s.user_score ?? s.total ?? s.value,
           sessionScore: s.sessionScore ?? s.session_score ?? s.session ?? s.value,
           incorrectAnswers: s.incorrectAnswers ?? s.incorrect_answers,
-        });
+        }, answer);
       } else {
-        // Не показываем правильный ответ для обычных вопросов
-        onAnswerResult?.(false);
+        // При неправильном ответе НЕ останавливаем таймер - модалка должна остаться открытой до истечения времени
+        // Таймер продолжает работать, модалка закроется автоматически по истечении времени
+        // Разрешаем повторную отправку ответа (уведомление показывается через sharedResult)
+        setAnswerSubmitted(false);
+        onAnswerResult?.(false, undefined);
       }
       
     } catch (err) {
       console.error("Ошибка при отправке ответа:", err);
       setResult("⚠ Ошибка при проверке ответа");
+      setAnswerSubmitted(false); // Разрешаем повторную отправку при ошибке
     } finally {
       setLoading(false);
     }
   };
 
   const handleClose = () => {
-    console.log("🔍 [QuestionModal] handleClose вызван");
-    console.log("🔍 [QuestionModal] currentUserId:", currentUserId);
-    console.log("🔍 [QuestionModal] activePlayerId:", activePlayerId);
-    console.log("🔍 [QuestionModal] timerActive:", timerActive);
-    
-    setAnswer('');
-    setResult(null);
-    setTimerActive(false);
-    setTimeLeft(30);
-    setShowHint(false);
-    
-    // Если закрывает активный игрок - это неправильный ответ
+    // Если закрывает активный игрок - показываем подтверждение
     if (Number(currentUserId) === Number(activePlayerId)) {
-      console.log("❌ [QuestionModal] Активный игрок закрыл модалку - засчитываем неправильный ответ");
-      console.log("❌ [QuestionModal] Вызываем onLocalIncorrectAnswer");
-      onLocalIncorrectAnswer?.();
+      setShowConfirmClose(true);
     } else {
-      console.log("ℹ️ [QuestionModal] Неактивный игрок закрыл модалку - просто закрываем");
       onClose();
     }
   };
+
+  const handleConfirmClose = () => {
+    setShowConfirmClose(false);
+    onCloseModal?.();
+  };
+
+  const handleCancelClose = () => {
+    setShowConfirmClose(false);
+  };
+
 
   const isCorrectMessage = Boolean(sharedResult && sharedResult.includes('Правильный ответ'));
 
@@ -206,7 +241,7 @@ export function QuestionModal({
               </div>
             )}
 
-            {Number(currentUserId) === Number(activePlayerId) && timerActive && (
+            {timerActive && (
               <div className={`${styles.timer} ${
                 timeLeft <= 10 ? styles.timerDanger : 
                 timeLeft <= 15 ? styles.timerWarning : ''
@@ -226,37 +261,55 @@ export function QuestionModal({
               </div>
             )}
 
-            {Number(currentUserId) === Number(activePlayerId) ? (
-              <>
-                <input
-                  type="text"
-                  className={styles.input}
-                  placeholder="Ваш ответ... (пустой ответ = неправильный)"
-                  value={answer}
-                  onChange={(e) => setAnswer(e.target.value)}
-                  disabled={loading}
-                />
+            <input
+              type="text"
+              className={styles.input}
+              placeholder={
+                Number(currentUserId) === Number(activePlayerId)
+                  ? "Ваш ответ... (пустой ответ = неправильный)"
+                  : `Отвечает ${activePlayerName}...`
+              }
+              value={answer}
+              onChange={handleAnswerChange}
+              disabled={loading || Number(currentUserId) !== Number(activePlayerId)}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' && !e.shiftKey && Number(currentUserId) === Number(activePlayerId)) {
+                  e.preventDefault();
+                  handleSubmit();
+                }
+              }}
+            />
 
-                <div className={styles.actions}>
-                  <Button onClick={handleClose}>Закрыть</Button>
-                  <Button onClick={handleSubmit} disabled={loading}>
-                    Отправить
-                  </Button>
-                </div>
-              </>
-            ) : (
-              <div className={styles.waitingBlock}>
-                <p className={styles.waiting}>
-                  Сейчас отвечает <strong>{activePlayerName}</strong>
-                </p>
-                <div className={styles.actions}>
-                  <Button onClick={handleClose}>Закрыть</Button>
-                </div>
+            <div className={styles.actions}>
+              <div className={styles.leftActions}>
+                {questionId && (
+                  <FavoriteButton 
+                    questionId={questionId} 
+                    showText={true}
+                    size="medium"
+                    className={styles.favoriteButton}
+                  />
+                )}
               </div>
-            )}
+              <div className={styles.rightActions}>
+                <Button onClick={handleClose}>Закрыть</Button>
+                {Number(currentUserId) === Number(activePlayerId) && (
+                  <Button onClick={handleSubmit} disabled={loading || answerSubmitted}>
+                    {answerSubmitted ? 'Ответ отправлен' : 'Отправить'}
+                  </Button>
+                )}
+              </div>
+            </div>
           </>
         )}
       </div>
+
+      {/* Модальное окно подтверждения закрытия */}
+      <ConfirmCloseModal
+        isOpen={showConfirmClose}
+        onConfirm={handleConfirmClose}
+        onCancel={handleCancelClose}
+      />
     </div>
   );
 }

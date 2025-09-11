@@ -1,4 +1,5 @@
 const { Phase, Topic, Question, User, UserSession } = require("../../db/models");
+const achievementController = require("./achievement.controller");
 
 // 👇 теперь ключ = lobbyId, а не userId_lobbyId
 const incorrectAnswersMap = new Map();
@@ -124,14 +125,8 @@ class QuestionController {
 
         
       } else {
-        // Неправильный ответ - вычитаем баллы
-        const penaltyPoints = 5; // Штраф за неправильный ответ
-        
+        // Неправильный ответ - НЕ вычитаем баллы, только увеличиваем счетчик
         updatedUser = await User.findByPk(userId);
-        if (updatedUser) {
-          updatedUser.score = Math.max(0, Number(updatedUser.score || 0) - penaltyPoints);
-          await updatedUser.save();
-        }
 
         if (lobby_id) {
           // 👇 увеличиваем общий счётчик ошибок лобби
@@ -139,14 +134,11 @@ class QuestionController {
           incorrectAnswersCount = current + 1;
           incorrectAnswersMap.set(lobby_id, incorrectAnswersCount);
           
-          // Вычитаем баллы из сессии лобби
+          // НЕ вычитаем баллы из сессии лобби
           updatedSession = await UserSession.findOne({
             where: { user_id: userId, game_session_id: lobby_id },
           });
-          if (updatedSession) {
-            updatedSession.score = Math.max(0, Number(updatedSession.score || 0) - penaltyPoints);
-            await updatedSession.save();
-          }
+          
           // Пересчитываем общий счёт лобби
           const allSessions = await UserSession.findAll({ where: { game_session_id: lobby_id } });
           lobbyTotalScore = allSessions.reduce((sum, s) => sum + Number(s.score || 0), 0);
@@ -162,11 +154,15 @@ class QuestionController {
             userScore: updatedUser.score,
             sessionScore: lobbyTotalScore,
           });
-          // Широковещательное уведомление о правильном ответе для всех клиентов
-          io.of("/lobby").to(roomName).emit("lobby:correctAnswer", {
-            userId,
-            message: "✅ Правильный ответ! (+10 очков)",
-          });
+          
+          // Отправляем уведомление о правильном ответе только если ответ был правильным
+          if (isCorrect) {
+            io.of("/lobby").to(roomName).emit("lobby:correctAnswer", {
+              userId,
+              message: "✅ Правильный ответ! (+10 очков)",
+            });
+          }
+          
           console.log("EMIT lobby:scores", {
             userId,
             userScore: updatedUser.score,
@@ -174,16 +170,40 @@ class QuestionController {
           });
         }
 
-        if (!isCorrect) {
-          io.of("/lobby").to(roomName).emit("lobby:incorrectAnswer", {
+        // Убираем отправку lobby:incorrectAnswer при неправильном ответе через API
+        // Уведомления о неправильных ответах показываются локально
+      }
+
+      // Проверяем достижения после изменения очков
+      try {
+        let newAchievements = [];
+        
+        // Проверяем общие достижения пользователя
+        const userAchievements = await achievementController.checkUserAchievements(userId, lobby_id);
+        newAchievements.push(...userAchievements);
+        
+        // Проверяем достижения для конкретной сессии (если есть лобби)
+        if (lobby_id) {
+          const sessionAchievements = await achievementController.checkSessionAchievements(userId, lobby_id);
+          newAchievements.push(...sessionAchievements);
+        }
+        
+        // Проверяем достижение "Первые шаги" для первого правильного ответа
+        if (isCorrect) {
+          const firstStepsAchievement = await achievementController.awardAchievement(userId, 'first_steps', lobby_id);
+          if (firstStepsAchievement) newAchievements.push(firstStepsAchievement);
+        }
+        
+        // Если есть новые достижения, отправляем их клиенту
+        if (newAchievements.length > 0 && lobby_id) {
+          const roomName = `lobby:${lobby_id}`;
+          io.of("/lobby").to(roomName).emit("lobby:newAchievements", {
             userId,
-            userScore: updatedUser?.score || 0,
-            sessionScore: lobbyTotalScore,
-            incorrectAnswers: incorrectAnswersCount, // общий счётчик по лобби
-            correctAnswer: question.correct_answer, // Добавляем правильный ответ
-            message: `❌ Неправильный ответ! (-5 очков)`,
+            achievements: newAchievements
           });
         }
+      } catch (achievementError) {
+        console.error("Ошибка при проверке достижений:", achievementError);
       }
 
       return res.json({

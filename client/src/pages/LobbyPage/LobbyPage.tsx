@@ -5,12 +5,16 @@ import { Button } from "../../components/common/Button/Button";
 import { Point, type POIStatus } from "../../components/map/Point/Point";
 import { QuestionModal } from "../../components/common/modals/QuestionModal/QuestionModal";
 import { ExamModal } from "../../components/common/modals/ExamModal/ExamModal";
+import { UserActionsModal } from "../../components/common/modals/UserActionsModal";
 import api from "../../api/axios";
 import { useLobbySocket } from "../../hooks/useLobbySocket";
 import { useAppDispatch, useAppSelector } from "../../store/hooks";
-import { updatePointStatus, mergeScores, openModal as openModalAction, closeModal as closeModalAction, openExamModal as openExamModalAction, closeExamModal as closeExamModalAction } from "../../store/lobbyPage/lobbySlice";
-
-// УДАЛИТЬ: ExamQuestion перенесен в ExamModal
+import { updatePointStatus, mergeScores, openModal as openModalAction, closeModal as closeModalAction, openExamModal as openExamModalAction, closeExamModal as closeExamModalAction, setModalResult, closePhaseTransitionModal, closeExamFailureModal, closeReconnectWaitingModal } from "../../store/lobbyPage/lobbySlice";
+import { AchievementNotification } from "../../components/Achievement/AchievementNotification/AchievementNotification";
+import type { Achievement } from "../../types/achievement";
+import PhaseTransitionModal from "../../components/common/modals/PhaseTransitionModal";
+import ExamFailureModal from "../../components/common/modals/ExamFailureModal";
+import { ReconnectWaitingModal } from "../../components/common/modals/ReconnectWaitingModal";
 
 export function LobbyPage() {
   const { id } = useParams<{ id: string }>();
@@ -23,6 +27,9 @@ export function LobbyPage() {
   const points = useAppSelector(s => s.lobbyPage.points);
   const { user } = useAppSelector(s => s.auth)
   const { userScore, sessionScore, incorrectAnswers } = useAppSelector(s => s.lobbyPage.scores);
+  const phaseTransitionModal = useAppSelector(s => s.lobbyPage.phaseTransitionModal);
+  const examFailureModal = useAppSelector(s => s.lobbyPage.examFailureModal);
+  const reconnectWaitingModal = useAppSelector(s => s.lobbyPage.reconnectWaitingModal);
   const {
     history,
     connected,
@@ -30,76 +37,82 @@ export function LobbyPage() {
     sendChatMessage,
     sendAnswer,
     sendTimeout,
-    sendExamComplete,
     sendOpenModal,
     sendOpenExam,
     sendExamAnswerProgress,
     sendCloseModal,
-  } = useLobbySocket(lobbyId);
+    sendIncorrectAnswer,
+    sendPassTurn,
+    sendIncorrectCountUpdate,
+    sendCorrectAnswer,
+    sendPassTurnNotification,
+    sendAnswerInput,
+    sendExamAnswerInput,
+  } = useLobbySocket(
+    lobbyId,
+    (answer: string) => setSyncedAnswer(answer),
+    (answer: string) => setSyncedExamAnswer(answer)
+  );
 
   const [input, setInput] = useState("");
-  const listRef = useRef<HTMLDivElement | null>(null);
-
-  // локальная модалка (для обратной совместимости). Также используем redux.modal для синхронизации через сокет
-  const [isModalOpen, setIsModalOpen] = useState(false);
-  const [currentTopic, setCurrentTopic] = useState("");
-  const [currentQuestion, setCurrentQuestion] = useState("");
-  const [currentQuestionId, setCurrentQuestionId] = useState<number | null>(null);
-  const [currentMentorTip, setCurrentMentorTip] = useState<string | null>(null);
+  const [mapNaturalSize, setMapNaturalSize] = useState<{ w: number; h: number } | null>(null);
   const [currentPointId, setCurrentPointId] = useState<string | null>(null);
+  const [syncedAnswer, setSyncedAnswer] = useState("");
+  const [syncedExamAnswer, setSyncedExamAnswer] = useState("");
+  
   const modal = useAppSelector(s => s.lobbyPage.modal);
   const examModalOpenGlobal = useAppSelector(s => s.lobbyPage.examModalOpen);
   const modalResult = useAppSelector(s => s.lobbyPage.modalResult);
 
-  // Вычисляемые значения модалки: если в Redux есть открытая модалка — используем её
-  const effectiveIsOpen = isModalOpen || modal.isOpen;
-  const effectiveTopic = modal.isOpen ? modal.topic : currentTopic;
-  const effectiveQuestion = modal.isOpen ? modal.question : currentQuestion;
-  const effectiveQuestionId = modal.isOpen ? modal.questionId : currentQuestionId;
-  const effectiveMentorTip = modal.isOpen ? modal.mentor_tip : currentMentorTip;
+  const [achievementNotifications, setAchievementNotifications] = useState<Achievement[]>([]);
+  
+  // Состояние для модального окна действий пользователя
+  const [isUserActionsModalOpen, setIsUserActionsModalOpen] = useState(false);
+  const [selectedUsername, setSelectedUsername] = useState("");
+  useEffect(() => {
+    const img = new Image();
+    img.src = '/map.png';
+    img.onload = () => {
+      if (img.naturalWidth && img.naturalHeight) {
+        setMapNaturalSize({ w: img.naturalWidth, h: img.naturalHeight });
+      }
+    };
+  }, []);
 
-  // УДАЛИТЬ: состояние для экзамена перенесено в ExamModal
+  const listRef = useRef<HTMLDivElement | null>(null);
 
   const openModal = async (pointId: string) => {
     const point = points.find(p => p.id === pointId);
-    if (!point) return;
+    if (!point || point.status !== "available") return;
 
-    if (pointId === "exam" && point.status !== "available") return;
-    if (pointId !== "exam" && point.status !== "available") return;
+    // Любой игрок может открыть модальное окно, но отвечать может только активный
 
     try {
-      if (pointId !== "exam") {
-        console.log("📡 Запрашиваю вопрос:", {
-          phase_id: point.phaseId,
-          topic_id: point.topicId,
-        });
+      if (pointId !== "exam" && pointId !== "exam2") {
         const res = await api.get("/api/question/textQuestion", {
           params: { phase_id: point.phaseId, topic_id: point.topicId },
           withCredentials: true,
         });
-        setCurrentTopic(res.data.topic_title || "Без названия");
-        setCurrentQuestion(res.data.question_text);
-        setCurrentQuestionId(res.data.question_id);
-        setCurrentMentorTip(res.data.mentor_tip || null);
-        setCurrentPointId(pointId);
-        setIsModalOpen(true);
+        
         const payload = { 
           questionId: res.data.question_id, 
           topic: res.data.topic_title || "Без названия", 
           question: res.data.question_text,
           mentor_tip: res.data.mentor_tip || null
         };
+        
+        setCurrentPointId(pointId);
         dispatch(openModalAction(payload));
         sendOpenModal(payload);
       } else {
-        // Для экзамена инициатор загружает вопросы и рассылает всем
+        const phaseId = pointId === "exam" ? 1 : 2;
         const res = await api.get("/api/exam/examQuestion", {
-          params: { phase_id: 1, count: usersInLobby.length + incorrectAnswers },
+          params: { phase_id: phaseId, count: usersInLobby.length + incorrectAnswers },
           withCredentials: true,
         });
         const questions = res.data?.questions ?? [];
         dispatch(openExamModalAction());
-        sendOpenExam({ questions });
+        sendOpenExam({ questions, examId: pointId });
       }
     } catch (err) {
       console.error("Ошибка при получении вопроса:", err);
@@ -113,12 +126,31 @@ export function LobbyPage() {
   };
 
   useEffect(() => {
-    const allRegular = points.filter(p => p.id !== "exam");
-    const exam = points.find(p => p.id === "exam");
-    const shouldUnlock = allRegular.every(p => p.status === "completed") && exam?.status !== "available";
-    const shouldLock = !allRegular.every(p => p.status === "completed") && exam?.status !== "locked";
-    if (shouldUnlock) updatePoint("exam", "available");
-    if (shouldLock) updatePoint("exam", "locked");
+    // Фаза 1: разблокировать экзамен, когда все 1-4 выполнены, но НЕ трогать если уже completed
+    const phase1 = points.filter(p => p.phaseId === 1 && p.id !== "exam");
+    const exam1 = points.find(p => p.id === "exam");
+    const phase1AllDone = phase1.every(p => p.status === "completed");
+    if (exam1 && exam1.status !== "completed") {
+      if (phase1AllDone && exam1.status === "locked") updatePoint("exam", "available");
+      if (!phase1AllDone && exam1.status === "available") updatePoint("exam", "locked");
+    }
+
+    // После завершения экзамена 1 — разблокировать темы 5-8 (фаза 2)
+    const exam1Completed = exam1?.status === "completed";
+    const phase2 = points.filter(p => p.phaseId === 2 && p.id !== "exam2");
+    if (exam1Completed) {
+      phase2.forEach(p => {
+        if (p.status === "locked") updatePoint(p.id, "available");
+      });
+    }
+
+    // Фаза 2: экзамен 2 становится доступен, когда темы 5-8 выполнены
+    const exam2 = points.find(p => p.id === "exam2");
+    const phase2AllDone = phase2.every(p => p.status === "completed");
+    if (exam2 && exam2.status !== "completed") {
+      if (phase2AllDone && exam2.status === "locked") updatePoint("exam2", "available");
+      if (!phase2AllDone && exam2.status === "available") updatePoint("exam2", "locked");
+    }
   }, [points]);
 
   useEffect(() => {
@@ -132,6 +164,29 @@ export function LobbyPage() {
     if (!token) { navigate("/login"); return; }
   }, [lobbyId, navigate]);
 
+  // Обработчик уведомлений о достижениях
+  useEffect(() => {
+    const handleAchievementReceived = (event: CustomEvent) => {
+      const { userId, achievements } = event.detail;
+      
+      // Показываем уведомления только для текущего пользователя
+      if (user && Number(userId) === Number(user.id)) {
+        setAchievementNotifications(achievements);
+      }
+    };
+
+    window.addEventListener('achievement:received', handleAchievementReceived as EventListener);
+    
+    return () => {
+      window.removeEventListener('achievement:received', handleAchievementReceived as EventListener);
+    };
+  }, [user]);
+
+  const handleCloseAchievementNotification = () => {
+    setAchievementNotifications([]);
+  };
+
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     const text = input.trim();
@@ -142,106 +197,187 @@ export function LobbyPage() {
 
   const handleExitLobby = () => navigate("/");
 
-  const handleExamComplete = (correctAnswers: number, totalQuestions: number) => {
-    dispatch(updatePointStatus({ pointId: "exam", status: "completed" }));
-    sendExamComplete(correctAnswers, totalQuestions);
+  const handleUserClick = (username: string) => {
+    // Не открываем модальное окно для своего собственного имени
+    if (user?.username === username) return;
+    
+    setSelectedUsername(username);
+    setIsUserActionsModalOpen(true);
   };
 
-  const handleAnswerResult = (correct: boolean, scores: any) => {
-    // Если сервер ничего не прислал про очки, не трогаем текущие значения
-    if (!scores) {
-      return;
+  const handleGoToProfile = () => {
+    // TODO: Реализовать переход в профиль пользователя
+    console.log(`Переход в профиль пользователя: ${selectedUsername}`);
+  };
+
+  const handleAddFriend = async () => {
+    if (!selectedUsername) return;
+    
+    try {
+      console.log('Начинаем добавление в друзья для:', selectedUsername);
+      
+      // Получаем ID пользователя по username
+      const { getUserByUsername, sendFriendRequest } = await import('../../api/friendship/friendshipApi');
+      const userResponse = await getUserByUsername(selectedUsername);
+      
+      console.log('Результат поиска пользователя:', userResponse);
+      
+      if (userResponse.success && userResponse.data) {
+        console.log('Отправляем запрос на дружбу для ID:', userResponse.data.id);
+        const friendResponse = await sendFriendRequest(userResponse.data.id);
+        
+        console.log('Результат отправки запроса:', friendResponse);
+        
+        if (friendResponse.success) {
+          alert(`Запрос на дружбу отправлен пользователю ${selectedUsername}`);
+        } else {
+          console.error('Ошибка при отправке запроса:', friendResponse.message);
+          alert(friendResponse.message || 'Ошибка при отправке запроса на дружбу');
+        }
+      } else {
+        console.error('Пользователь не найден:', userResponse.message);
+        alert(userResponse.message || 'Пользователь не найден');
+      }
+    } catch (error: any) {
+      console.error('Критическая ошибка при добавлении в друзья:', error);
+      alert(`Ошибка при добавлении в друзья: ${error.message || 'Неизвестная ошибка'}`);
     }
+    
+    // Модальное окно будет закрыто в UserActionsModal, не закрываем здесь дважды
+  };
 
-    // Допускаем разные форматы payload
-    const nested = (scores as any)?.scores;
-    const isNumber = typeof scores === 'number';
-    const flat = !nested && !isNumber ? scores : undefined;
 
-    const nextUserScore = isNumber
-      ? scores
-      : nested
-      ? (nested.userScore ?? nested.user_score ?? userScore)
-      : (flat?.userScore ?? flat?.user_score ?? userScore);
+  const handleAnswerResult = (correct: boolean, scores: any, answer?: string) => {
+    if (correct && scores) {
+      // При правильном ответе обновляем очки из сервера
+      const nested = (scores as any)?.scores;
+      const isNumber = typeof scores === 'number';
+      const flat = !nested && !isNumber ? scores : undefined;
 
-    const nextSessionScore = isNumber
-      ? scores
-      : nested
-      ? (nested.sessionScore ?? nested.session_score ?? sessionScore)
-      : (flat?.sessionScore ?? flat?.session_score ?? sessionScore);
+      const nextUserScore = isNumber
+        ? scores
+        : nested
+        ? (nested.userScore ?? nested.user_score ?? userScore)
+        : (flat?.userScore ?? flat?.user_score ?? userScore);
 
-    const nextIncorrect = (nested?.incorrectAnswers ?? flat?.incorrectAnswers ?? incorrectAnswers);
+      const nextSessionScore = isNumber
+        ? scores
+        : nested
+        ? (nested.sessionScore ?? nested.session_score ?? sessionScore)
+        : (flat?.sessionScore ?? flat?.session_score ?? sessionScore);
 
-    dispatch(mergeScores({
-      userScore: Number(nextUserScore),
-      sessionScore: Number(nextSessionScore),
-      incorrectAnswers: Number(nextIncorrect),
-    }));
+      const nextIncorrect = (nested?.incorrectAnswers ?? flat?.incorrectAnswers ?? incorrectAnswers);
+
+      dispatch(mergeScores({
+        userScore: Number(nextUserScore),
+        sessionScore: Number(nextSessionScore),
+        incorrectAnswers: Number(nextIncorrect),
+      }));
+    }
     
     if (correct && currentPointId) {
       dispatch(updatePointStatus({ pointId: currentPointId, status: "completed" }));
-      sendAnswer(currentPointId, true);
-      // Закрываем модалку локально для отвечающего игрока через 3 секунды
+      sendAnswer(currentPointId, true, answer);
+      
+      // Отправляем уведомление о правильном ответе всем игрокам
+      sendCorrectAnswer();
+      
+      // Локально закрываем модалку у активного игрока
       setTimeout(() => {
-        setIsModalOpen(false);
         dispatch(closeModalAction());
+        setCurrentPointId(null);
       }, 3000);
     } else if (currentPointId) {
-      // При неправильном ответе меняем роль, точка остается доступной для других игроков
-      console.log("Неправильный ответ, меняем роль, точка остается доступной");
-      sendAnswer(currentPointId, false);
-      // Закрываем модалку локально для отвечающего игрока через 3 секунды
-      setTimeout(() => {
-        setIsModalOpen(false);
-        dispatch(closeModalAction());
-      }, 3000);
+      // При неправильном ответе увеличиваем счетчик неправильных ответов
+      const newIncorrectCount = (incorrectAnswers || 0) + 1;
+      dispatch(mergeScores({
+        incorrectAnswers: newIncorrectCount
+      }));
+      
+      // Отправляем уведомление и обновление счетчика всем игрокам
+      // НЕ передаем ход следующему игроку - активный игрок может попробовать еще раз
+      sendIncorrectAnswer(newIncorrectCount);
     }
   };
 
-  // Локальная обработка неправильного ответа без запроса к серверу
   const handleLocalIncorrectAnswer = () => {
-    console.log("🔍 [CLIENT] handleLocalIncorrectAnswer вызван");
-    console.log("🔍 [CLIENT] currentPointId:", currentPointId);
-    console.log("🔍 [CLIENT] user?.id:", user?.id);
-    console.log("🔍 [CLIENT] activePlayerId:", activePlayerId);
+    if (!currentPointId) return;
     
-    if (!currentPointId) {
-      console.log("❌ [CLIENT] currentPointId не установлен, не можем отправить неправильный ответ");
-      return;
-    }
+    const newIncorrectCount = (incorrectAnswers || 0) + 1;
+    dispatch(mergeScores({
+      incorrectAnswers: newIncorrectCount
+    }));
     
-    console.log("❌ [CLIENT] Локальная обработка неправильного ответа (пустой ответ или закрытие модалки)");
-    console.log("❌ [CLIENT] Отправляем sendAnswer с pointId:", currentPointId, "correct: false");
+    // Отправляем обновление на сервер
+    sendIncorrectCountUpdate(newIncorrectCount);
     
-    // Сохраняем pointId перед отправкой
-    const pointIdToSend = currentPointId;
+    // НЕ передаем ход следующему игроку - активный игрок может попробовать еще раз
+    sendIncorrectAnswer(newIncorrectCount);
+  };
+
+  const handleCloseModal = () => {
+    if (!currentPointId) return;
     
-    // Отправляем неправильный ответ на сервер - он сам обновит счетчики и передаст ход
-    sendAnswer(pointIdToSend, false);
+    // Засчитываем неправильный ответ при закрытии модалки
+    const newIncorrectCount = (incorrectAnswers || 0) + 1;
+    dispatch(mergeScores({
+      incorrectAnswers: newIncorrectCount
+    }));
     
-    // Отправляем событие закрытия модалки всем игрокам
-    console.log("🔒 [CLIENT] Отправляем событие закрытия модалки всем игрокам");
-    sendCloseModal();
+    // Отправляем обновление счетчика всем игрокам без показа уведомления
+    sendIncorrectCountUpdate(newIncorrectCount);
     
-    // Закрываем модалку локально
+    // Передаем ход следующему игроку
+    sendPassTurn();
+    
+    // Отправляем уведомление о передаче хода всем игрокам
+    sendPassTurnNotification();
+    
+    // Локально закрываем модалку после показа уведомления
     setTimeout(() => {
-      console.log("❌ [CLIENT] Закрываем модалку локально");
-      setIsModalOpen(false);
       dispatch(closeModalAction());
       setCurrentPointId(null);
-    }, 1000);
+      // Отправляем событие закрытия модалки после показа уведомления
+      sendCloseModal();
+    }, 2000);
   };
 
-  // Обработка timeout - отправка события всем игрокам
   const handleTimeout = (pointId: string) => {
-    console.log("⏰ Отправляем timeout событие для точки:", pointId);
     sendTimeout(pointId);
+  };
+
+  const handleTimeoutClose = () => {
+    if (!currentPointId) return;
+    
+    // Засчитываем неправильный ответ при истечении времени
+    const newIncorrectCount = (incorrectAnswers || 0) + 1;
+    dispatch(mergeScores({
+      incorrectAnswers: newIncorrectCount
+    }));
+    
+    // Отправляем обновление счетчика всем игрокам без показа уведомления
+    sendIncorrectCountUpdate(newIncorrectCount);
+    
+    // Передаем ход следующему игроку
+    sendPassTurn();
+    
+    // Показываем уведомление о передаче хода
+    dispatch(setModalResult('Ход будет передан следующему игроку'));
+    setTimeout(() => {
+      dispatch(setModalResult(null));
+      dispatch(closeModalAction());
+      setCurrentPointId(null);
+      // Отправляем событие закрытия модалки после показа уведомления
+      sendCloseModal();
+    }, 2000);
   };
 
   return (
     <div className={styles.lobbyPage}>
-      <div className={styles.gameArea}>
-        <img src="/map.png" alt="Игровая карта" className={styles.gameMap} />
+      <div
+        className={styles.gameArea}
+        style={mapNaturalSize ? ({ aspectRatio: `${mapNaturalSize.w} / ${mapNaturalSize.h}` } as React.CSSProperties) : undefined}
+      >
         {points.map(point => (
           <Point
             key={point.id}
@@ -256,23 +392,28 @@ export function LobbyPage() {
         
         {/* Модальные окна рендерятся внутри области карты */}
          <QuestionModal
-           isOpen={effectiveIsOpen}
-           onClose={() => { setIsModalOpen(false); dispatch(closeModalAction()); }}
-           topic={effectiveTopic}
-           question={effectiveQuestion}
-           questionId={effectiveQuestionId}
-           pointId={currentPointId || undefined}
+           isOpen={modal.isOpen}
+           onClose={() => { dispatch(closeModalAction()); setCurrentPointId(null); }}
+           topic={modal.topic}
+           question={modal.question}
+           questionId={modal.questionId}
            lobbyId={lobbyId}
            onAnswerResult={handleAnswerResult}
-           onLocalIncorrectAnswer={handleLocalIncorrectAnswer}
-           onTimeout={handleTimeout}
+           onCloseModal={handleCloseModal}
+           onTimeoutClose={handleTimeoutClose}
            currentUserId={user?.id ?? 0}
            activePlayerId={activePlayerId}
            activePlayerName={
              usersInLobby.find(u => u.id === activePlayerId)?.username ?? ''
            }
-           mentor_tip={effectiveMentorTip}
+           mentor_tip={modal.mentor_tip}
            sharedResult={modalResult}
+           onAnswerSync={(answer: string, activePlayerName: string) => {
+             // Синхронизируем ответ активного игрока
+             console.log('🔄 Синхронизация ответа:', { answer, activePlayerName });
+             sendAnswerInput(answer, activePlayerName);
+           }}
+           syncedAnswer={syncedAnswer}
          />
 
         <ExamModal
@@ -286,14 +427,53 @@ export function LobbyPage() {
           activePlayerName={
             usersInLobby.find(u => u.id === activePlayerId)?.username ?? ''
           }
-          onExamComplete={handleExamComplete}
-          onLocalIncorrectAnswer={handleLocalIncorrectAnswer}
-          onTimeout={handleTimeout}
-          sharedResult={modalResult}
           questions={useAppSelector(s => s.lobbyPage.examQuestions)}
-          onAdvance={(correct: boolean) => {
+          onAdvance={(correct: boolean, isTimeout?: boolean, answer?: string) => {
             // Сообщаем серверу, был ли ответ правильным, чтобы он продвинул индекс
-            (sendExamAnswerProgress as any)?.(correct);
+            (sendExamAnswerProgress as any)?.(correct, isTimeout, answer);
+          }}
+          onTimerReset={(timeLeft: number) => {
+            // Синхронизируем таймер при получении события с сервера
+            console.log('⏰ Синхронизация таймера:', timeLeft);
+          }}
+          onAnswerSync={(answer: string, activePlayerName: string) => {
+            // Синхронизируем ответ активного игрока
+            console.log('🔄 Синхронизация ответа:', { answer, activePlayerName });
+            sendExamAnswerInput(answer, activePlayerName);
+          }}
+          syncedAnswer={syncedExamAnswer}
+          onExamFail={() => {
+            // Проваливаем экзамен при закрытии активным игроком
+            console.log('❌ Экзамен провален при закрытии активным игроком');
+            // Отправляем событие провала экзамена на сервер
+            // Это будет обработано сервером и покажет модальное окно провала
+            sendExamAnswerProgress(false, false, 'exam_closed_by_user');
+          }}
+        />
+
+        <PhaseTransitionModal
+          isOpen={phaseTransitionModal.isOpen}
+          onClose={() => dispatch(closePhaseTransitionModal())}
+          phaseNumber={phaseTransitionModal.phaseNumber}
+          rewardPoints={phaseTransitionModal.rewardPoints}
+        />
+
+        <ExamFailureModal
+          isOpen={examFailureModal.isOpen}
+          onClose={() => dispatch(closeExamFailureModal())}
+          correctAnswers={examFailureModal.correctAnswers}
+          totalQuestions={examFailureModal.totalQuestions}
+          successRate={examFailureModal.successRate}
+          phaseId={examFailureModal.phaseId}
+        />
+
+        <ReconnectWaitingModal
+          isOpen={reconnectWaitingModal.isOpen}
+          activePlayerName={reconnectWaitingModal.activePlayerName}
+          timeLeft={reconnectWaitingModal.timeLeft}
+          onTimeUp={() => {
+            console.log('⏰ Время ожидания переподключения истекло');
+            dispatch(closeReconnectWaitingModal());
           }}
         />
       </div>
@@ -315,7 +495,12 @@ export function LobbyPage() {
                   fontWeight: user.id === activePlayerId ? 'bold' : 'normal'
                 }}
               >
-                {user.username}
+                <span 
+                  className={styles.clickableUsername}
+                  onClick={() => handleUserClick(user.username)}
+                >
+                  {user.username}
+                </span>
                 {user.id === activePlayerId && ' (активный)'}
               </li>
             ))}
@@ -393,6 +578,23 @@ export function LobbyPage() {
           </form>
         </div>
       </div>
+
+      {/* Модальное окно действий пользователя */}
+      <UserActionsModal
+        isOpen={isUserActionsModalOpen}
+        onClose={() => setIsUserActionsModalOpen(false)}
+        username={selectedUsername}
+        onGoToProfile={handleGoToProfile}
+        onAddFriend={handleAddFriend}
+      />
+
+      {/* Уведомления о достижениях */}
+      {achievementNotifications.length > 0 && (
+        <AchievementNotification
+          achievements={achievementNotifications}
+          onClose={handleCloseAchievementNotification}
+        />
+      )}
 
     </div>
   );

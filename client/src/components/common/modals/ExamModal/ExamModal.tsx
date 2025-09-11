@@ -1,9 +1,9 @@
 import { useState, useEffect } from "react";
 import { Button } from "../../Button/Button";
+import { ConfirmCloseExamModal } from "../ConfirmCloseExamModal/ConfirmCloseExamModal";
 import styles from "./ExamModal.module.css";
 import api from "../../../../api/axios";
-import { useAppSelector, useAppDispatch } from "../../../../store/hooks";
-import { setExamIndex } from "../../../../store/lobbyPage/lobbySlice";
+import { useAppSelector } from "../../../../store/hooks";
 
 interface ExamQuestion {
   id: number;
@@ -18,12 +18,12 @@ interface ExamModalProps {
   currentUserId: number;
   activePlayerId: number | null;
   activePlayerName: string;
-  onExamComplete?: (correctAnswers: number, totalQuestions: number) => void;
-  onLocalIncorrectAnswer?: () => void;
-  onTimeout?: (pointId: string) => void;
-  sharedResult?: string | null;
   questions?: ExamQuestion[];
-  onAdvance?: (correct: boolean) => void;
+  onAdvance?: (correct: boolean, isTimeout?: boolean, answer?: string) => void;
+  onTimerReset?: (timeLeft: number) => void;
+  onAnswerSync?: (answer: string, activePlayerName: string) => void;
+  syncedAnswer?: string;          // 👈 синхронизированный ввод от активного игрока
+  onExamFail?: () => void;        // 👈 колбэк для провала экзамена
 }
 
 export function ExamModal({
@@ -33,15 +33,14 @@ export function ExamModal({
   currentUserId,
   activePlayerId,
   activePlayerName,
-  onExamComplete,
-  onLocalIncorrectAnswer,
-  onTimeout,
-  sharedResult,
   questions,
   onAdvance,
+  onTimerReset,
+  onAnswerSync,
+  syncedAnswer,
+  onExamFail,
 }: ExamModalProps) {
   // Для отправки прогресса экзамена (следующий вопрос) используем хук сокета через пропсы не получаем, поэтому просто импорт нельзя использовать напрямую.
-  const dispatch = useAppDispatch();
   const globalQuestions = useAppSelector(s => s.lobbyPage.examQuestions);
   const currentQuestionIndex = useAppSelector(s => s.lobbyPage.examIndex);
   const [examQuestions, setExamQuestions] = useState<ExamQuestion[]>(questions ?? globalQuestions ?? []);
@@ -51,10 +50,10 @@ export function ExamModal({
   const [correctAnswer, setCorrectAnswer] = useState<string | null>(null);
   const [timeLeft, setTimeLeft] = useState(30);
   const [timerActive, setTimerActive] = useState(false);
+  const [showConfirmClose, setShowConfirmClose] = useState(false);
 
   const totalQuestions = examQuestions.length;
   const currentQuestion = examQuestions[currentQuestionIndex];
-  const isLastQuestion = currentQuestionIndex === totalQuestions - 1;
 
   useEffect(() => {
     if (questions && questions.length > 0) {
@@ -70,20 +69,21 @@ export function ExamModal({
 
   useEffect(() => {
     setAnswer('');
-    setResult(null);
     setCorrectAnswer(null);
     setTimeLeft(30);
     setTimerActive(false);
     
-    // Автоматически запускаем таймер для активного игрока при переходе к новому вопросу
-    if (Number(currentUserId) === Number(activePlayerId) && isOpen) {
+    // НЕ сбрасываем result - уведомления показываются через сокет
+    
+    // Автоматически запускаем таймер для всех игроков при переходе к новому вопросу
+    if (isOpen) {
       setTimerActive(true);
     }
-  }, [currentQuestionIndex, currentUserId, activePlayerId, isOpen]);
+  }, [currentQuestionIndex, isOpen]);
 
-  // Таймер для активного игрока
+  // Таймер для всех игроков (синхронизированный)
   useEffect(() => {
-    if (!isOpen || !timerActive || Number(currentUserId) !== Number(activePlayerId)) {
+    if (!isOpen || !timerActive) {
       return;
     }
 
@@ -91,19 +91,22 @@ export function ExamModal({
       setTimeLeft((prev) => {
         if (prev <= 1) {
           setTimerActive(false);
-          // Автоматически отправляем ответ при истечении времени
-          console.log("⏰ Время истекло в экзамене, автоматически отправляем ответ:", answer.trim() || "пустой");
-          if (answer.trim()) {
-            handleSubmit();
+          // Только активный игрок может отправлять ответы
+          if (Number(currentUserId) === Number(activePlayerId)) {
+            // Автоматически отправляем ответ при истечении времени
+            console.log("⏰ Время истекло в экзамене, автоматически отправляем ответ:", answer.trim() || "пустой");
+            if (answer.trim()) {
+              handleSubmit();
+            } else {
+              // Если ответ пустой в экзамене — считаем как неправильный ответ
+              // Используем сокетную логику для корректного перехода к следующему вопросу
+              console.log("⏰ Пустой ответ при истечении времени в экзамене - считаем как неправильный");
+              // Убираем локальное уведомление - оно будет показано через сокет всем игрокам
+              onAdvance?.(false, true); // Передаем true для указания таймаута
+            }
           } else {
-            // Если ответ пустой, отправляем событие timeout всем игрокам
-            console.log("⏰ Пустой ответ при истечении времени в экзамене - отправляем timeout");
-            onTimeout?.("exam");
-            // Закрываем модальное окно локально
-            console.log("⏰ Закрываем ExamModal через 100ms");
-            setTimeout(() => {
-              onClose();
-            }, 100);
+            // Если неактивный игрок - просто сбрасываем таймер
+            console.log("⏰ Время истекло для неактивного игрока в экзамене");
           }
           return 0;
         }
@@ -114,16 +117,59 @@ export function ExamModal({
     return () => clearInterval(timer);
   }, [isOpen, timerActive, currentUserId, activePlayerId, answer]);
 
-  // Запускаем таймер когда модальное окно открывается для активного игрока
+  // Запускаем таймер когда модальное окно открывается для всех игроков
   useEffect(() => {
-    if (isOpen && Number(currentUserId) === Number(activePlayerId) && !loading) {
+    if (isOpen && !loading) {
       setTimerActive(true);
     } else {
       setTimerActive(false);
     }
-  }, [isOpen, currentUserId, activePlayerId, loading]);
+  }, [isOpen, loading]);
+
+  // Синхронизация таймера через сокеты
+  useEffect(() => {
+    if (onTimerReset) {
+      const handleTimerReset = (timeLeft: number) => {
+        setTimeLeft(timeLeft);
+        setTimerActive(true);
+      };
+      
+      // Здесь можно добавить слушатель события, если нужно
+      // Пока просто используем пропс для синхронизации
+    }
+  }, [onTimerReset]);
+
+  // Синхронизация ответа активного игрока
+  useEffect(() => {
+    if (onAnswerSync) {
+      const handleAnswerSync = (answer: string, activePlayerName: string) => {
+        setAnswer(answer);
+      };
+      
+      // Здесь можно добавить слушатель события, если нужно
+      // Пока просто используем пропс для синхронизации
+    }
+  }, [onAnswerSync]);
+
+  // Синхронизация ввода от активного игрока
+  useEffect(() => {
+    if (syncedAnswer !== undefined && Number(currentUserId) !== Number(activePlayerId)) {
+      // Обновляем ввод только для неактивных игроков
+      setAnswer(syncedAnswer);
+    }
+  }, [syncedAnswer, currentUserId, activePlayerId]);
 
   // Загрузка перенесена в инициатора и рассылается по сокету
+
+  const handleAnswerChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const newAnswer = e.target.value;
+    setAnswer(newAnswer);
+    
+    // Отправляем изменения инпута через сокет, если это активный игрок
+    if (Number(currentUserId) === Number(activePlayerId) && onAnswerSync) {
+      onAnswerSync(newAnswer, activePlayerName);
+    }
+  };
 
   const handleSubmit = async () => {
     if (!currentQuestion) return;
@@ -135,21 +181,26 @@ export function ExamModal({
       setResult(null);
 
       const res = await api.post(
-        "/api/question/answerCheck",
-        { question_id: currentQuestion.id, answer, lobby_id: lobbyId },
+        "/api/exam/examAnswerCheck",
+        { 
+          phase_id: currentQuestion.phase_id || 1, 
+          topic_id: currentQuestion.topic_id, 
+          question_id: currentQuestion.id, 
+          answer 
+        },
         { withCredentials: true }
       );
 
       if (res.data.correct) {
-        setResult("✅ Правильный ответ! (+10 очков)");
+        // Убираем локальное уведомление - оно будет показано через сокет всем игрокам
         // Переходим к следующему вопросу или завершаем экзамен
         // Сообщаем серверу, что ответ правильный, чтобы он продвинул индекс и/или завершил экзамен
-        onAdvance?.(true);
+        onAdvance?.(true, false, answer);
       } else {
-        setResult("❌ Неправильный ответ! (-5 очков)");
+        // Убираем локальное уведомление - оно будет показано через сокет всем игрокам
         setCorrectAnswer(res.data.correctAnswer);
         // При неправильном ответе не продвигаем индекс, просто передаём ход следующему игроку
-        onAdvance?.(false);
+        onAdvance?.(false, false, answer);
       }
       
     } catch (err) {
@@ -161,17 +212,23 @@ export function ExamModal({
   };
 
   const handleClose = () => {
-    setAnswer('');
-    setResult(null);
-    setCorrectAnswer(null);
-    setTimerActive(false);
-    setTimeLeft(30);
-    // Не трогаем общий список вопросов и индекс — это ломает синхронизацию
+    // Если закрывает активный игрок - показываем подтверждение
     if (Number(currentUserId) === Number(activePlayerId)) {
-      onLocalIncorrectAnswer?.();
+      setShowConfirmClose(true);
     } else {
+      // Неактивный игрок просто закрывает у себя
       onClose();
     }
+  };
+
+  const handleConfirmClose = () => {
+    setShowConfirmClose(false);
+    // Вызываем колбэк для провала экзамена
+    onExamFail?.();
+  };
+
+  const handleCancelClose = () => {
+    setShowConfirmClose(false);
   };
 
   if (!isOpen) return null;
@@ -185,6 +242,10 @@ export function ExamModal({
         
         {result && (
           <p className={styles.result}>{result}</p>
+        )}
+
+        {sharedResult && (
+          <p className={styles.result}>{sharedResult}</p>
         )}
 
         {correctAnswer && (
@@ -203,16 +264,17 @@ export function ExamModal({
             <h3 className={styles.topic}>{currentQuestion.topic_title}</h3>
             <p className={styles.question}>{currentQuestion.question_text}</p>
 
-            {Number(currentUserId) === Number(activePlayerId) && timerActive && (
+            {timerActive && (
               <div className={`${styles.timer} ${
                 timeLeft <= 10 ? styles.timerDanger : 
                 timeLeft <= 15 ? styles.timerWarning : ''
               }`}>
                 <p className={styles.timerText}>
                   ⏰ Осталось: {timeLeft} сек
+                  {Number(currentUserId) === Number(activePlayerId) ? ' (ваш ход)' : ' (ход другого игрока)'}
                 </p>
                 <div className={styles.timerBar}>
-                  <div 
+                  <div
                     className={`${styles.timerBarFill} ${
                       timeLeft <= 10 ? styles.timerBarDanger : 
                       timeLeft <= 15 ? styles.timerBarWarning : ''
@@ -223,34 +285,33 @@ export function ExamModal({
               </div>
             )}
 
-            {Number(currentUserId) === Number(activePlayerId) ? (
-              <>
-                <input
-                  type="text"
-                  className={styles.input}
-                  placeholder="Ваш ответ... (пустой ответ = неправильный)"
-                  value={answer}
-                  onChange={(e) => setAnswer(e.target.value)}
-                  disabled={loading}
-                />
+            <input
+              type="text"
+              className={styles.input}
+              placeholder={
+                Number(currentUserId) === Number(activePlayerId)
+                  ? "Ваш ответ... (пустой ответ = неправильный)"
+                  : `Отвечает ${activePlayerName}...`
+              }
+              value={answer}
+              onChange={handleAnswerChange}
+              disabled={loading || Number(currentUserId) !== Number(activePlayerId)}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' && !e.shiftKey && Number(currentUserId) === Number(activePlayerId)) {
+                  e.preventDefault();
+                  handleSubmit();
+                }
+              }}
+            />
 
-                <div className={styles.actions}>
-                  <Button onClick={handleClose}>Закрыть</Button>
-                  <Button onClick={handleSubmit} disabled={loading}>
-                    Отправить
-                  </Button>
-                </div>
-              </>
-            ) : (
-              <div className={styles.waitingBlock}>
-                <p className={styles.waiting}>
-                  Сейчас отвечает <strong>{activePlayerName}</strong>
-                </p>
-                <div className={styles.actions}>
-                  <Button onClick={handleClose}>Закрыть</Button>
-                </div>
-              </div>
-            )}
+            <div className={styles.actions}>
+              <Button onClick={handleClose}>Закрыть</Button>
+              {Number(currentUserId) === Number(activePlayerId) && (
+                <Button onClick={handleSubmit} disabled={loading}>
+                  Отправить
+                </Button>
+              )}
+            </div>
           </>
         )}
 
@@ -263,6 +324,13 @@ export function ExamModal({
           </div>
         )}
       </div>
+
+      {/* Модальное окно подтверждения закрытия экзамена */}
+      <ConfirmCloseExamModal
+        isOpen={showConfirmClose}
+        onConfirm={handleConfirmClose}
+        onCancel={handleCancelClose}
+      />
     </div>
   );
 }

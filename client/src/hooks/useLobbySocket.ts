@@ -2,14 +2,14 @@ import { useEffect, useState } from "react";
 import { useAppDispatch, useAppSelector } from "../store/hooks";
 import type { RootState } from "../store/store";
 import { type ChatHistoryItem, type IncomingChatMessage, socketClient, type SystemEvent } from "../socket/socketLobbyPage";
-import { initialState, setScores, mergeScores, openModal, setModalResult, closeModal, openExamModal, closeExamModal, setExamQuestions, setExamIndex, clearExamQuestions } from "../store/lobbyPage/lobbySlice";
+import { initialState, setScores, mergeScores, openModal, setModalResult, closeModal, openExamModal, closeExamModal, setExamQuestions, setExamIndex, clearExamQuestions, openPhaseTransitionModal, openExamFailureModal, openReconnectWaitingModal, closeReconnectWaitingModal } from "../store/lobbyPage/lobbySlice";
 import {
   setUsers,
   setPoints,
   updatePointStatus,
 } from "../store/lobbyPage/lobbySlice";
 
-export function useLobbySocket(lobbyId: number) {
+export function useLobbySocket(lobbyId: number, onAnswerInputSync?: (answer: string) => void, onExamAnswerInputSync?: (answer: string) => void) {
   const dispatch = useAppDispatch();
   const token = localStorage.getItem("accessToken");
   const { user } = useAppSelector((state: RootState) => state.auth);
@@ -23,8 +23,6 @@ export function useLobbySocket(lobbyId: number) {
     socketClient.connectWithToken(token, lobbyId);
 
     const socket = socketClient.socket;
-
-    console.log('🔌 [SOCKET] Регистрирую обработчики для комнаты:', lobbyId);
 
     const onConnect = () => {
       setConnected(true);
@@ -56,7 +54,6 @@ export function useLobbySocket(lobbyId: number) {
     const onPointStatus = ({ pointId, status}: any) => dispatch(updatePointStatus({ pointId, status }));
 
     const onInitScores = (payload: any) => {
-      console.log("ON lobby:initScores", payload);
       const nextIncorrect = payload?.incorrectAnswers ?? payload?.incorrect_answers ?? 0;
       dispatch(setScores({
         userScore: payload.userScore ?? 0,
@@ -66,35 +63,34 @@ export function useLobbySocket(lobbyId: number) {
     };
 
     const onScores = (payload: any) => {
-      console.log("ON lobby:scores", payload);
-      // Обновляем общий счёт лобби всем
       dispatch(mergeScores({ sessionScore: payload.sessionScore }));
-      // Личный счёт обновляем только тому пользователю, чьи очки пришли
       if (payload.userId && user?.id && Number(payload.userId) === Number(user.id)) {
         dispatch(mergeScores({ userScore: payload.userScore }));
       }
     };
 
+    // Убираем обработчик onCorrectAnswer - уведомления о правильных ответах показываются локально
+
     const onIncorrectAnswer = (payload: any) => {
-      console.log('🎯 [CLIENT] Получил lobby:incorrectAnswer:', payload);
-      console.log('🔍 [DEBUG] Структура payload:', payload);
-      console.log('🔍 [DEBUG] incorrectAnswers value:', payload.incorrectAnswers);
-      console.log('🔍 [DEBUG] Тип incorrectAnswers:', typeof payload.incorrectAnswers);
-      
-      // Обновляем общий счет лобби и счетчик неправильных ответов для всех
+      // Обновляем счетчик неправильных ответов у всех игроков
+      const incorrectCount = payload.incorrectAnswers || payload.incorrect_answers || 0;
       dispatch(mergeScores({
-        sessionScore: payload.sessionScore || 0,
-        incorrectAnswers: payload.incorrectAnswers || 0,
+        incorrectAnswers: incorrectCount
       }));
       
       dispatch(setModalResult('❌ Неправильный ответ!'));
-      setTimeout(() => dispatch(setModalResult(null)), 3000);
-
-      console.log('✅ [CLIENT] Redux обновлен');
+      setTimeout(() => dispatch(setModalResult(null)), 2000);
     };
 
-    const onCorrectAnswer = (payload: any) => {
-      console.log('🎯 [CLIENT] Получил lobby:correctAnswer:', payload);
+    const onIncorrectCountUpdate = (payload: { incorrectAnswers: number }) => {
+      // Обновляем только счетчик неправильных ответов без показа уведомления
+      dispatch(mergeScores({
+        incorrectAnswers: payload.incorrectAnswers
+      }));
+    };
+
+    const onCorrectAnswer = () => {
+      // Показываем уведомление о правильном ответе всем игрокам
       dispatch(setModalResult('✅ Правильный ответ! (+10 очков)'));
       setTimeout(() => {
         dispatch(setModalResult(null));
@@ -102,14 +98,32 @@ export function useLobbySocket(lobbyId: number) {
       }, 3000);
     };
 
-    const onTimeout = (payload: any) => {
-      console.log('⏰ [CLIENT] Получил lobby:timeout:', payload);
-      dispatch(setModalResult('⏰ Вы не успели ответить'));
-      dispatch(closeModal());
-      dispatch(closeExamModal());
+    const onExamCorrectAnswer = (payload: { message: string }) => {
+      // Показываем уведомление о правильном ответе в экзамене всем игрокам
+      console.log('onExamCorrectAnswer: показываем уведомление:', payload.message);
+      dispatch(setModalResult(payload.message));
+      setTimeout(() => {
+        console.log('onExamCorrectAnswer: убираем уведомление через 2 секунды');
+        dispatch(setModalResult(null));
+      }, 2000);
+    };
+
+    const onTimeout = () => {
+      dispatch(setModalResult('Ход будет передан следующему игроку'));
       setTimeout(() => {
         dispatch(setModalResult(null));
-      }, 4000);
+        dispatch(closeModal());
+        dispatch(closeExamModal());
+      }, 2000);
+    };
+
+    const onPassTurnNotification = () => {
+      dispatch(setModalResult('Ход будет передан следующему игроку'));
+      setTimeout(() => {
+        dispatch(setModalResult(null));
+        dispatch(closeModal());
+        dispatch(closeExamModal());
+      }, 2000);
     };
     
     const onOpenModal = (payload: { questionId: number; topic: string; question: string }) => {
@@ -122,8 +136,6 @@ export function useLobbySocket(lobbyId: number) {
     };
     
     const onExamNext = (payload: { index: number; question?: any }) => {
-      // В данный момент список вопросов уже синхронизирован при старте экзамена.
-      // Мы лишь двигаем индекс. payload.question зарезервирован на будущее.
       dispatch(setExamIndex(payload.index));
     };
     const onExamComplete = () => {
@@ -133,12 +145,148 @@ export function useLobbySocket(lobbyId: number) {
     };
 
     const onCloseModal = () => {
-      console.log('🔒 [CLIENT] Получил lobby:closeModal - закрываем модалку');
       dispatch(closeModal());
     };
-;
+
+    const onNewAchievements = (payload: any) => {
+      console.log('🏆 [CLIENT] Получил lobby:newAchievements:', payload);
+      // Эмитим кастомное событие для показа уведомления о достижениях
+      window.dispatchEvent(new CustomEvent('achievement:received', { 
+        detail: payload 
+      }));
+    };
+
+    const onCloseExamModal = () => {
+      dispatch(closeExamModal());
+    };
+
+    const onExamReward = (payload: { 
+      message: string; 
+      rewardPoints: number; 
+      sessionScore: number; 
+      userScores?: Array<{ userId: number; userScore: number }> 
+    }) => {
+      // Обновляем общий счет лобби
+      dispatch(mergeScores({
+        sessionScore: payload.sessionScore
+      }));
+      
+      // Обновляем очки текущего пользователя, если он есть в списке
+      if (payload.userScores && user?.id) {
+        const currentUserScore = payload.userScores.find(us => Number(us.userId) === Number(user.id));
+        if (currentUserScore) {
+          console.log('🎯 Обновляем очки пользователя:', {
+            userId: user.id,
+            newScore: currentUserScore.userScore,
+            sessionScore: payload.sessionScore
+          });
+          dispatch(mergeScores({
+            userScore: currentUserScore.userScore
+          }));
+        }
+      }
+
+      // Открываем модальное окно поздравления с переходом на новую фазу
+      // Определяем номер фазы на основе награды (30 очков = фаза 2, 60 очков = фаза 3)
+      const phaseNumber = payload.rewardPoints === 30 ? 2 : 3;
+      dispatch(openPhaseTransitionModal({
+        phaseNumber,
+        rewardPoints: payload.rewardPoints
+      }));
+    };
+
+    const onExamFailed = (payload: {
+      message: string;
+      correctAnswers: number;
+      totalQuestions: number;
+      successRate: number;
+      phaseId: number;
+    }) => {
+      console.log('❌ [EXAM] Экзамен провален:', payload);
+      
+      // Открываем модальное окно провала экзамена
+      dispatch(openExamFailureModal({
+        correctAnswers: payload.correctAnswers,
+        totalQuestions: payload.totalQuestions,
+        successRate: payload.successRate,
+        phaseId: payload.phaseId,
+      }));
+    };
+
+    const onExamIncorrectAnswer = (payload: { message: string }) => {
+      console.log('❌ [EXAM] Неправильный ответ в экзамене:', payload);
+      
+      // Показываем уведомление о неправильном ответе всем игрокам
+      dispatch(setModalResult(payload.message));
+      
+      // Закрываем уведомление через 2 секунды
+      setTimeout(() => {
+        dispatch(setModalResult(null));
+      }, 2000);
+    };
+
+    const onExamAnswerSync = (payload: { answer: string; activePlayerName: string }) => {
+      console.log('🔄 [EXAM] Синхронизация ответа:', payload);
+      // Это событие будет обработано в ExamModal через пропсы
+    };
+
+    const onAnswerSync = (payload: { answer: string; activePlayerName: string }) => {
+      console.log('🔄 [QUESTION] Синхронизация ответа:', payload);
+      // Это событие будет обработано в QuestionModal через пропсы
+    };
+
+    const onAnswerInput = (payload: { answer: string; activePlayerName: string }) => {
+      console.log('🔄 [QUESTION] Синхронизация ввода:', payload);
+      if (onAnswerInputSync) {
+        onAnswerInputSync(payload.answer);
+      }
+    };
+
+    const onExamAnswerInput = (payload: { answer: string; activePlayerName: string }) => {
+      console.log('🔄 [EXAM] Синхронизация ввода:', payload);
+      if (onExamAnswerInputSync) {
+        onExamAnswerInputSync(payload.answer);
+      }
+    };
+
+    const onExamTimerReset = (payload: { timeLeft: number }) => {
+      // Синхронизируем таймер для всех игроков
+      // Это событие будет обработано в ExamModal через пропсы
+      console.log('⏰ Синхронизация таймера экзамена:', payload.timeLeft);
+    };
+
+    const onReconnectWaiting = (payload: { activePlayerName: string; timeLeft: number }) => {
+      console.log('⏳ [RECONNECT] Начинаем ожидание переподключения:', payload);
+      dispatch(openReconnectWaitingModal({
+        activePlayerName: payload.activePlayerName,
+        timeLeft: payload.timeLeft
+      }));
+    };
+
+    const onReconnectTimeout = () => {
+      console.log('⏰ [RECONNECT] Время ожидания истекло');
+      dispatch(closeReconnectWaitingModal());
+    };
+
+    const onReconnectCanceled = () => {
+      console.log('✅ [RECONNECT] Ожидание отменено, игрок вернулся');
+      dispatch(closeReconnectWaitingModal());
+    };
+
+    const onFavoriteToggled = (payload: { 
+      userId: number; 
+      questionId: number; 
+      isFavorite: boolean; 
+      username: string;
+    }) => {
+      console.log('⭐ [FAVORITE] Вопрос добавлен/удален из избранного:', payload);
+      
+      // Эмитим кастомное событие для синхронизации состояния избранного
+      window.dispatchEvent(new CustomEvent('favorite:sync', { 
+        detail: payload 
+      }));
+    };
     socket.on("connect", () => {
-      console.log('✅ [SOCKET] Подключен к комнате lobby:', lobbyId);
       setConnected(true);
       setConnecting(false);
     });
@@ -168,15 +316,30 @@ export function useLobbySocket(lobbyId: number) {
     socket.on("lobby:initScores", onInitScores);
     socket.on("lobby:scores", onScores);
     socket.on("lobby:incorrectAnswer", onIncorrectAnswer);
+    socket.on("lobby:incorrectCountUpdate", onIncorrectCountUpdate);
     socket.on("lobby:correctAnswer", onCorrectAnswer);
+    socket.on("lobby:examCorrectAnswer", onExamCorrectAnswer);
     socket.on("lobby:openModal", onOpenModal);
     socket.on("lobby:examStart", onExamStart);
     socket.on("lobby:examNext", onExamNext);
     socket.on("lobby:examComplete", onExamComplete);
+    socket.on("lobby:examReward", onExamReward);
+    socket.on("lobby:examFailed", onExamFailed);
+    socket.on("lobby:examIncorrectAnswer", onExamIncorrectAnswer);
+    socket.on("lobby:examAnswerSync", onExamAnswerSync);
+    socket.on("lobby:answerSync", onAnswerSync);
+    socket.on("lobby:answerInput", onAnswerInput);
+    socket.on("lobby:examAnswerInput", onExamAnswerInput);
+    socket.on("lobby:examTimerReset", onExamTimerReset);
+    socket.on("lobby:reconnectWaiting", onReconnectWaiting);
+    socket.on("lobby:reconnectTimeout", onReconnectTimeout);
+    socket.on("lobby:reconnectCanceled", onReconnectCanceled);
     socket.on("lobby:timeout", onTimeout);
+    socket.on("lobby:passTurnNotification", onPassTurnNotification);
     socket.on("lobby:closeModal", onCloseModal);
-    
-    console.log('✅ [SOCKET] Обработчик lobby:incorrectAnswer зарегистрирован');
+    socket.on("lobby:newAchievements", onNewAchievements);
+    socket.on("lobby:closeExamModal", onCloseExamModal);
+    socket.on("lobby:favoriteToggled", onFavoriteToggled);
 
     return () => {
       socket.emit("leaveLobby");
@@ -193,13 +356,27 @@ export function useLobbySocket(lobbyId: number) {
       socket.off("lobby:initScores", onInitScores);
       socket.off("lobby:scores", onScores);
       socket.off("lobby:incorrectAnswer", onIncorrectAnswer);
+      socket.off("lobby:incorrectCountUpdate", onIncorrectCountUpdate);
       socket.off("lobby:correctAnswer", onCorrectAnswer);
+      socket.off("lobby:examCorrectAnswer", onExamCorrectAnswer);
       socket.off("lobby:timeout", onTimeout);
+      socket.off("lobby:passTurnNotification", onPassTurnNotification);
       socket.off("lobby:openModal", onOpenModal);
       socket.off("lobby:examStart", onExamStart);
       socket.off("lobby:examNext", onExamNext);
       socket.off("lobby:examComplete", onExamComplete);
+      socket.off("lobby:examReward", onExamReward);
+      socket.off("lobby:examAnswerSync", onExamAnswerSync);
+      socket.off("lobby:answerSync", onAnswerSync);
+      socket.off("lobby:answerInput", onAnswerInput);
+      socket.off("lobby:examAnswerInput", onExamAnswerInput);
+      socket.off("lobby:examTimerReset", onExamTimerReset);
+      socket.off("lobby:reconnectWaiting", onReconnectWaiting);
+      socket.off("lobby:reconnectTimeout", onReconnectTimeout);
+      socket.off("lobby:reconnectCanceled", onReconnectCanceled);
       socket.off("lobby:closeModal", onCloseModal);
+      socket.off("lobby:newAchievements", onNewAchievements);
+      socket.off("lobby:favoriteToggled", onFavoriteToggled);
       socket.disconnect();
     };
   }, [dispatch, lobbyId, token]);
@@ -209,10 +386,8 @@ export function useLobbySocket(lobbyId: number) {
     socketClient.socket.emit("chat:message", { text });
   };
 
-  const sendAnswer = (pointId: string, correct: boolean) => {
-    console.log("📡 [CLIENT] sendAnswer вызван:", { lobbyId, pointId, correct });
-    console.log("📡 [CLIENT] connected:", connected);
-    socketClient.socket.emit("lobby:answer", { lobbyId, pointId, correct });
+  const sendAnswer = (pointId: string, correct: boolean, answer?: string) => {
+    socketClient.socket.emit("lobby:answer", { lobbyId, pointId, correct, answer });
   };
 
   const sendTimeout = (pointId: string) => {
@@ -226,16 +401,51 @@ export function useLobbySocket(lobbyId: number) {
   const sendOpenModal = (payload: { questionId: number; topic: string; question: string }) => {
     socketClient.socket.emit("lobby:openModal", payload);
   };
-  const sendOpenExam = (payload?: { questions?: any[] }) => {
+  const sendOpenExam = (payload?: { questions?: any[]; examId?: string }) => {
     socketClient.socket.emit("lobby:openExam", payload ?? {});
   };
-  const sendExamAnswerProgress = (correct?: boolean) => {
-    socketClient.socket.emit("lobby:examAnswer", { correct: Boolean(correct) });
+  const sendExamAnswerProgress = (correct?: boolean, isTimeout?: boolean, answer?: string) => {
+    socketClient.socket.emit("lobby:examAnswer", { 
+      correct: Boolean(correct), 
+      isTimeout: Boolean(isTimeout),
+      answer: answer 
+    });
   };
 
   const sendCloseModal = () => {
-    console.log("📡 [CLIENT] sendCloseModal вызван");
     socketClient.socket.emit("lobby:closeModal");
+  };
+
+  const sendIncorrectAnswer = (incorrectCount: number) => {
+    socketClient.socket.emit("lobby:incorrectAnswer", { incorrectAnswers: incorrectCount });
+  };
+
+  const sendPassTurn = () => {
+    socketClient.socket.emit("lobby:passTurn");
+  };
+
+  const sendIncorrectCountUpdate = (incorrectCount: number) => {
+    socketClient.socket.emit("lobby:incorrectCountUpdate", { incorrectAnswers: incorrectCount });
+  };
+
+  const sendCorrectAnswer = () => {
+    socketClient.socket.emit("lobby:correctAnswer");
+  };
+
+  const sendPassTurnNotification = () => {
+    socketClient.socket.emit("lobby:passTurnNotification");
+  };
+
+  const sendAnswerInput = (answer: string, activePlayerName: string) => {
+    socketClient.socket.emit("lobby:answerInput", { answer, activePlayerName });
+  };
+
+  const sendExamAnswerInput = (answer: string, activePlayerName: string) => {
+    socketClient.socket.emit("lobby:examAnswerInput", { answer, activePlayerName });
+  };
+
+  const sendFavoriteToggle = (questionId: number, isFavorite: boolean) => {
+    socketClient.socket.emit("lobby:favoriteToggle", { questionId, isFavorite });
   };
 
   return {
@@ -251,5 +461,13 @@ export function useLobbySocket(lobbyId: number) {
     sendOpenExam,
     sendExamAnswerProgress,
     sendCloseModal,
+    sendIncorrectAnswer,
+    sendPassTurn,
+    sendIncorrectCountUpdate,
+    sendCorrectAnswer,
+    sendPassTurnNotification,
+    sendAnswerInput,
+    sendExamAnswerInput,
+    sendFavoriteToggle,
   };
 };
