@@ -76,6 +76,19 @@ module.exports = (sequelize, DataTypes) => {
         foreignKey: 'user_id',
         as: 'user_favorite_questions'
       });
+
+      // Связи для аватаров
+      User.belongsToMany(models.Avatar, {
+        through: models.UserAvatar,
+        foreignKey: 'userId',
+        otherKey: 'avatarId',
+        as: 'avatars'
+      });
+
+      User.hasMany(models.UserAvatar, {
+        foreignKey: 'userId',
+        as: 'user_avatars'
+      });
     }
   }
   User.init({

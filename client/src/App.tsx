@@ -7,6 +7,7 @@ import { Profile } from './pages/ProfilePage/Profile';
 import { LobbyPage } from './pages/LobbyPage/LobbyPage';
 import { AchievementsPage } from './pages/AchievementsPage/AchievementsPage';
 import { FavoritesPage } from './pages/FavoritesPage';
+import { AvatarShopPage } from './pages/AvatarShopPage/AvatarShopPage';
 import { PrivateRoute } from './components/PrivateRoute/PrivateRoute';
 import { useEffect } from 'react';
 import { initAuth } from './store/authThunks';
@@ -61,6 +62,14 @@ export function App() {
           element={
             <PrivateRoute>
               <FavoritesPage />
+            </PrivateRoute>
+          } 
+        />
+        <Route 
+          path="/avatar-shop" 
+          element={
+            <PrivateRoute>
+              <AvatarShopPage />
             </PrivateRoute>
           } 
         />

@@ -4,6 +4,7 @@ import authReducer from './authSlice';
 import mainPageReducer from './mainPage/mainPageSlice';
 import mainPageConditionalRenderingReducer from './mainPageConditionalRenderingSlice/mainPageConditionalRenderingSlice';
 import lobbyPageReducer from './lobbyPage/lobbySlice';
+import avatarReducer from './avatarSlice';
 
 
 export const store = configureStore({
@@ -12,6 +13,7 @@ export const store = configureStore({
     mainPage: mainPageReducer,
     mainPageConditionalRendering: mainPageConditionalRenderingReducer,
     lobbyPage: lobbyPageReducer,
+    avatar: avatarReducer,
   },
 });
 

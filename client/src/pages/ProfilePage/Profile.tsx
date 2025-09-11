@@ -12,6 +12,9 @@ import {
   type User as FriendUser, 
   type Friendship 
 } from "../../api/friendship/friendshipApi";
+import { useAppDispatch, useAppSelector } from "../../store/hooks";
+import { fetchCurrentAvatar } from "../../store/avatarSlice";
+import { Link } from "react-router-dom";
 import styles from "./Profile.module.css";
 
 interface User {
@@ -30,6 +33,9 @@ interface ApiResponse<T> {
 }
 
 export function Profile() {
+  const dispatch = useAppDispatch();
+  const { currentAvatar } = useAppSelector((state) => state.avatar);
+  
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
@@ -91,7 +97,10 @@ export function Profile() {
     };
 
     loadUserProfile();
-  }, []);
+    
+    // Загружаем данные аватара
+    dispatch(fetchCurrentAvatar());
+  }, [dispatch]);
 
   // Загрузка друзей и заявок
   useEffect(() => {
@@ -331,17 +340,32 @@ export function Profile() {
   <h1 className={styles.header}>Профиль</h1>
 
   <div className={styles.profileContainer}>
-    <img
-      src={user.image_url || "/default-avatar.png"}
-      alt="Аватар"
-      className={styles.avatar}
-    />
+    <div className={styles.avatarSection}>
+      <img
+        src={currentAvatar?.imageUrl || user.image_url || "/default-avatar.png"}
+        alt="Аватар"
+        className={styles.avatar}
+      />
+      {currentAvatar && (
+        <div className={styles.avatarInfo}>
+          <span className={styles.avatarName}>{currentAvatar.name}</span>
+          <span className={styles.avatarRarity}>{currentAvatar.rarity}</span>
+        </div>
+      )}
+    </div>
 
     <div className={styles.userInfo}>
       <h2>{user.username}</h2>
       <p><strong>Email:</strong> {user.email}</p>
       <p><strong>Роль:</strong> {user.role || "Пользователь"}</p>
-      <p><strong>Очки:</strong> {user.score ?? 0}</p>
+      <div className={styles.scoreInfo}>
+        <span className={styles.scoreIcon}>⭐</span>
+        <span className={styles.scoreAmount}>{user.score ?? 0}</span>
+        <span className={styles.scoreLabel}>очков</span>
+      </div>
+      <Link to="/avatar-shop" className={styles.shopLink}>
+        🎭 Магазин аватаров
+      </Link>
     </div>
   </div>
 

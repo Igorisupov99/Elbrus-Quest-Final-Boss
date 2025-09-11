@@ -4,6 +4,8 @@ export interface User {
   username: string;
   score: number;
   isActive: boolean;
+  coins: number;
+  currentAvatarId?: number;
 }
 
 export interface LoginCredentials {

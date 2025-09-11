@@ -38,6 +38,9 @@ export function Header() {
               <Link to="/favorites" className={styles.profileLink}>
                 📚 Избранное
               </Link>
+              <Link to="/avatar-shop" className={styles.profileLink}>
+                🎭 Магазин
+              </Link>
               <Link to="/profile" className={styles.profileLink}>
                 Профиль
               </Link>
