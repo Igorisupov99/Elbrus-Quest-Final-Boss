@@ -85,8 +85,7 @@ export function LobbyPage() {
     const point = points.find(p => p.id === pointId);
     if (!point || point.status !== "available") return;
 
-    // Проверяем, что нажимает активный игрок
-    if (user?.id !== activePlayerId) return;
+    // Любой игрок может открыть модальное окно, но отвечать может только активный
 
     try {
       if (pointId !== "exam" && pointId !== "exam2") {

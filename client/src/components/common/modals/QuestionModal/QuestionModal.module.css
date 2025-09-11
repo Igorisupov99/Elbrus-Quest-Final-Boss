@@ -43,8 +43,32 @@
 
 .actions {
   display: flex;
-  justify-content: flex-end;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1rem;
+}
+
+.leftActions {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.rightActions {
+  display: flex;
   gap: 12px;
+  justify-content: flex-end;
+}
+
+.favoriteButton {
+  background-color: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 0.5rem;
+  color: white;
+}
+
+.favoriteButton:hover {
+  background-color: rgba(255, 255, 255, 0.2);
 }
 
 .timer {

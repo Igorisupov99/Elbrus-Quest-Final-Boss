@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 import { Button } from "../../Button/Button";
+import { FavoriteButton } from "../../FavoriteButton";
 import { ConfirmCloseModal } from "../ConfirmCloseModal/ConfirmCloseModal";
 import styles from "./QuestionModal.module.css";
 import api from "../../../../api/axios";
@@ -280,12 +281,24 @@ export function QuestionModal({
             />
 
             <div className={styles.actions}>
-              <Button onClick={handleClose}>Закрыть</Button>
-              {Number(currentUserId) === Number(activePlayerId) && (
-                <Button onClick={handleSubmit} disabled={loading || answerSubmitted}>
-                  {answerSubmitted ? 'Ответ отправлен' : 'Отправить'}
-                </Button>
-              )}
+              <div className={styles.leftActions}>
+                {questionId && (
+                  <FavoriteButton 
+                    questionId={questionId} 
+                    showText={true}
+                    size="medium"
+                    className={styles.favoriteButton}
+                  />
+                )}
+              </div>
+              <div className={styles.rightActions}>
+                <Button onClick={handleClose}>Закрыть</Button>
+                {Number(currentUserId) === Number(activePlayerId) && (
+                  <Button onClick={handleSubmit} disabled={loading || answerSubmitted}>
+                    {answerSubmitted ? 'Ответ отправлен' : 'Отправить'}
+                  </Button>
+                )}
+              </div>
             </div>
           </>
         )}

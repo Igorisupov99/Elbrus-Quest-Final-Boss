@@ -63,6 +63,19 @@ module.exports = (sequelize, DataTypes) => {
         foreignKey: 'user_id',
         as: 'user_achievements'
       });
+
+      // Связи для избранных вопросов
+      User.belongsToMany(models.Question, {
+        through: models.UserFavoriteQuestion,
+        foreignKey: 'user_id',
+        otherKey: 'question_id',
+        as: 'favorite_questions'
+      });
+
+      User.hasMany(models.UserFavoriteQuestion, {
+        foreignKey: 'user_id',
+        as: 'user_favorite_questions'
+      });
     }
   }
   User.init({
