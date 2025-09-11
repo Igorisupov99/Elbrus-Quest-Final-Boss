@@ -13,7 +13,13 @@ const initialState: AuthState = {
 const authSlice = createSlice({
   name: 'auth',
   initialState,
-  reducers: {},
+  reducers: {
+    updateUserScore: (state, action: PayloadAction<number>) => {
+      if (state.user) {
+        state.user.score = action.payload;
+      }
+    },
+  },
   extraReducers: (builder) => {
     // login
     builder.addCase(loginUser.pending, (state) => {
@@ -67,4 +73,5 @@ const authSlice = createSlice({
   },
 });
 
+export const { updateUserScore } = authSlice.actions;
 export default authSlice.reducer;

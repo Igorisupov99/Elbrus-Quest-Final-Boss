@@ -62,6 +62,10 @@ export function Profile() {
   const [favoritesLoading, setFavoritesLoading] = useState<boolean>(false);
   const [currentFavoriteIndex, setCurrentFavoriteIndex] = useState<number>(0);
 
+  // Redux для аватаров
+  const dispatch = useAppDispatch();
+  const currentAvatar = useAppSelector(state => state.avatar.currentAvatar);
+
 
   // Для управления формой настроек
   const [formData, setFormData] = useState({
@@ -197,6 +201,13 @@ export function Profile() {
 
     loadFavorites();
   }, []);
+
+  // Загрузка текущего аватара
+  useEffect(() => {
+    if (user.id) {
+      dispatch(fetchCurrentAvatar(user.id));
+    }
+  }, [dispatch, user.id]);
 
   // Обработчик открытия/закрытия модалки
   const openSettings = () => {
@@ -424,13 +435,18 @@ export function Profile() {
       <div className={styles.profileInfoBlock}>
         <div className={styles.avatarSection}>
     <img
-      src={user.image_url || "/default-avatar.png"}
+      src={currentAvatar?.imageUrl || user.image_url || "/default-avatar.png"}
       alt="Аватар"
       className={styles.avatar}
     />
           <button className={styles.editButton} onClick={openSettings}>
             Редактировать
           </button>
+          <div className={styles.avatarControls}>
+            <Link to="/avatar-shop" className={styles.avatarShopLink}>
+              🛒 Магазин аватаров
+            </Link>
+          </div>
         </div>
         <div className={styles.basicInfo}>
           <h2 className={styles.username}>{user.username}</h2>
