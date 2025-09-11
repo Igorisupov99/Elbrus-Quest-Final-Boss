@@ -5,6 +5,7 @@ const lobbyUsers = new Map();
 const lobbyPoints = new Map();
 const lobbyTimeouts = new Map();
 const lobbyExamState = new Map(); // lobbyId -> { questions: any[], index: number, correctAnswers: number, totalQuestions: number, examId: string }
+const lobbyReconnectTimers = new Map(); // lobbyId -> { timerId: number, activePlayerId: number, activePlayerName: string }
 
 function initLobbySockets(nsp) {
   nsp.on('connection', async (socket) => {
@@ -76,6 +77,57 @@ function initLobbySockets(nsp) {
       }
     }
 
+    // Функция для запуска таймера ожидания переподключения
+    function startReconnectTimer(activePlayerId, activePlayerName) {
+      // Очищаем предыдущий таймер, если есть
+      if (lobbyReconnectTimers.has(lobbyId)) {
+        const existingTimer = lobbyReconnectTimers.get(lobbyId);
+        clearTimeout(existingTimer.timerId);
+      }
+
+      console.log(`⏳ [RECONNECT] Запускаем таймер ожидания для ${activePlayerName} (ID: ${activePlayerId})`);
+      
+      // Уведомляем всех игроков о начале ожидания
+      nsp.to(roomKey).emit('lobby:reconnectWaiting', {
+        activePlayerName,
+        timeLeft: 30
+      });
+
+      const timerId = setTimeout(async () => {
+        console.log(`⏰ [RECONNECT] Время ожидания истекло, передаем ход следующему игроку`);
+        
+        // Передаем ход следующему игроку
+        await passTurnToNextPlayer();
+        
+        // Уведомляем всех игроков о завершении ожидания
+        nsp.to(roomKey).emit('lobby:reconnectTimeout');
+        
+        // Удаляем таймер из Map
+        lobbyReconnectTimers.delete(lobbyId);
+      }, 30000); // 30 секунд
+
+      // Сохраняем таймер в Map
+      lobbyReconnectTimers.set(lobbyId, {
+        timerId,
+        activePlayerId,
+        activePlayerName
+      });
+    }
+
+    // Функция для отмены таймера ожидания переподключения
+    function cancelReconnectTimer() {
+      if (lobbyReconnectTimers.has(lobbyId)) {
+        const timer = lobbyReconnectTimers.get(lobbyId);
+        clearTimeout(timer.timerId);
+        lobbyReconnectTimers.delete(lobbyId);
+        
+        console.log(`✅ [RECONNECT] Таймер ожидания отменен для лобби ${lobbyId}`);
+        
+        // Уведомляем всех игроков об отмене ожидания
+        nsp.to(roomKey).emit('lobby:reconnectCanceled');
+      }
+    }
+
     // Функция для передачи хода следующему игроку
     async function passTurnToNextPlayer() {
       try {
@@ -119,6 +171,13 @@ function initLobbySockets(nsp) {
     }
 
     console.log(`Пользователь подключился ${lobbyId}: ${socket.user.username}`);
+
+    // Проверяем, есть ли активный таймер ожидания переподключения для этого игрока
+    const reconnectTimer = lobbyReconnectTimers.get(lobbyId);
+    if (reconnectTimer && reconnectTimer.activePlayerId === socket.user.id) {
+      console.log(`✅ [RECONNECT] Игрок ${socket.user.username} вернулся, отменяем таймер ожидания`);
+      cancelReconnectTimer();
+    }
 
     // --- создание / получение UserSession ---
     try {
@@ -858,10 +917,25 @@ function initLobbySockets(nsp) {
     socket.on('disconnect', async (reason) => {
       console.log(`Сокет отключён: ${socket.id}, reason=${reason}`);
 
+      // Проверяем, был ли отключившийся игрок активным
+      const wasActive = await db.UserSession.findOne({
+        where: {
+          game_session_id: lobbyId,
+          user_id: socket.user.id,
+          is_user_active: true,
+        },
+      });
+
       // Удаляем пользователя из памяти
       if (lobbyUsers.has(lobbyId)) {
         lobbyUsers.get(lobbyId).delete(socket.id);
         await emitUsersList();
+      }
+
+      // Если отключился активный игрок - запускаем таймер ожидания
+      if (wasActive) {
+        console.log(`⚠️ [RECONNECT] Активный игрок ${socket.user.username} отключился`);
+        startReconnectTimer(socket.user.id, socket.user.username);
       }
 
       // Если лобби пустое — ставим таймер на удаление данных
@@ -869,6 +943,7 @@ function initLobbySockets(nsp) {
         const timeoutId = setTimeout(() => {
           lobbyPoints.delete(lobbyId);
           lobbyTimeouts.delete(lobbyId);
+          lobbyReconnectTimers.delete(lobbyId);
         }, 5 * 60 * 1000);
         lobbyTimeouts.set(lobbyId, timeoutId);
       }

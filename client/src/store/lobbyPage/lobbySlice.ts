@@ -57,6 +57,11 @@ interface LobbyState {
     successRate: number;
     phaseId: number;
   };
+  reconnectWaitingModal: {
+    isOpen: boolean;
+    activePlayerName: string;
+    timeLeft: number;
+  };
 }
 
 export const initialState: LobbyState = {
@@ -178,6 +183,11 @@ export const initialState: LobbyState = {
     successRate: 0,
     phaseId: 1,
   },
+  reconnectWaitingModal: {
+    isOpen: false,
+    activePlayerName: '',
+    timeLeft: 30,
+  },
 };
 
 const lobbyPageReducer = createSlice({
@@ -276,11 +286,27 @@ const lobbyPageReducer = createSlice({
     },
     closeExamFailureModal(state) {
       state.examFailureModal.isOpen = false;
+    },
+    openReconnectWaitingModal(
+      state,
+      action: PayloadAction<{ activePlayerName: string; timeLeft: number }>
+    ) {
+      state.reconnectWaitingModal = {
+        isOpen: true,
+        activePlayerName: action.payload.activePlayerName,
+        timeLeft: action.payload.timeLeft,
+      };
+    },
+    closeReconnectWaitingModal(state) {
+      state.reconnectWaitingModal.isOpen = false;
+    },
+    updateReconnectTimer(state, action: PayloadAction<number>) {
+      state.reconnectWaitingModal.timeLeft = action.payload;
     }
   },
 });
 
-export const { setUsers, setPoints, updatePointStatus, openModal, closeModal, openExamModal, closeExamModal, setExamQuestions, clearExamQuestions, setExamIndex, setScores, mergeScores, incrementIncorrectAnswers, setIncorrectAnswers, setModalResult, openPhaseTransitionModal, closePhaseTransitionModal, openExamFailureModal, closeExamFailureModal } =
+export const { setUsers, setPoints, updatePointStatus, openModal, closeModal, openExamModal, closeExamModal, setExamQuestions, clearExamQuestions, setExamIndex, setScores, mergeScores, incrementIncorrectAnswers, setIncorrectAnswers, setModalResult, openPhaseTransitionModal, closePhaseTransitionModal, openExamFailureModal, closeExamFailureModal, openReconnectWaitingModal, closeReconnectWaitingModal, updateReconnectTimer } =
   lobbyPageReducer.actions;
 
 export default lobbyPageReducer.reducer;

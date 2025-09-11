@@ -8,9 +8,10 @@ import { ExamModal } from "../../components/common/modals/ExamModal/ExamModal";
 import api from "../../api/axios";
 import { useLobbySocket } from "../../hooks/useLobbySocket";
 import { useAppDispatch, useAppSelector } from "../../store/hooks";
-import { updatePointStatus, mergeScores, openModal as openModalAction, closeModal as closeModalAction, openExamModal as openExamModalAction, closeExamModal as closeExamModalAction, setModalResult, closePhaseTransitionModal, closeExamFailureModal } from "../../store/lobbyPage/lobbySlice";
+import { updatePointStatus, mergeScores, openModal as openModalAction, closeModal as closeModalAction, openExamModal as openExamModalAction, closeExamModal as closeExamModalAction, setModalResult, closePhaseTransitionModal, closeExamFailureModal, closeReconnectWaitingModal } from "../../store/lobbyPage/lobbySlice";
 import PhaseTransitionModal from "../../components/common/modals/PhaseTransitionModal";
 import ExamFailureModal from "../../components/common/modals/ExamFailureModal";
+import { ReconnectWaitingModal } from "../../components/common/modals/ReconnectWaitingModal";
 
 export function LobbyPage() {
   const { id } = useParams<{ id: string }>();
@@ -25,6 +26,7 @@ export function LobbyPage() {
   const { userScore, sessionScore, incorrectAnswers } = useAppSelector(s => s.lobbyPage.scores);
   const phaseTransitionModal = useAppSelector(s => s.lobbyPage.phaseTransitionModal);
   const examFailureModal = useAppSelector(s => s.lobbyPage.examFailureModal);
+  const reconnectWaitingModal = useAppSelector(s => s.lobbyPage.reconnectWaitingModal);
   const {
     history,
     connected,
@@ -391,6 +393,16 @@ export function LobbyPage() {
           totalQuestions={examFailureModal.totalQuestions}
           successRate={examFailureModal.successRate}
           phaseId={examFailureModal.phaseId}
+        />
+
+        <ReconnectWaitingModal
+          isOpen={reconnectWaitingModal.isOpen}
+          activePlayerName={reconnectWaitingModal.activePlayerName}
+          timeLeft={reconnectWaitingModal.timeLeft}
+          onTimeUp={() => {
+            console.log('⏰ Время ожидания переподключения истекло');
+            dispatch(closeReconnectWaitingModal());
+          }}
         />
       </div>
 

@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { useAppDispatch, useAppSelector } from "../store/hooks";
 import type { RootState } from "../store/store";
 import { type ChatHistoryItem, type IncomingChatMessage, socketClient, type SystemEvent } from "../socket/socketLobbyPage";
-import { initialState, setScores, mergeScores, openModal, setModalResult, closeModal, openExamModal, closeExamModal, setExamQuestions, setExamIndex, clearExamQuestions, openPhaseTransitionModal, openExamFailureModal } from "../store/lobbyPage/lobbySlice";
+import { initialState, setScores, mergeScores, openModal, setModalResult, closeModal, openExamModal, closeExamModal, setExamQuestions, setExamIndex, clearExamQuestions, openPhaseTransitionModal, openExamFailureModal, openReconnectWaitingModal, closeReconnectWaitingModal } from "../store/lobbyPage/lobbySlice";
 import {
   setUsers,
   setPoints,
@@ -246,6 +246,24 @@ export function useLobbySocket(lobbyId: number, onAnswerInputSync?: (answer: str
       // Это событие будет обработано в ExamModal через пропсы
       console.log('⏰ Синхронизация таймера экзамена:', payload.timeLeft);
     };
+
+    const onReconnectWaiting = (payload: { activePlayerName: string; timeLeft: number }) => {
+      console.log('⏳ [RECONNECT] Начинаем ожидание переподключения:', payload);
+      dispatch(openReconnectWaitingModal({
+        activePlayerName: payload.activePlayerName,
+        timeLeft: payload.timeLeft
+      }));
+    };
+
+    const onReconnectTimeout = () => {
+      console.log('⏰ [RECONNECT] Время ожидания истекло');
+      dispatch(closeReconnectWaitingModal());
+    };
+
+    const onReconnectCanceled = () => {
+      console.log('✅ [RECONNECT] Ожидание отменено, игрок вернулся');
+      dispatch(closeReconnectWaitingModal());
+    };
     socket.on("connect", () => {
       setConnected(true);
       setConnecting(false);
@@ -291,6 +309,9 @@ export function useLobbySocket(lobbyId: number, onAnswerInputSync?: (answer: str
     socket.on("lobby:answerInput", onAnswerInput);
     socket.on("lobby:examAnswerInput", onExamAnswerInput);
     socket.on("lobby:examTimerReset", onExamTimerReset);
+    socket.on("lobby:reconnectWaiting", onReconnectWaiting);
+    socket.on("lobby:reconnectTimeout", onReconnectTimeout);
+    socket.on("lobby:reconnectCanceled", onReconnectCanceled);
     socket.on("lobby:timeout", onTimeout);
     socket.on("lobby:passTurnNotification", onPassTurnNotification);
     socket.on("lobby:closeModal", onCloseModal);
@@ -326,6 +347,9 @@ export function useLobbySocket(lobbyId: number, onAnswerInputSync?: (answer: str
       socket.off("lobby:answerInput", onAnswerInput);
       socket.off("lobby:examAnswerInput", onExamAnswerInput);
       socket.off("lobby:examTimerReset", onExamTimerReset);
+      socket.off("lobby:reconnectWaiting", onReconnectWaiting);
+      socket.off("lobby:reconnectTimeout", onReconnectTimeout);
+      socket.off("lobby:reconnectCanceled", onReconnectCanceled);
       socket.off("lobby:closeModal", onCloseModal);
       socket.disconnect();
     };
