@@ -309,7 +309,10 @@ export function LobbyPage() {
       incorrectAnswers: newIncorrectCount
     }));
     
-    // Отправляем обновление счетчика всем игрокам
+    // Отправляем обновление на сервер
+    sendIncorrectCountUpdate(newIncorrectCount);
+    
+    // НЕ передаем ход следующему игроку - активный игрок может попробовать еще раз
     sendIncorrectAnswer(newIncorrectCount);
   };
 
