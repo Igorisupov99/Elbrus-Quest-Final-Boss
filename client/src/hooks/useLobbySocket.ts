@@ -182,6 +182,12 @@ export function useLobbySocket(lobbyId: number) {
         rewardPoints: payload.rewardPoints
       }));
     };
+
+    const onExamTimerReset = (payload: { timeLeft: number }) => {
+      // Синхронизируем таймер для всех игроков
+      // Это событие будет обработано в ExamModal через пропсы
+      console.log('⏰ Синхронизация таймера экзамена:', payload.timeLeft);
+    };
     socket.on("connect", () => {
       setConnected(true);
       setConnecting(false);
@@ -220,6 +226,7 @@ export function useLobbySocket(lobbyId: number) {
     socket.on("lobby:examNext", onExamNext);
     socket.on("lobby:examComplete", onExamComplete);
     socket.on("lobby:examReward", onExamReward);
+    socket.on("lobby:examTimerReset", onExamTimerReset);
     socket.on("lobby:timeout", onTimeout);
     socket.on("lobby:passTurnNotification", onPassTurnNotification);
     socket.on("lobby:closeModal", onCloseModal);
@@ -249,6 +256,7 @@ export function useLobbySocket(lobbyId: number) {
       socket.off("lobby:examNext", onExamNext);
       socket.off("lobby:examComplete", onExamComplete);
       socket.off("lobby:examReward", onExamReward);
+      socket.off("lobby:examTimerReset", onExamTimerReset);
       socket.off("lobby:closeModal", onCloseModal);
       socket.disconnect();
     };

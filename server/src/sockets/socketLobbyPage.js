@@ -440,6 +440,9 @@ function initLobbySockets(nsp) {
               lobbyExamState.set(lobbyId, state);
               const nextQuestion = state.questions[nextIndex];
               nsp.to(roomKey).emit('lobby:examNext', { index: nextIndex, question: nextQuestion });
+              
+              // Синхронизируем таймер для всех игроков
+              nsp.to(roomKey).emit('lobby:examTimerReset', { timeLeft: 30 });
             } else {
             // Экзамен завершён
             lobbyExamState.delete(lobbyId);

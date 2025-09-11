@@ -341,6 +341,10 @@ export function LobbyPage() {
             // Сообщаем серверу, был ли ответ правильным, чтобы он продвинул индекс
             (sendExamAnswerProgress as any)?.(correct);
           }}
+          onTimerReset={(timeLeft: number) => {
+            // Синхронизируем таймер при получении события с сервера
+            console.log('⏰ Синхронизация таймера:', timeLeft);
+          }}
         />
 
         <PhaseTransitionModal

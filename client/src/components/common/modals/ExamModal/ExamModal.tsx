@@ -24,6 +24,7 @@ interface ExamModalProps {
   sharedResult?: string | null;
   questions?: ExamQuestion[];
   onAdvance?: (correct: boolean) => void;
+  onTimerReset?: (timeLeft: number) => void;
 }
 
 export function ExamModal({
@@ -39,6 +40,7 @@ export function ExamModal({
   sharedResult,
   questions,
   onAdvance,
+  onTimerReset,
 }: ExamModalProps) {
   // Для отправки прогресса экзамена (следующий вопрос) используем хук сокета через пропсы не получаем, поэтому просто импорт нельзя использовать напрямую.
   const dispatch = useAppDispatch();
@@ -76,15 +78,15 @@ export function ExamModal({
     
     // НЕ сбрасываем result - уведомления показываются через сокет
     
-    // Автоматически запускаем таймер для активного игрока при переходе к новому вопросу
-    if (Number(currentUserId) === Number(activePlayerId) && isOpen) {
+    // Автоматически запускаем таймер для всех игроков при переходе к новому вопросу
+    if (isOpen) {
       setTimerActive(true);
     }
-  }, [currentQuestionIndex, currentUserId, activePlayerId, isOpen]);
+  }, [currentQuestionIndex, isOpen]);
 
-  // Таймер для активного игрока
+  // Таймер для всех игроков (синхронизированный)
   useEffect(() => {
-    if (!isOpen || !timerActive || Number(currentUserId) !== Number(activePlayerId)) {
+    if (!isOpen || !timerActive) {
       return;
     }
 
@@ -92,28 +94,36 @@ export function ExamModal({
       setTimeLeft((prev) => {
         if (prev <= 1) {
           setTimerActive(false);
-          // Автоматически отправляем ответ при истечении времени
-          console.log("⏰ Время истекло в экзамене, автоматически отправляем ответ:", answer.trim() || "пустой");
-          if (answer.trim()) {
-            handleSubmit();
-          } else {
-            // Если ответ пустой в экзамене — считаем как неправильный ответ,
-            // отправляем на сервер для применения штрафа и НЕ закрываем модалку
-            console.log("⏰ Пустой ответ при истечении времени в экзамене - считаем как неправильный и штрафуем");
-            (async () => {
-              try {
-                await api.post(
-                  "/api/question/answerCheck",
-                  { question_id: currentQuestion.id, answer: "", lobby_id: lobbyId },
-                  { withCredentials: true }
-                );
-              } catch (e) {
-                console.error("Ошибка применения штрафа при таймауте экзамена", e);
-              } finally {
-                setResult("⏰ Время истекло. Ответ засчитан как неправильный.");
-                onAdvance?.(false);
-              }
-            })();
+          // Только активный игрок может отправлять ответы
+          if (Number(currentUserId) === Number(activePlayerId)) {
+            // Автоматически отправляем ответ при истечении времени
+            console.log("⏰ Время истекло в экзамене, автоматически отправляем ответ:", answer.trim() || "пустой");
+            if (answer.trim()) {
+              handleSubmit();
+            } else {
+              // Если ответ пустой в экзамене — считаем как неправильный ответ,
+              // отправляем на сервер для применения штрафа и НЕ закрываем модалку
+              console.log("⏰ Пустой ответ при истечении времени в экзамене - считаем как неправильный и штрафуем");
+              (async () => {
+                try {
+                  await api.post(
+                    "/api/exam/examAnswerCheck",
+                    { 
+                      phase_id: currentQuestion.phase_id || 1, 
+                      topic_id: currentQuestion.topic_id, 
+                      question_id: currentQuestion.id, 
+                      answer: "" 
+                    },
+                    { withCredentials: true }
+                  );
+                } catch (e) {
+                  console.error("Ошибка применения штрафа при таймауте экзамена", e);
+                } finally {
+                  setResult("⏰ Время истекло. Ответ засчитан как неправильный.");
+                  onAdvance?.(false);
+                }
+              })();
+            }
           }
           return 0;
         }
@@ -124,14 +134,27 @@ export function ExamModal({
     return () => clearInterval(timer);
   }, [isOpen, timerActive, currentUserId, activePlayerId, answer]);
 
-  // Запускаем таймер когда модальное окно открывается для активного игрока
+  // Запускаем таймер когда модальное окно открывается для всех игроков
   useEffect(() => {
-    if (isOpen && Number(currentUserId) === Number(activePlayerId) && !loading) {
+    if (isOpen && !loading) {
       setTimerActive(true);
     } else {
       setTimerActive(false);
     }
-  }, [isOpen, currentUserId, activePlayerId, loading]);
+  }, [isOpen, loading]);
+
+  // Синхронизация таймера через сокеты
+  useEffect(() => {
+    if (onTimerReset) {
+      const handleTimerReset = (timeLeft: number) => {
+        setTimeLeft(timeLeft);
+        setTimerActive(true);
+      };
+      
+      // Здесь можно добавить слушатель события, если нужно
+      // Пока просто используем пропс для синхронизации
+    }
+  }, [onTimerReset]);
 
   // Загрузка перенесена в инициатора и рассылается по сокету
 
@@ -226,16 +249,17 @@ export function ExamModal({
             <h3 className={styles.topic}>{currentQuestion.topic_title}</h3>
             <p className={styles.question}>{currentQuestion.question_text}</p>
 
-            {Number(currentUserId) === Number(activePlayerId) && timerActive && (
+            {timerActive && (
               <div className={`${styles.timer} ${
                 timeLeft <= 10 ? styles.timerDanger : 
                 timeLeft <= 15 ? styles.timerWarning : ''
               }`}>
                 <p className={styles.timerText}>
                   ⏰ Осталось: {timeLeft} сек
+                  {Number(currentUserId) === Number(activePlayerId) ? ' (ваш ход)' : ' (ход другого игрока)'}
                 </p>
                 <div className={styles.timerBar}>
-                  <div 
+                  <div
                     className={`${styles.timerBarFill} ${
                       timeLeft <= 10 ? styles.timerBarDanger : 
                       timeLeft <= 15 ? styles.timerBarWarning : ''
