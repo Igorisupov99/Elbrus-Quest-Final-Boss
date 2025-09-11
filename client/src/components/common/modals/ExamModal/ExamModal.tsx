@@ -145,8 +145,13 @@ export function ExamModal({
       setResult(null);
 
       const res = await api.post(
-        "/api/question/answerCheck",
-        { question_id: currentQuestion.id, answer, lobby_id: lobbyId },
+        "/api/exam/examAnswerCheck",
+        { 
+          phase_id: currentQuestion.phase_id || 1, 
+          topic_id: currentQuestion.topic_id, 
+          question_id: currentQuestion.id, 
+          answer 
+        },
         { withCredentials: true }
       );
 
@@ -156,7 +161,7 @@ export function ExamModal({
         // Сообщаем серверу, что ответ правильный, чтобы он продвинул индекс и/или завершил экзамен
         onAdvance?.(true);
       } else {
-        setResult("❌ Неправильный ответ! (-5 очков)");
+        setResult("❌ Неправильный ответ! Ход переходит следующему игроку");
         setCorrectAnswer(res.data.correctAnswer);
         // При неправильном ответе не продвигаем индекс, просто передаём ход следующему игроку
         onAdvance?.(false);

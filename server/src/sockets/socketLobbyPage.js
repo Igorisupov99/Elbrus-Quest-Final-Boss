@@ -443,6 +443,60 @@ function initLobbySockets(nsp) {
             } else {
             // Экзамен завершён
             lobbyExamState.delete(lobbyId);
+            
+            // Начисляем 30 очков каждому игроку в лобби за успешную сдачу экзамена
+            try {
+              const { User, UserSession } = require("../../db/models");
+              const rewardPoints = 30;
+              
+              // Получаем всех игроков в лобби
+              const allSessions = await UserSession.findAll({ 
+                where: { game_session_id: lobbyId } 
+              });
+              
+              // Начисляем очки каждому игроку
+              for (const session of allSessions) {
+                const user = await User.findByPk(session.user_id);
+                if (user) {
+                  user.score = Number(user.score || 0) + rewardPoints;
+                  await user.save();
+                }
+                
+                session.score = Number(session.score || 0) + rewardPoints;
+                await session.save();
+              }
+              
+              // Пересчитываем общий счёт лобби
+              const updatedSessions = await UserSession.findAll({ 
+                where: { game_session_id: lobbyId } 
+              });
+              const lobbyTotalScore = updatedSessions.reduce((sum, s) => sum + Number(s.score || 0), 0);
+              
+              // Получаем обновленные очки пользователей из базы данных
+              const userScores = [];
+              for (const session of updatedSessions) {
+                const user = await User.findByPk(session.user_id);
+                if (user) {
+                  console.log(`🎯 Пользователь ${session.user_id}: session.score=${session.score}, user.score=${user.score}`);
+                  userScores.push({
+                    userId: session.user_id,
+                    userScore: user.score
+                  });
+                }
+              }
+              
+              // Отправляем обновленные очки всем игрокам
+              nsp.to(roomKey).emit('lobby:examReward', {
+                message: '🎉 Экзамен успешно сдан! Каждый игрок получил +30 очков!',
+                rewardPoints,
+                sessionScore: lobbyTotalScore,
+                userScores: userScores
+              });
+              
+            } catch (error) {
+              console.error('Ошибка при начислении очков за экзамен:', error);
+            }
+            
             // Обновим точку экзамена как выполненную и известим всех
             const points = lobbyPoints.get(lobbyId);
             if (points) {

@@ -56,6 +56,7 @@ for (const topic of mixTopics) {
       id: q.id,
       question_text: q.question_text,
       topic_id: topic.id,  // добавляем id топика
+      phase_id: phase_id,  // добавляем id фазы
       topic_title: topic.title
     }));
   
@@ -76,8 +77,52 @@ for (const topic of mixTopics) {
     }
   }
 
-  // ПРОВЕРКА ПРАВИЛЬНОСТИ ОТВЕТА
+  // НАЧИСЛЕНИЕ ОЧКОВ ЗА УСПЕШНУЮ СДАЧУ ЭКЗАМЕНА
+  async examReward(req, res) {
+    try {
+      const { lobby_id } = req.body;
+      const userId = req.user.id;
 
+      if (!lobby_id) {
+        return res.status(400).json({ error: "Параметр lobby_id обязателен" });
+      }
+
+      const { User, UserSession } = require("../../db/models");
+      const rewardPoints = 30;
+
+      // Начисляем очки пользователю
+      const user = await User.findByPk(userId);
+      if (user) {
+        user.score = Number(user.score || 0) + rewardPoints;
+        await user.save();
+      }
+
+      // Начисляем очки в сессии лобби
+      const userSession = await UserSession.findOne({
+        where: { user_id: userId, game_session_id: lobby_id },
+      });
+      if (userSession) {
+        userSession.score = Number(userSession.score || 0) + rewardPoints;
+        await userSession.save();
+      }
+
+      // Пересчитываем общий счёт лобби
+      const allSessions = await UserSession.findAll({ where: { game_session_id: lobby_id } });
+      const lobbyTotalScore = allSessions.reduce((sum, s) => sum + Number(s.score || 0), 0);
+
+      return res.json({
+        success: true,
+        rewardPoints,
+        userScore: user.score,
+        sessionScore: lobbyTotalScore,
+      });
+    } catch (error) {
+      console.error("Ошибка при начислении очков за экзамен:", error);
+      return res.status(500).json({ error: "Внутренняя ошибка сервера" });
+    }
+  }
+
+  // ПРОВЕРКА ПРАВИЛЬНОСТИ ОТВЕТА
   async examAnswerCheck(req, res) {
     try {
       const { phase_id, topic_id, question_id, answer } = req.body;
@@ -135,4 +180,5 @@ for (const topic of mixTopics) {
 
 }
 
-module.exports = new ExamController();
+const examController = new ExamController();
+module.exports = examController;

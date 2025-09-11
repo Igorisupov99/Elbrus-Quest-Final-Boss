@@ -147,7 +147,39 @@ export function useLobbySocket(lobbyId: number) {
     const onCloseModal = () => {
       dispatch(closeModal());
     };
-;
+
+    const onExamReward = (payload: { 
+      message: string; 
+      rewardPoints: number; 
+      sessionScore: number; 
+      userScores?: Array<{ userId: number; userScore: number }> 
+    }) => {
+      // Показываем уведомление о награде за экзамен
+      dispatch(setModalResult(payload.message));
+      setTimeout(() => {
+        dispatch(setModalResult(null));
+      }, 4000);
+      
+      // Обновляем общий счет лобби
+      dispatch(mergeScores({
+        sessionScore: payload.sessionScore
+      }));
+      
+      // Обновляем очки текущего пользователя, если он есть в списке
+      if (payload.userScores && user?.id) {
+        const currentUserScore = payload.userScores.find(us => Number(us.userId) === Number(user.id));
+        if (currentUserScore) {
+          console.log('🎯 Обновляем очки пользователя:', {
+            userId: user.id,
+            newScore: currentUserScore.userScore,
+            sessionScore: payload.sessionScore
+          });
+          dispatch(mergeScores({
+            userScore: currentUserScore.userScore
+          }));
+        }
+      }
+    };
     socket.on("connect", () => {
       setConnected(true);
       setConnecting(false);
@@ -185,6 +217,7 @@ export function useLobbySocket(lobbyId: number) {
     socket.on("lobby:examStart", onExamStart);
     socket.on("lobby:examNext", onExamNext);
     socket.on("lobby:examComplete", onExamComplete);
+    socket.on("lobby:examReward", onExamReward);
     socket.on("lobby:timeout", onTimeout);
     socket.on("lobby:passTurnNotification", onPassTurnNotification);
     socket.on("lobby:closeModal", onCloseModal);
@@ -213,6 +246,7 @@ export function useLobbySocket(lobbyId: number) {
       socket.off("lobby:examStart", onExamStart);
       socket.off("lobby:examNext", onExamNext);
       socket.off("lobby:examComplete", onExamComplete);
+      socket.off("lobby:examReward", onExamReward);
       socket.off("lobby:closeModal", onCloseModal);
       socket.disconnect();
     };
