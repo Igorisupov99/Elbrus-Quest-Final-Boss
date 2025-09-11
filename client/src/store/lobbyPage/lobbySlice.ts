@@ -45,6 +45,23 @@ interface LobbyState {
     incorrectAnswers: number;
   };
   modalResult: string | null;
+  phaseTransitionModal: {
+    isOpen: boolean;
+    phaseNumber: number;
+    rewardPoints: number;
+  };
+  examFailureModal: {
+    isOpen: boolean;
+    correctAnswers: number;
+    totalQuestions: number;
+    successRate: number;
+    phaseId: number;
+  };
+  reconnectWaitingModal: {
+    isOpen: boolean;
+    activePlayerName: string;
+    timeLeft: number;
+  };
 }
 
 export const initialState: LobbyState = {
@@ -154,6 +171,23 @@ export const initialState: LobbyState = {
   examIndex: 0,
   modalResult: null,
   scores: { userScore: 0, sessionScore: 0, incorrectAnswers: 0},
+  phaseTransitionModal: {
+    isOpen: false,
+    phaseNumber: 1,
+    rewardPoints: 0,
+  },
+  examFailureModal: {
+    isOpen: false,
+    correctAnswers: 0,
+    totalQuestions: 0,
+    successRate: 0,
+    phaseId: 1,
+  },
+  reconnectWaitingModal: {
+    isOpen: false,
+    activePlayerName: '',
+    timeLeft: 30,
+  },
 };
 
 const lobbyPageReducer = createSlice({
@@ -224,11 +258,55 @@ const lobbyPageReducer = createSlice({
     },
     setIncorrectAnswers(state, action: PayloadAction<number>) {
       state.scores.incorrectAnswers = action.payload;
+    },
+    openPhaseTransitionModal(
+      state,
+      action: PayloadAction<{ phaseNumber: number; rewardPoints: number }>
+    ) {
+      state.phaseTransitionModal = {
+        isOpen: true,
+        phaseNumber: action.payload.phaseNumber,
+        rewardPoints: action.payload.rewardPoints,
+      };
+    },
+    closePhaseTransitionModal(state) {
+      state.phaseTransitionModal.isOpen = false;
+    },
+    openExamFailureModal(
+      state,
+      action: PayloadAction<{ correctAnswers: number; totalQuestions: number; successRate: number; phaseId: number }>
+    ) {
+      state.examFailureModal = {
+        isOpen: true,
+        correctAnswers: action.payload.correctAnswers,
+        totalQuestions: action.payload.totalQuestions,
+        successRate: action.payload.successRate,
+        phaseId: action.payload.phaseId,
+      };
+    },
+    closeExamFailureModal(state) {
+      state.examFailureModal.isOpen = false;
+    },
+    openReconnectWaitingModal(
+      state,
+      action: PayloadAction<{ activePlayerName: string; timeLeft: number }>
+    ) {
+      state.reconnectWaitingModal = {
+        isOpen: true,
+        activePlayerName: action.payload.activePlayerName,
+        timeLeft: action.payload.timeLeft,
+      };
+    },
+    closeReconnectWaitingModal(state) {
+      state.reconnectWaitingModal.isOpen = false;
+    },
+    updateReconnectTimer(state, action: PayloadAction<number>) {
+      state.reconnectWaitingModal.timeLeft = action.payload;
     }
   },
 });
 
-export const { setUsers, setPoints, updatePointStatus, openModal, closeModal, openExamModal, closeExamModal, setExamQuestions, clearExamQuestions, setExamIndex, setScores, mergeScores, incrementIncorrectAnswers, setIncorrectAnswers, setModalResult } =
+export const { setUsers, setPoints, updatePointStatus, openModal, closeModal, openExamModal, closeExamModal, setExamQuestions, clearExamQuestions, setExamIndex, setScores, mergeScores, incrementIncorrectAnswers, setIncorrectAnswers, setModalResult, openPhaseTransitionModal, closePhaseTransitionModal, openExamFailureModal, closeExamFailureModal, openReconnectWaitingModal, closeReconnectWaitingModal, updateReconnectTimer } =
   lobbyPageReducer.actions;
 
 export default lobbyPageReducer.reducer;
