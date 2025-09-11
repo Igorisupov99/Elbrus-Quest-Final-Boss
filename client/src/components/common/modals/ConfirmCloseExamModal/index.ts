@@ -1,0 +1,1 @@
+export { ConfirmCloseExamModal } from './ConfirmCloseExamModal';

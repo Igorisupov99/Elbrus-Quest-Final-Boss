@@ -451,13 +451,65 @@ function initLobbySockets(nsp) {
         const state = lobbyExamState.get(lobbyId);
         if (!state) return;
         const isCorrect = Boolean(payload && payload.correct);
+        const isExamClosedByUser = payload.answer === 'exam_closed_by_user';
         
         // Синхронизируем ответ активного игрока со всеми игроками
-        if (payload.answer !== undefined) {
+        if (payload.answer !== undefined && !isExamClosedByUser) {
           nsp.to(roomKey).emit('lobby:examAnswerSync', { 
             answer: payload.answer,
             activePlayerName: socket.user.username 
           });
+        }
+
+        // Если экзамен закрыт пользователем - проваливаем его
+        if (isExamClosedByUser) {
+          console.log('❌ [EXAM] Экзамен провален при закрытии пользователем');
+          
+          // Проваливаем экзамен - сбрасываем фазу для повторного прохождения
+          lobbyExamState.delete(lobbyId);
+          
+          // Обнуляем счётчик неправильных ответов при провале экзамена
+          incorrectAnswersMap.set(lobbyId, 0);
+          console.log(`🎯 [SOCKET] Счётчик неправильных ответов обнулён при провале экзамена для лобби ${lobbyId}`);
+          
+          // Сбрасываем фазу - делаем все точки текущей фазы доступными для повторного прохождения
+          const points = lobbyPoints.get(lobbyId);
+          if (points) {
+            const currentPhaseId = state.examId === 'exam2' ? 2 : 1;
+            
+            // Сбрасываем все точки текущей фазы в состояние "доступно" для повторного прохождения
+            points.forEach(p => {
+              if (p.phase_id === currentPhaseId) {
+                p.status = 'available';
+              }
+            });
+            
+            // Обновляем статусы точек на клиентах
+            points.forEach(p => {
+              if (p.phase_id === currentPhaseId) {
+                nsp.to(roomKey).emit('lobby:updatePointStatus', { pointId: p.id, status: p.status });
+              }
+            });
+          }
+          
+          // Отправляем уведомление о провале экзамена
+          nsp.to(roomKey).emit('lobby:examFailed', {
+            message: `❌ Экзамен провален! Экзамен был закрыт пользователем. Фаза ${state.examId === 'exam2' ? '2' : '1'} сброшена для повторного прохождения.`,
+            correctAnswers: state.correctAnswers,
+            totalQuestions: state.totalQuestions,
+            successRate: state.correctAnswers / state.totalQuestions,
+            phaseId: state.examId === 'exam2' ? 2 : 1
+          });
+          
+          // Отправляем обновление счётчика неправильных ответов (обнуляем при провале)
+          nsp.to(roomKey).emit('lobby:incorrectCountUpdate', { incorrectAnswers: 0 });
+          
+          // Закрываем модалку экзамена
+          nsp.to(roomKey).emit('lobby:closeExamModal');
+          
+          // Передаем ход следующему игроку
+          await passTurnToNextPlayer();
+          return;
         }
 
         if (isCorrect) {

@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { Button } from "../../Button/Button";
+import { ConfirmCloseExamModal } from "../ConfirmCloseExamModal/ConfirmCloseExamModal";
 import styles from "./ExamModal.module.css";
 import api from "../../../../api/axios";
 import { useAppSelector, useAppDispatch } from "../../../../store/hooks";
@@ -27,6 +28,7 @@ interface ExamModalProps {
   onTimerReset?: (timeLeft: number) => void;
   onAnswerSync?: (answer: string, activePlayerName: string) => void;
   syncedAnswer?: string;          // 👈 синхронизированный ввод от активного игрока
+  onExamFail?: () => void;        // 👈 колбэк для провала экзамена
 }
 
 export function ExamModal({
@@ -45,6 +47,7 @@ export function ExamModal({
   onTimerReset,
   onAnswerSync,
   syncedAnswer,
+  onExamFail,
 }: ExamModalProps) {
   // Для отправки прогресса экзамена (следующий вопрос) используем хук сокета через пропсы не получаем, поэтому просто импорт нельзя использовать напрямую.
   const dispatch = useAppDispatch();
@@ -57,6 +60,7 @@ export function ExamModal({
   const [correctAnswer, setCorrectAnswer] = useState<string | null>(null);
   const [timeLeft, setTimeLeft] = useState(30);
   const [timerActive, setTimerActive] = useState(false);
+  const [showConfirmClose, setShowConfirmClose] = useState(false);
 
   const totalQuestions = examQuestions.length;
   const currentQuestion = examQuestions[currentQuestionIndex];
@@ -219,21 +223,23 @@ export function ExamModal({
   };
 
   const handleClose = () => {
-    setAnswer('');
-    setResult(null);
-    setCorrectAnswer(null);
-    setTimerActive(false);
-    setTimeLeft(30);
-    // Не трогаем общий список вопросов и индекс — это ломает синхронизацию
-    // В экзамене закрытие активным игроком трактуем как неправильный ответ (передаём ход),
-    // но НЕ трогаем обычные точки карты и НЕ закрываем модалку
+    // Если закрывает активный игрок - показываем подтверждение
     if (Number(currentUserId) === Number(activePlayerId)) {
-      setResult('❌ Ответ не отправлен. Ход передан следующему игроку.');
-      onAdvance?.(false, false);
-      return;
+      setShowConfirmClose(true);
+    } else {
+      // Неактивный игрок просто закрывает у себя
+      onClose();
     }
-    // Неактивный игрок просто закрывает у себя
-    onClose();
+  };
+
+  const handleConfirmClose = () => {
+    setShowConfirmClose(false);
+    // Вызываем колбэк для провала экзамена
+    onExamFail?.();
+  };
+
+  const handleCancelClose = () => {
+    setShowConfirmClose(false);
   };
 
   if (!isOpen) return null;
@@ -329,6 +335,13 @@ export function ExamModal({
           </div>
         )}
       </div>
+
+      {/* Модальное окно подтверждения закрытия экзамена */}
+      <ConfirmCloseExamModal
+        isOpen={showConfirmClose}
+        onConfirm={handleConfirmClose}
+        onCancel={handleCancelClose}
+      />
     </div>
   );
 }

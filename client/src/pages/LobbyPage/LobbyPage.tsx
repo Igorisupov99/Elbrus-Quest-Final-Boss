@@ -368,6 +368,13 @@ export function LobbyPage() {
             sendExamAnswerInput(answer, activePlayerName);
           }}
           syncedAnswer={syncedExamAnswer}
+          onExamFail={() => {
+            // Проваливаем экзамен при закрытии активным игроком
+            console.log('❌ Экзамен провален при закрытии активным игроком');
+            // Отправляем событие провала экзамена на сервер
+            // Это будет обработано сервером и покажет модальное окно провала
+            sendExamAnswerProgress(false, false, 'exam_closed_by_user');
+          }}
         />
 
         <PhaseTransitionModal
