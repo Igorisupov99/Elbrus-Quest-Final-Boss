@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useAppDispatch, useAppSelector } from '../../../store/hooks';
-import { purchaseAvatar, equipAvatar, unequipAvatar } from '../../../store/avatarSlice';
+import { purchaseAvatar, equipAvatar, unequipAvatar, fetchUserAvatars } from '../../../store/avatarSlice';
 import { updateUserScore } from '../../../store/authSlice';
 import type { Avatar } from '../../../types/avatar';
 import styles from './AvatarCard.module.css';
@@ -30,6 +30,8 @@ export const AvatarCard: React.FC<AvatarCardProps> = ({
         const result = await dispatch(purchaseAvatar({ avatarId: avatar.id })).unwrap();
         // Обновляем очки пользователя в auth state
         dispatch(updateUserScore(result.score));
+        // Обновляем список пользовательских аватаров
+        dispatch(fetchUserAvatars());
       } catch (error) {
         console.error('Ошибка покупки аватара:', error);
       } finally {
