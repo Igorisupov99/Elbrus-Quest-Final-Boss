@@ -84,8 +84,7 @@ export function LobbyPage() {
     const point = points.find(p => p.id === pointId);
     if (!point || point.status !== "available") return;
 
-    // Проверяем, что нажимает активный игрок
-    if (user?.id !== activePlayerId) return;
+    // Любой игрок может открыть модальное окно, но отвечать может только активный
 
     try {
       if (pointId !== "exam" && pointId !== "exam2") {
@@ -210,9 +209,40 @@ export function LobbyPage() {
     console.log(`Переход в профиль пользователя: ${selectedUsername}`);
   };
 
-  const handleAddFriend = () => {
-    // TODO: Реализовать добавление в друзья
-    console.log(`Добавить в друзья: ${selectedUsername}`);
+  const handleAddFriend = async () => {
+    if (!selectedUsername) return;
+    
+    try {
+      console.log('Начинаем добавление в друзья для:', selectedUsername);
+      
+      // Получаем ID пользователя по username
+      const { getUserByUsername, sendFriendRequest } = await import('../../api/friendship/friendshipApi');
+      const userResponse = await getUserByUsername(selectedUsername);
+      
+      console.log('Результат поиска пользователя:', userResponse);
+      
+      if (userResponse.success && userResponse.data) {
+        console.log('Отправляем запрос на дружбу для ID:', userResponse.data.id);
+        const friendResponse = await sendFriendRequest(userResponse.data.id);
+        
+        console.log('Результат отправки запроса:', friendResponse);
+        
+        if (friendResponse.success) {
+          alert(`Запрос на дружбу отправлен пользователю ${selectedUsername}`);
+        } else {
+          console.error('Ошибка при отправке запроса:', friendResponse.message);
+          alert(friendResponse.message || 'Ошибка при отправке запроса на дружбу');
+        }
+      } else {
+        console.error('Пользователь не найден:', userResponse.message);
+        alert(userResponse.message || 'Пользователь не найден');
+      }
+    } catch (error: any) {
+      console.error('Критическая ошибка при добавлении в друзья:', error);
+      alert(`Ошибка при добавлении в друзья: ${error.message || 'Неизвестная ошибка'}`);
+    }
+    
+    // Модальное окно будет закрыто в UserActionsModal, не закрываем здесь дважды
   };
 
 

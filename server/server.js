@@ -25,6 +25,8 @@ const questionRouter = require('./src/routes/question.routes');
 const examRouter = require('./src/routes/exam.routes');
 const friendshipRouter = require('./src/routes/friendship.routes');
 const achievementRouter = require('./src/routes/achievement.routes');
+const favoriteRouter = require('./src/routes/favorite.routes');
+const avatarRouter = require('./src/routes/avatar.routes');
 
 const initLobbySockets = require('./src/sockets/socketLobbyPage');
 const {
@@ -67,6 +69,8 @@ app.use('/api/question', questionRouter);
 app.use('/api/exam', examRouter);
 app.use('/api/friendship', friendshipRouter);
 app.use('/api/achievement', achievementRouter);
+app.use('/api/favorites', favoriteRouter);
+app.use('/api/avatars', avatarRouter);
 
 const mainNsp = io.of('/');
 withAuth(mainNsp);

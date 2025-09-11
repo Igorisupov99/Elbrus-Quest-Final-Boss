@@ -174,27 +174,112 @@
   .profileContainer {
     display: flex;
     flex-direction: row;
-    align-items: center;
+    align-items: flex-start;
     gap: 32px;
   
-    width: 540px;        /* 200 + 32 + 200 (аватар + gap + инфо) */
+    width: 100%;
+    max-width: 800px;
     margin: 0 auto;
+    padding: 24px;
+    background: #f5deb3;
+    border-radius: 12px;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+  }
+  
+  .avatarSection {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 12px;
   }
   
   .avatar {
-    width: 250px;
-    height: 250px;
+    width: 200px;
+    height: 200px;
     border-radius: 12px;
     object-fit: cover;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.2);
     background: #ddd;
+    border: 3px solid #d8a35d;
+  }
+  
+  .avatarInfo {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+    text-align: center;
+  }
+  
+  .avatarName {
+    font-size: 14px;
+    font-weight: 600;
+    color: #5c3d2e;
+  }
+  
+  .avatarRarity {
+    font-size: 12px;
+    padding: 2px 8px;
+    border-radius: 12px;
+    background: #d8a35d;
+    color: #2c1810;
+    text-transform: uppercase;
+    font-weight: 600;
   }
   
   .userInfo {
-    width: 200px;          /* равная ширина с аватаром */
+    flex: 1;
     font-size: 1.1rem;
-    line-height: 1.5;
+    line-height: 1.6;
     color: #5c3d2e;
+  }
+  
+  .scoreInfo {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin: 12px 0;
+    padding: 8px 12px;
+    background: linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%);
+    border-radius: 20px;
+    color: white;
+    font-weight: 600;
+    box-shadow: 0 2px 8px rgba(245, 158, 11, 0.3);
+    width: fit-content;
+  }
+  
+  .scoreIcon {
+    font-size: 18px;
+  }
+  
+  .scoreAmount {
+    font-size: 16px;
+    font-weight: 700;
+  }
+  
+  .scoreLabel {
+    font-size: 14px;
+  }
+  
+  .shopLink {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 16px;
+    background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+    color: white;
+    text-decoration: none;
+    border-radius: 8px;
+    font-weight: 600;
+    font-size: 14px;
+    transition: all 0.2s ease;
+    box-shadow: 0 2px 8px rgba(59, 130, 246, 0.3);
+  }
+  
+  .shopLink:hover {
+    background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(59, 130, 246, 0.4);
   }
   
   /* Кнопка под контейнером */
@@ -226,5 +311,199 @@
 
   .profileSection {
     background-color: #d6b37a;
+  }
+
+  /* Стили для секции друзей */
+  .friendsSection {
+    width: 100%;
+    max-width: 900px;
+    margin: 32px auto 0;
+    padding: 24px;
+    background: #f5deb3;
+    border-radius: 12px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+  }
+
+  /* Вкладки */
+  .tabsContainer {
+    display: flex;
+    margin-bottom: 24px;
+    border-bottom: 2px solid #d8a35d;
+  }
+
+  .tab {
+    flex: 1;
+    padding: 12px 20px;
+    background: transparent;
+    border: none;
+    color: #5c3d2e;
+    font-size: 1.1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    border-bottom: 3px solid transparent;
+  }
+
+  .tab:hover {
+    background: rgba(216, 163, 93, 0.2);
+  }
+
+  .activeTab {
+    color: #2c1810;
+    border-bottom-color: #b0752d;
+    background: rgba(216, 163, 93, 0.3);
+  }
+
+  /* Контент вкладок */
+  .tabContent {
+    min-height: 200px;
+  }
+
+  /* Списки друзей и заявок */
+  .friendsList,
+  .requestsList {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+    gap: 16px;
+  }
+
+  /* Карточки друзей и заявок */
+  .friendCard,
+  .requestCard {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 16px;
+    background: #fffaf0;
+    border-radius: 8px;
+    border: 1px solid rgba(0, 0, 0, 0.1);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    transition: transform 0.2s ease-in-out;
+  }
+
+  .friendCard:hover,
+  .requestCard:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+  }
+
+  .friendAvatar {
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    object-fit: cover;
+    background: #ddd;
+    flex-shrink: 0;
+  }
+
+  .friendInfo {
+    flex: 1;
+    min-width: 0;
+  }
+
+  .friendName {
+    margin: 0 0 4px 0;
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: #5c3d2e;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .friendEmail {
+    margin: 0 0 4px 0;
+    font-size: 0.9rem;
+    color: #8b4513;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .friendScore {
+    margin: 0;
+    font-size: 0.85rem;
+    color: #6b3e15;
+    font-weight: 500;
+  }
+
+  /* Кнопки действий */
+  .removeButton,
+  .acceptButton,
+  .rejectButton {
+    padding: 8px 12px;
+    border-radius: 6px;
+    border: none;
+    font-size: 0.9rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    flex-shrink: 0;
+  }
+
+  .removeButton {
+    background: #d32f2f;
+    color: white;
+  }
+
+  .removeButton:hover {
+    background: #b71c1c;
+  }
+
+  .acceptButton {
+    background: #4caf50;
+    color: white;
+    margin-right: 8px;
+  }
+
+  .acceptButton:hover {
+    background: #45a049;
+  }
+
+  .rejectButton {
+    background: #f44336;
+    color: white;
+  }
+
+  .rejectButton:hover {
+    background: #d32f2f;
+  }
+
+  .requestButtons {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    flex-shrink: 0;
+  }
+
+  /* Пустые сообщения */
+  .emptyMessage {
+    text-align: center;
+    padding: 40px 20px;
+    color: #8b4513;
+    font-size: 1.1rem;
+    font-weight: 500;
+  }
+
+  /* Адаптивность */
+  @media (max-width: 768px) {
+    .friendsSection {
+      margin: 16px;
+      padding: 16px;
+    }
+
+    .friendsList,
+    .requestsList {
+      grid-template-columns: 1fr;
+    }
+
+    .requestButtons {
+      flex-direction: row;
+    }
+
+    .acceptButton {
+      margin-right: 8px;
+      margin-bottom: 0;
+    }
   }
   

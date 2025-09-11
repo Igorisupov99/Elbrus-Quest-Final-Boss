@@ -912,6 +912,64 @@ function initLobbySockets(nsp) {
       }
     });
 
+    // Обработчик добавления/удаления из избранного
+    socket.on('lobby:favoriteToggle', async (payload) => {
+      try {
+        console.log('⭐ [FAVORITE] Получен запрос на изменение избранного:', payload);
+        
+        const { questionId, isFavorite } = payload;
+        const userId = socket.user.id;
+        const username = socket.user.username;
+
+        // Проверяем существование вопроса
+        const question = await db.Question.findByPk(questionId);
+        if (!question) {
+          socket.emit('error', { message: 'Вопрос не найден' });
+          return;
+        }
+
+        if (isFavorite) {
+          // Добавляем в избранное
+          try {
+            await db.UserFavoriteQuestion.create({
+              user_id: userId,
+              question_id: questionId
+            });
+            console.log(`✅ Вопрос ${questionId} добавлен в избранное пользователем ${username}`);
+          } catch (error) {
+            if (error.name === 'SequelizeUniqueConstraintError') {
+              console.log(`ℹ️ Вопрос ${questionId} уже в избранном у пользователя ${username}`);
+            } else {
+              throw error;
+            }
+          }
+        } else {
+          // Удаляем из избранного
+          await db.UserFavoriteQuestion.destroy({
+            where: {
+              user_id: userId,
+              question_id: questionId
+            }
+          });
+          console.log(`❌ Вопрос ${questionId} удален из избранного пользователем ${username}`);
+        }
+
+        // Уведомляем всех игроков в лобби о изменении избранного
+        const eventPayload = {
+          userId,
+          questionId,
+          isFavorite,
+          username
+        };
+        
+        nsp.to(roomKey).emit('lobby:favoriteToggled', eventPayload);
+        
+      } catch (error) {
+        console.error('Ошибка при изменении избранного:', error);
+        socket.emit('error', { message: 'Ошибка при изменении избранного' });
+      }
+    });
+
 
     // Обработчик отключения
     socket.on('disconnect', async (reason) => {

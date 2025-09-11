@@ -35,6 +35,12 @@ export function Header() {
               <Link to="/achievements" className={styles.profileLink}>
                 🏆 Достижения
               </Link>
+              <Link to="/favorites" className={styles.profileLink}>
+                📚 Избранное
+              </Link>
+              <Link to="/avatar-shop" className={styles.profileLink}>
+                🎭 Магазин
+              </Link>
               <Link to="/profile" className={styles.profileLink}>
                 Профиль
               </Link>

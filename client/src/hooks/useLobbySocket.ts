@@ -156,6 +156,14 @@ export function useLobbySocket(lobbyId: number, onAnswerInputSync?: (answer: str
       }));
     };
 
+    const onUserNewAchievements = (payload: any) => {
+      console.log('🏆 [CLIENT] Получил user:newAchievements:', payload);
+      // Эмитим кастомное событие для показа уведомления о достижениях
+      window.dispatchEvent(new CustomEvent('achievement:received', { 
+        detail: payload 
+      }));
+    };
+
     const onCloseExamModal = () => {
       dispatch(closeExamModal());
     };
@@ -272,6 +280,20 @@ export function useLobbySocket(lobbyId: number, onAnswerInputSync?: (answer: str
       console.log('✅ [RECONNECT] Ожидание отменено, игрок вернулся');
       dispatch(closeReconnectWaitingModal());
     };
+
+    const onFavoriteToggled = (payload: { 
+      userId: number; 
+      questionId: number; 
+      isFavorite: boolean; 
+      username: string;
+    }) => {
+      console.log('⭐ [FAVORITE] Вопрос добавлен/удален из избранного:', payload);
+      
+      // Эмитим кастомное событие для синхронизации состояния избранного
+      window.dispatchEvent(new CustomEvent('favorite:sync', { 
+        detail: payload 
+      }));
+    };
     socket.on("connect", () => {
       setConnected(true);
       setConnecting(false);
@@ -324,7 +346,9 @@ export function useLobbySocket(lobbyId: number, onAnswerInputSync?: (answer: str
     socket.on("lobby:passTurnNotification", onPassTurnNotification);
     socket.on("lobby:closeModal", onCloseModal);
     socket.on("lobby:newAchievements", onNewAchievements);
+    socket.on("user:newAchievements", onUserNewAchievements);
     socket.on("lobby:closeExamModal", onCloseExamModal);
+    socket.on("lobby:favoriteToggled", onFavoriteToggled);
 
     return () => {
       socket.emit("leaveLobby");
@@ -361,6 +385,8 @@ export function useLobbySocket(lobbyId: number, onAnswerInputSync?: (answer: str
       socket.off("lobby:reconnectCanceled", onReconnectCanceled);
       socket.off("lobby:closeModal", onCloseModal);
       socket.off("lobby:newAchievements", onNewAchievements);
+      socket.off("user:newAchievements", onUserNewAchievements);
+      socket.off("lobby:favoriteToggled", onFavoriteToggled);
       socket.disconnect();
     };
   }, [dispatch, lobbyId, token]);
@@ -428,6 +454,10 @@ export function useLobbySocket(lobbyId: number, onAnswerInputSync?: (answer: str
     socketClient.socket.emit("lobby:examAnswerInput", { answer, activePlayerName });
   };
 
+  const sendFavoriteToggle = (questionId: number, isFavorite: boolean) => {
+    socketClient.socket.emit("lobby:favoriteToggle", { questionId, isFavorite });
+  };
+
   return {
     history,
     connected,
@@ -448,5 +478,6 @@ export function useLobbySocket(lobbyId: number, onAnswerInputSync?: (answer: str
     sendPassTurnNotification,
     sendAnswerInput,
     sendExamAnswerInput,
+    sendFavoriteToggle,
   };
 };

@@ -23,8 +23,7 @@
   box-shadow:
     0 0 0 2px rgba(255, 223, 140, 0.35) inset,
     0 2px 6px rgba(0,0,0,0.35);
-  /* background: radial-gradient(circle at 30% 30%, #ffd86b, #c77b28 65%, #8b4d1e); */
-  background: red;
+  background: radial-gradient(circle at 30% 30%, #ffd86b, #c77b28 65%, #8b4d1e);
 }
 
 /* Стиль для экзаменационной точки - звезда */

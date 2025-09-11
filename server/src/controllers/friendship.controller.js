@@ -21,7 +21,7 @@ class FriendshipController {
         });
       }
 
-      // Проверяем, не существует ли уже запрос на дружбу
+      // Проверяем существующие связи между пользователями
       const existingFriendship = await db.Friendship.findOne({
         where: {
           [db.Sequelize.Op.or]: [
@@ -32,9 +32,18 @@ class FriendshipController {
       });
 
       if (existingFriendship) {
-        return res.status(400).json({ 
-          message: 'Запрос на дружбу уже существует' 
-        });
+        if (existingFriendship.status === 'accepted') {
+          return res.status(400).json({ 
+            message: 'Вы уже друзья' 
+          });
+        } else if (existingFriendship.status === 'pending') {
+          return res.status(400).json({ 
+            message: 'Запрос на дружбу уже отправлен' 
+          });
+        } else if (existingFriendship.status === 'blocked') {
+          // Если связь заблокирована, удаляем старую запись и создаем новую
+          await existingFriendship.destroy();
+        }
       }
 
       // Создаем запрос на дружбу
@@ -279,6 +288,7 @@ class FriendshipController {
           friend_id: user_id,
           status: 'pending'
         },
+        attributes: ['id', 'user_id', 'friend_id', 'status', 'created_at', 'updated_at'],
         include: [{
           model: db.User,
           as: 'user',
@@ -308,6 +318,7 @@ class FriendshipController {
           user_id,
           status: 'pending'
         },
+        attributes: ['id', 'user_id', 'friend_id', 'status', 'created_at', 'updated_at'],
         include: [{
           model: db.User,
           as: 'friend',

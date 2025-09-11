@@ -14,6 +14,7 @@ export type MainChatMessage = {
 class MainSocketClient {
   private _socket: Socket | null = null;
   private _roomUpdateListener: ((data: any) => void) | null = null;
+  private _achievementListener: ((data: any) => void) | null = null;
 
   connectWithToken(token: string) {
     // Disconnect existing socket if any
@@ -42,6 +43,12 @@ class MainSocketClient {
       if (this._roomUpdateListener) {
         this._socket?.on('room:update', this._roomUpdateListener);
         console.log('🔄 Re-setup room update listener after reconnection');
+      }
+      
+      // Re-setup achievement listener if it exists
+      if (this._achievementListener) {
+        this._socket?.on('user:newAchievements', this._achievementListener);
+        console.log('🔄 Re-setup achievement listener after reconnection');
       }
     });
 
@@ -102,12 +109,58 @@ class MainSocketClient {
     }
   }
 
+  setupAchievementListener(listener: (data: any) => void) {
+    console.log('🏆 Setting up achievement listener...');
+    this._achievementListener = listener;
+
+    if (this._socket) {
+      console.log(
+        '🔌 Socket exists, checking connection status:',
+        this._socket.connected
+      );
+      if (this._socket.connected) {
+        this._socket.on('user:newAchievements', listener);
+        console.log('🏆 Achievement listener set up immediately');
+      } else {
+        console.log(
+          '⏳ Socket not connected yet, achievement listener will be set up on connect'
+        );
+        // Set up a one-time connection listener
+        this._socket.once('connect', () => {
+          console.log('🔄 Socket connected, setting up achievement listener');
+          this._socket?.on('user:newAchievements', listener);
+        });
+      }
+    } else {
+      console.log('❌ No socket instance available');
+    }
+    
+    // Also set up a general user:newAchievements listener for debugging
+    if (this._socket) {
+      this._socket.on('user:newAchievements', (data) => {
+        console.log('🏆 Received user:newAchievements event:', data);
+        if (this._achievementListener) {
+          this._achievementListener(data);
+        }
+      });
+      console.log('🔍 General user:newAchievements listener also set up for debugging');
+    }
+  }
+
   removeRoomUpdateListener() {
     if (this._socket && this._roomUpdateListener) {
       this._socket.off('room:update', this._roomUpdateListener);
       console.log('🧹 Room update listener removed');
     }
     this._roomUpdateListener = null;
+  }
+
+  removeAchievementListener() {
+    if (this._socket && this._achievementListener) {
+      this._socket.off('user:newAchievements', this._achievementListener);
+      console.log('🧹 Achievement listener removed');
+    }
+    this._achievementListener = null;
   }
 
   disconnect() {
