@@ -176,24 +176,72 @@ export function Profile() {
 <section className={styles.profileSection}>
   <h1 className={styles.header}>Профиль</h1>
 
-  <div className={styles.profileContainer}>
-    <img
-      src={user.image_url || "/default-avatar.png"}
-      alt="Аватар"
-      className={styles.avatar}
-    />
+  <div className={styles.mainContainer}>
+    {/* Левый блок (2/3 ширины) */}
+    <div className={styles.leftBlock}>
+      
+      {/* Блок 1.1 - Основная информация */}
+      <div className={styles.profileInfoBlock}>
+        <div className={styles.avatarSection}>
+          <img
+            src={user.image_url || "/default-avatar.png"}
+            alt="Аватар"
+            className={styles.avatar}
+          />
+          <button className={styles.editButton} onClick={openSettings}>
+            Редактировать
+          </button>
+        </div>
+        <div className={styles.basicInfo}>
+          <h2 className={styles.username}>{user.username}</h2>
+          <p className={styles.friendsCount}>Друзей: 0</p>
+        </div>
+      </div>
 
-    <div className={styles.userInfo}>
-      <h2>{user.username}</h2>
-      <p><strong>Email:</strong> {user.email}</p>
-      <p><strong>Роль:</strong> {user.role || "Пользователь"}</p>
-      <p><strong>Очки:</strong> {user.score ?? 0}</p>
+      {/* Блок 1.2 - Статистика */}
+      <div className={styles.statisticsBlock}>
+        <h3 className={styles.blockTitle}>Статистика</h3>
+        <div className={styles.statsGrid}>
+          <div className={styles.statCard}>
+            <div className={styles.statValue}>{user.score ?? 0}</div>
+            <div className={styles.statLabel}>Очки</div>
+          </div>
+          <div className={styles.statCard}>
+            <div className={styles.statValue}>0</div>
+            <div className={styles.statLabel}>Игры</div>
+          </div>
+        </div>
+      </div>
+
+      {/* Блок достижений */}
+      <div className={styles.achievementsBlock}>
+        <h3 className={styles.blockTitle}>Достижения</h3>
+        <div className={styles.achievementsList}>
+          <div className={styles.emptyMessage}>У вас пока нет достижений</div>
+        </div>
+      </div>
+    </div>
+
+    {/* Правый блок (1/3 ширины) */}
+    <div className={styles.rightBlock}>
+      
+      {/* Секция друзей */}
+      <div className={styles.friendsSection}>
+        <h3 className={styles.blockTitle}>Друзья</h3>
+        <div className={styles.friendsList}>
+          <div className={styles.emptyMessage}>У вас еще нет друзей</div>
+        </div>
+      </div>
+
+      {/* Секция избранных вопросов */}
+      <div className={styles.favoriteQuestionsSection}>
+        <h3 className={styles.blockTitle}>Избранные вопросы</h3>
+        <div className={styles.questionsList}>
+          <div className={styles.emptyMessage}>У вас нет избранных вопросов</div>
+        </div>
+      </div>
     </div>
   </div>
-
-  <button className={styles.settingsButton} onClick={openSettings}>
-    Настройки профиля
-  </button>
 
       {/* Модальное окно */}
       {isSettingsOpen && (
