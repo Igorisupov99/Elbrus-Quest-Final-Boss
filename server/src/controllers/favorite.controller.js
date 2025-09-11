@@ -127,7 +127,7 @@ class FavoriteController {
         favorites: formattedFavorites,
         pagination: {
           currentPage: page,
-          totalPages: Math.ceil(count / limit),
+          totalPages: count > 0 ? Math.ceil(count / limit) : 1,
           totalItems: count,
           itemsPerPage: limit
         }

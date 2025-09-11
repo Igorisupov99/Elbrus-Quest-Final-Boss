@@ -26,8 +26,13 @@ const FavoritesPage: React.FC = () => {
         limit: pagination.itemsPerPage 
       });
       
-      setFavorites(response.favorites);
-      setPagination(response.pagination);
+      setFavorites(response.favorites || []);
+      setPagination(response.pagination || {
+        currentPage: 1,
+        totalPages: 1,
+        totalItems: 0,
+        itemsPerPage: 10
+      });
     } catch (err: any) {
       setError(err.message || 'Ошибка при загрузке избранных вопросов');
       console.error('Ошибка загрузки избранных:', err);
@@ -148,11 +153,11 @@ const FavoritesPage: React.FC = () => {
                       className={styles.showAnswerButton}
                       onClick={() => handleShowAnswer(favorite.questionId)}
                     >
-                      {(favorite as any).showAnswer ? 'Скрыть ответ' : 'Показать ответ'}
+                      {favorite.showAnswer ? 'Скрыть ответ' : 'Показать ответ'}
                     </button>
                   </div>
 
-                  {(favorite as any).showAnswer && (
+                  {favorite.showAnswer && (
                     <div className={styles.answerSection}>
                       <div className={styles.correctAnswer}>
                         <h4>✅ Правильный ответ:</h4>
