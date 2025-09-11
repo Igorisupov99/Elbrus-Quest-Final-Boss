@@ -11,6 +11,7 @@ import ModelPageEnterPassword from '../../components/ModelPageEnterPassword/Mode
 import SuccessModal from '../../components/common/modals/SuccessModal/SuccessModal';
 import EditRoomModal from '../../components/common/modals/EditRoomModal/EditRoomModal';
 import DeleteRoomModal from '../../components/common/modals/DeleteRoomModal/DeleteRoomModal';
+import { AchievementNotification } from '../../components/Achievement/AchievementNotification/AchievementNotification';
 import { mainSocketClient } from '../../socket/socketMainPage';
 
 import styles from './MainPage.module.css';
@@ -21,7 +22,8 @@ import {
   removeRoom,
 } from '../../store/mainPage/mainPageThunks';
 import { addRoom } from '../../store/mainPage/mainPageSlice';
-import type { MainPageItem } from '../../types/mainPage';
+import type { MainPageItem, ModalKind } from '../../types/mainPage';
+import type { Achievement } from '../../types/achievement';
 
 type ModalKind = 'confirm' | 'password' | null;
 
@@ -71,6 +73,13 @@ export function MainPage(): JSX.Element {
   }>({ min: 0, max: 100 });
   const [minInputValue, setMinInputValue] = useState('');
   const [maxInputValue, setMaxInputValue] = useState('');
+
+  // Achievement notification states
+  const [achievementNotifications, setAchievementNotifications] = useState<Achievement[]>([]);
+
+  const handleCloseAchievementNotification = () => {
+    setAchievementNotifications([]);
+  };
 
   useEffect(() => {
     // if no user in state, redirect to login
@@ -134,10 +143,25 @@ export function MainPage(): JSX.Element {
         console.log('🎯 Setting up room update listener...');
         mainSocketClient.setupRoomUpdateListener(roomUpdateListener);
 
+        // Set up achievement listener
+        const achievementListener = (data: { userId: number; achievements: Achievement[] }) => {
+          console.log('🏆 [MAIN] Received user:newAchievements:', data);
+          const { userId: achievementUserId, achievements } = data;
+          
+          // Показываем уведомления только для текущего пользователя
+          if (user && Number(achievementUserId) === Number(user.id)) {
+            setAchievementNotifications(achievements);
+          }
+        };
+        
+        console.log('🏆 Setting up achievement listener...');
+        mainSocketClient.setupAchievementListener(achievementListener);
+
         // Cleanup on unmount
         return () => {
           console.log('🧹 Cleaning up socket listeners');
           mainSocketClient.removeRoomUpdateListener();
+          mainSocketClient.removeAchievementListener();
           mainSocketClient.disconnect();
         };
       } catch (error) {
@@ -580,6 +604,15 @@ export function MainPage(): JSX.Element {
           title={successModalData.title}
           message={successModalData.message}
           type={successModalData.type}
+        />
+      )}
+
+      {/* Achievement Notifications */}
+      {achievementNotifications.length > 0 && (
+        <AchievementNotification
+          achievements={achievementNotifications}
+          onClose={handleCloseAchievementNotification}
+          autoCloseDelay={5000}
         />
       )}
     </div>

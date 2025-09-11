@@ -1,10 +1,7 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import type { PayloadAction } from '@reduxjs/toolkit';
 import { avatarApi } from '../api/avatar/avatarApi';
-import { updateUserScore } from './authSlice';
 import type { 
-  Avatar, 
-  UserAvatar, 
   AvatarShopState, 
   AvatarShopFilters,
   AvatarPurchaseRequest,
@@ -72,7 +69,7 @@ const avatarSlice = createSlice({
     clearError: (state) => {
       state.error = null;
     },
-    setFilters: (state, action: PayloadAction<AvatarShopFilters>) => {
+    setFilters: (_state, _action: PayloadAction<AvatarShopFilters>) => {
       // Фильтры будут применяться при запросе данных
     },
   },
@@ -147,6 +144,7 @@ const avatarSlice = createSlice({
               id: Date.now(), // Временный ID, сервер должен вернуть правильный
               userId: 0, // Будет обновлено сервером
               avatarId: avatarId,
+              isEquipped: false,
               purchasedAt: new Date().toISOString(),
               avatar: avatar
             });

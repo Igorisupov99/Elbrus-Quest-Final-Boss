@@ -52,7 +52,7 @@ export const FavoriteButton: React.FC<FavoriteButtonProps> = ({
   // Слушаем socket события для синхронизации состояния избранного
   useEffect(() => {
     const handleFavoriteSync = (event: any) => {
-      const { questionId: syncQuestionId, isFavorite, userId } = event.detail;
+      const { questionId: syncQuestionId, isFavorite } = event.detail;
       
       // Обновляем состояние только для текущего вопроса
       if (syncQuestionId === questionId) {

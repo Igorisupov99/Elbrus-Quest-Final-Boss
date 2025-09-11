@@ -54,7 +54,7 @@ const FavoritesPage: React.FC = () => {
   };
 
   // Обработчик удаления из избранного
-  const handleFavoriteToggle = (questionId: number, isFavorite: boolean) => {
+  const handleFavoriteToggle = (_questionId: number, isFavorite: boolean) => {
     if (!isFavorite) {
       // Если вопрос удален из избранного, перезагружаем список
       loadFavorites(pagination.currentPage);

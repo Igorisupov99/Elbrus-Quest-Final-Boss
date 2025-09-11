@@ -156,6 +156,14 @@ export function useLobbySocket(lobbyId: number, onAnswerInputSync?: (answer: str
       }));
     };
 
+    const onUserNewAchievements = (payload: any) => {
+      console.log('🏆 [CLIENT] Получил user:newAchievements:', payload);
+      // Эмитим кастомное событие для показа уведомления о достижениях
+      window.dispatchEvent(new CustomEvent('achievement:received', { 
+        detail: payload 
+      }));
+    };
+
     const onCloseExamModal = () => {
       dispatch(closeExamModal());
     };
@@ -338,6 +346,7 @@ export function useLobbySocket(lobbyId: number, onAnswerInputSync?: (answer: str
     socket.on("lobby:passTurnNotification", onPassTurnNotification);
     socket.on("lobby:closeModal", onCloseModal);
     socket.on("lobby:newAchievements", onNewAchievements);
+    socket.on("user:newAchievements", onUserNewAchievements);
     socket.on("lobby:closeExamModal", onCloseExamModal);
     socket.on("lobby:favoriteToggled", onFavoriteToggled);
 
@@ -376,6 +385,7 @@ export function useLobbySocket(lobbyId: number, onAnswerInputSync?: (answer: str
       socket.off("lobby:reconnectCanceled", onReconnectCanceled);
       socket.off("lobby:closeModal", onCloseModal);
       socket.off("lobby:newAchievements", onNewAchievements);
+      socket.off("user:newAchievements", onUserNewAchievements);
       socket.off("lobby:favoriteToggled", onFavoriteToggled);
       socket.disconnect();
     };
