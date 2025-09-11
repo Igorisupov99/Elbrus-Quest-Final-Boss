@@ -173,11 +173,75 @@
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
 }
 
-.achievementsList {
-  min-height: 120px;
+.achievementsHeader {
   display: flex;
-  flex-direction: column;
-  gap: 12px;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.carouselControls {
+  display: flex;
+  gap: 8px;
+}
+
+.carouselButton {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  border: 2px solid #6b3e15;
+  background: linear-gradient(180deg, #d8a35d, #b0752d);
+  color: #2c1810;
+  font-size: 18px;
+  font-weight: bold;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+.carouselButton:hover {
+  background: linear-gradient(180deg, #e8b76d, #c6853d);
+  transform: translateY(-1px);
+  box-shadow: 0 3px 6px rgba(0, 0, 0, 0.25);
+}
+
+.carouselButton:active {
+  transform: translateY(0);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.15);
+}
+
+.achievementsCarousel {
+  position: relative;
+  overflow: hidden;
+}
+
+.achievementsList {
+  display: flex;
+  gap: 16px;
+  justify-content: flex-start;
+  transition: transform 0.3s ease;
+  min-height: 200px;
+}
+
+.achievementWrapper {
+  flex: 0 0 calc(33.333% - 11px);
+  min-width: 0;
+}
+
+.profileAchievementCard {
+  height: 100%;
+  font-size: 0.9rem;
+}
+
+.achievementsIndicator {
+  text-align: center;
+  margin-top: 16px;
+  font-size: 0.9rem;
+  color: #8b7355;
+  font-weight: 500;
 }
 
 /* Блок 2 - Секции друзей и избранных вопросов */
@@ -189,12 +253,115 @@
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
 }
 
-.friendsList,
-.questionsList {
+/* Дополнительные стили для секции друзей */
+.friendsSection {
+  width: 100%;
+  max-width: 900px;
+  margin: 32px auto 0;
+}
+
+.friendsList {
   min-height: 120px;
   display: flex;
   flex-direction: column;
   gap: 12px;
+}
+
+.favoritesHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.favoritesCarousel {
+  position: relative;
+  overflow: hidden;
+}
+
+.questionsList {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  min-height: 300px;
+  transition: transform 0.3s ease;
+}
+
+.questionCard {
+  background: #fffaf0;
+  border: 1px solid rgba(139, 69, 19, 0.2);
+  border-radius: 8px;
+  padding: 16px;
+  transition: all 0.2s ease;
+}
+
+.questionCard:hover {
+  border-color: rgba(139, 69, 19, 0.4);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.questionHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+}
+
+.topicBadge {
+  background: linear-gradient(135deg, #d8a35d, #b0752d);
+  color: #2c1810;
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  text-shadow: 0 1px 0 #f3e0c0;
+}
+
+.phaseInfo {
+  background: rgba(139, 69, 19, 0.1);
+  color: #8b4513;
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 0.8rem;
+  font-weight: 500;
+}
+
+.questionContent {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.questionText {
+  margin: 0;
+  font-size: 0.9rem;
+  line-height: 1.4;
+  color: #5c3d2e;
+  font-weight: 500;
+}
+
+.questionMeta {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 0.8rem;
+  color: #8b7355;
+}
+
+.questionType {
+  font-weight: 600;
+}
+
+.addedDate {
+  font-style: italic;
+}
+
+.favoritesIndicator {
+  text-align: center;
+  margin-top: 16px;
+  font-size: 0.9rem;
+  color: #8b7355;
+  font-weight: 500;
 }
 
 .emptyMessage {
@@ -208,127 +375,127 @@
 
 /* Модальное окно - стили остаются прежними */
 .modalOverlay {
-  position: fixed;
+    position: fixed;
   top: 0;
   left: 0;
   width: 100%;
   height: 100%;
-  background: rgba(0, 0, 0, 0.5);
+    background: rgba(0, 0, 0, 0.5);
   display: flex;
   align-items: center;
   justify-content: center;
-  z-index: 1000;
-}
-
-.modalContent {
-  position: relative;
+    z-index: 1000;
+  }
+  
+  .modalContent {
+    position: relative;
   background: #f5deb3;
-  border-radius: 12px;
-  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.25);
-  padding: 24px;
-  max-width: 400px;
-  width: 90%;
-  box-sizing: border-box;
-}
-
-.modalHeader {
-  margin: 0 0 16px;
-  font-size: 1.5rem;
-  font-weight: 700;
-  color: #5c3d2e;
-  text-align: center;
-}
-
-.formGroup {
-  margin-bottom: 12px;
-}
-
-.formGroup label {
-  display: block;
-  margin-bottom: 4px;
-  font-weight: 600;
-  color: #8b4513;
-}
-
-.formGroup input {
-  width: 100%;
-  padding: 8px 10px;
-  border: 1px solid rgba(0, 0, 0, 0.2);
-  border-radius: 8px;
-  background: #fffaf0;
-  color: #5c3d2e;
-  font-size: 1rem;
-  box-sizing: border-box;
-}
-
-.closeBtn {
-  position: absolute;
-  top: 12px;
-  right: 12px;
-  background: transparent;
-  border: none;
-  font-size: 1.4rem;
-  color: #5c3d2e;
-  cursor: pointer;
-}
-
-.modalActions {
-  display: flex;
-  justify-content: space-between;
-  margin-top: 20px;
-}
-
-.button {
-  flex: 1;
-  text-align: center;
-  padding: 10px 14px;
-  font-size: 1rem;
-  font-weight: bold;
-  border-radius: 8px;
-  border: 2px solid #6b3e15;
-  color: #2c1810;
-  text-shadow: 0 1px 0 #f3e0c0;
-  box-shadow: 0 4px 0 #6b3e15, 0 6px 10px rgba(0, 0, 0, 0.25);
-  cursor: pointer;
-  transition: all 0.2s ease-in-out;
-  background: linear-gradient(180deg, #d8a35d, #b0752d);
-  margin: 0 4px;
-}
-
-.button:hover {
-  background: linear-gradient(180deg, #e8b76d, #c6853d);
-  transform: translateY(-2px);
-  box-shadow: 0 6px 0 #6b3e15, 0 8px 12px rgba(0, 0, 0, 0.3);
-}
-
-.button:active {
-  transform: translateY(2px);
-  box-shadow: 0 2px 0 #6b3e15, 0 3px 6px rgba(0, 0, 0, 0.2);
-}
-
-.saveBtn {
+    border-radius: 12px;
+    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.25);
+    padding: 24px;
+    max-width: 400px;
+    width: 90%;
+    box-sizing: border-box;
+  }
+  
+  .modalHeader {
+    margin: 0 0 16px;
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: #5c3d2e;
+    text-align: center;
+  }
+  
+  .formGroup {
+    margin-bottom: 12px;
+  }
+  
+  .formGroup label {
+    display: block;
+    margin-bottom: 4px;
+    font-weight: 600;
+    color: #8b4513;
+  }
+  
+  .formGroup input {
+    width: 100%;
+    padding: 8px 10px;
+    border: 1px solid rgba(0, 0, 0, 0.2);
+    border-radius: 8px;
+    background: #fffaf0;
+    color: #5c3d2e;
+    font-size: 1rem;
+    box-sizing: border-box;
+  }
+  
+  .closeBtn {
+    position: absolute;
+    top: 12px;
+    right: 12px;
+    background: transparent;
+    border: none;
+    font-size: 1.4rem;
+    color: #5c3d2e;
+    cursor: pointer;
+  }
+  
+  .modalActions {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 20px;
+  }
+  
+  .button {
+    flex: 1;
+    text-align: center;
+    padding: 10px 14px;
+    font-size: 1rem;
+    font-weight: bold;
+    border-radius: 8px;
+    border: 2px solid #6b3e15;
+    color: #2c1810;
+    text-shadow: 0 1px 0 #f3e0c0;
+    box-shadow: 0 4px 0 #6b3e15, 0 6px 10px rgba(0, 0, 0, 0.25);
+    cursor: pointer;
+    transition: all 0.2s ease-in-out;
+    background: linear-gradient(180deg, #d8a35d, #b0752d);
+    margin: 0 4px;
+  }
+  
+  .button:hover {
+    background: linear-gradient(180deg, #e8b76d, #c6853d);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 0 #6b3e15, 0 8px 12px rgba(0, 0, 0, 0.3);
+  }
+  
+  .button:active {
+    transform: translateY(2px);
+    box-shadow: 0 2px 0 #6b3e15, 0 3px 6px rgba(0, 0, 0, 0.2);
+  }
+  
+  .saveBtn {
   /* базовые стили от .button */
-}
-
-.deleteBtn {
-  background: linear-gradient(180deg, #d32f2f, #b71c1c);
-  border-color: #7f1a1a;
-  color: #fff8dc;
-}
-
-.deleteBtn:hover {
-  background: linear-gradient(180deg, #e35252, #c03939);
-}
-
+  }
+  
+  .deleteBtn {
+    background: linear-gradient(180deg, #d32f2f, #b71c1c);
+    border-color: #7f1a1a;
+    color: #fff8dc;
+  }
+  
+  .deleteBtn:hover {
+    background: linear-gradient(180deg, #e35252, #c03939);
+  }
+  
 /* Состояния загрузки и ошибок */
-.loading,
-.error,
-.notFound {
-  padding: 20px;
-  text-align: center;
-  color: #5c3d2e;
-  font-weight: 600;
-}
+  .loading,
+  .error,
+  .notFound {
+    padding: 20px;
+    text-align: center;
+    color: #5c3d2e;
+    font-weight: 600;
+  }
 
 .error {
   color: #d32f2f;
@@ -458,15 +625,90 @@
     font-size: 0.9rem;
   }
 
-  /* Стили для секции друзей */
-  .friendsSection {
-    width: 100%;
-    max-width: 900px;
-    margin: 32px auto 0;
-    padding: 24px;
-    background: #f5deb3;
-    border-radius: 12px;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+  /* Дублированные стили для секции друзей удалены - см. выше */
+
+  /* Новые стили для блока друзей */
+  .friendsStats {
+    margin-bottom: 16px;
+    text-align: center;
+  }
+
+  .friendsStats p {
+    margin: 0;
+    font-size: 1rem;
+    color: #5c3d2e;
+    font-weight: 600;
+  }
+
+  .friendsActions {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    margin-bottom: 20px;
+  }
+
+  .requestButton {
+    padding: 12px 24px;
+    font-weight: bold;
+    font-size: 1.1rem;
+    border-radius: 8px;
+    border: 2px solid #6b3e15;
+    background: linear-gradient(180deg, #d8a35d, #b0752d);
+    color: #2c1810;
+    text-shadow: 0 1px 0 #f3e0c0;
+    box-shadow: 0 4px 0 #6b3e15, 0 6px 10px rgba(0, 0, 0, 0.25);
+    cursor: pointer;
+    transition: all 0.2s ease;
+  }
+
+  .requestButton:hover {
+    background: linear-gradient(180deg, #e8b76d, #c6853d);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 0 #6b3e15, 0 8px 12px rgba(0, 0, 0, 0.3);
+  }
+  
+  .requestButton:active {
+    transform: translateY(2px);
+    box-shadow: 0 2px 0 #6b3e15, 0 3px 6px rgba(0, 0, 0, 0.2);
+  }
+
+  .requestStatus {
+    display: flex;
+    align-items: center;
+    flex-shrink: 0;
+  }
+
+  .pendingStatus {
+    padding: 6px 12px;
+    background: #f39c12;
+    color: white;
+    border-radius: 4px;
+    font-size: 0.8rem;
+    font-weight: 600;
+  }
+
+  .removeFriendButton {
+    padding: 8px 16px;
+    background: #dc3545;
+    color: white;
+    border: 1px solid #c82333;
+    border-radius: 6px;
+    font-size: 0.9rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    flex-shrink: 0;
+  }
+
+  .removeFriendButton:hover {
+    background: #c82333;
+    transform: translateY(-1px);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+  }
+
+  .removeFriendButton:active {
+    transform: translateY(0);
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
   }
 
   /* Вкладки */
@@ -517,19 +759,29 @@
   .requestCard {
     display: flex;
     align-items: center;
+    justify-content: space-between;
     gap: 12px;
     padding: 16px;
     background: #fffaf0;
     border-radius: 8px;
-    border: 1px solid rgba(0, 0, 0, 0.1);
+    border: 2px solid #6b3e15;
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-    transition: transform 0.2s ease-in-out;
+    transition: all 0.2s ease-in-out;
   }
 
   .friendCard:hover,
   .requestCard:hover {
     transform: translateY(-2px);
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+    border-color: #8b5a1f;
+  }
+
+  .friendCardContent {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex: 1;
+    min-width: 0;
   }
 
   .friendAvatar {
@@ -621,14 +873,7 @@
     flex-shrink: 0;
   }
 
-  /* Пустые сообщения */
-  .emptyMessage {
-    text-align: center;
-    padding: 40px 20px;
-    color: #8b4513;
-    font-size: 1.1rem;
-    font-weight: 500;
-  }
+  /* Пустые сообщения - стили определены выше */
 
   /* Адаптивность */
   @media (max-width: 768px) {
@@ -651,4 +896,4 @@
       margin-bottom: 0;
     }
   }
-  
+}

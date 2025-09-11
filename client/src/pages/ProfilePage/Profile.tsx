@@ -7,11 +7,16 @@ import {
   getIncomingRequests, 
   getOutgoingRequests,
   acceptFriendRequest, 
-  rejectFriendRequest, 
+  rejectFriendRequest,
   removeFriend,
   type User as FriendUser, 
   type Friendship 
 } from "../../api/friendship/friendshipApi";
+import { achievementApi } from "../../api/achievements/achievementApi";
+import { AchievementCard } from "../../components/Achievement/AchievementCard/AchievementCard";
+import type { Achievement } from "../../types/achievement";
+import { favoriteApi } from "../../api/favorites/favoriteApi";
+import type { FavoriteQuestion } from "../../types/favorite";
 import styles from "./Profile.module.css";
 
 interface User {
@@ -42,8 +47,21 @@ export function Profile() {
   const [incomingRequests, setIncomingRequests] = useState<Friendship[]>([]);
   const [outgoingRequests, setOutgoingRequests] = useState<Friendship[]>([]);
   const [friendsLoading, setFriendsLoading] = useState<boolean>(false);
-  const [friendsError, setFriendsError] = useState<string | null>(null);
-  const [activeTab, setActiveTab] = useState<'friends' | 'incoming' | 'outgoing'>('friends');
+  
+  // Для модальных окон заявок
+  const [isIncomingModalOpen, setIsIncomingModalOpen] = useState(false);
+  const [isOutgoingModalOpen, setIsOutgoingModalOpen] = useState(false);
+
+  // Для достижений
+  const [achievements, setAchievements] = useState<Achievement[]>([]);
+  const [achievementsLoading, setAchievementsLoading] = useState<boolean>(false);
+  const [currentAchievementIndex, setCurrentAchievementIndex] = useState<number>(0);
+
+  // Для избранных вопросов
+  const [favoriteQuestions, setFavoriteQuestions] = useState<FavoriteQuestion[]>([]);
+  const [favoritesLoading, setFavoritesLoading] = useState<boolean>(false);
+  const [currentFavoriteIndex, setCurrentFavoriteIndex] = useState<number>(0);
+
 
   // Для управления формой настроек
   const [formData, setFormData] = useState({
@@ -98,7 +116,6 @@ export function Profile() {
     const loadFriendsData = async () => {
       try {
         setFriendsLoading(true);
-        setFriendsError(null);
 
         const [friendsResponse, incomingResponse, outgoingResponse] = await Promise.all([
           getFriends(),
@@ -117,19 +134,68 @@ export function Profile() {
         if (outgoingResponse.success) {
           setOutgoingRequests(outgoingResponse.data || []);
         }
-
-        if (!friendsResponse.success || !incomingResponse.success || !outgoingResponse.success) {
-          setFriendsError('Ошибка при загрузке данных о друзьях');
-        }
       } catch (err) {
         console.error('Ошибка при загрузке друзей:', err);
-        setFriendsError('Ошибка при загрузке друзей');
       } finally {
         setFriendsLoading(false);
       }
     };
 
     loadFriendsData();
+  }, []);
+
+  // Загрузка достижений
+  useEffect(() => {
+    const loadAchievements = async () => {
+      setAchievementsLoading(true);
+      try {
+        // Сначала пытаемся загрузить пользовательские достижения
+        try {
+          const userData = await achievementApi.getUserAchievements();
+          // Фильтруем только полученные достижения
+          const earnedAchievements = userData.achievements
+            .filter(ua => ua.achievement)
+            .map(ua => ({
+              ...ua.achievement,
+              earned: true,
+              earned_at: ua.earned_at
+            }));
+          setAchievements(earnedAchievements);
+        } catch {
+          // Если пользователь не авторизован, показываем все достижения
+          const allData = await achievementApi.getAllAchievements();
+          setAchievements(allData.achievements.slice(0, 6)); // Показываем первые 6
+        }
+      } catch (error) {
+        console.error('Ошибка при загрузке достижений:', error);
+        setAchievements([]);
+      } finally {
+        setAchievementsLoading(false);
+      }
+    };
+
+    loadAchievements();
+  }, []);
+
+  // Загрузка избранных вопросов
+  useEffect(() => {
+    const loadFavorites = async () => {
+      setFavoritesLoading(true);
+      try {
+        const response = await favoriteApi.getUserFavorites({ 
+          page: 1, 
+          limit: 15 // Загружаем 15 вопросов для карусели
+        });
+        setFavoriteQuestions(response.favorites || []);
+      } catch (error) {
+        console.error('Ошибка при загрузке избранных вопросов:', error);
+        setFavoriteQuestions([]);
+      } finally {
+        setFavoritesLoading(false);
+      }
+    };
+
+    loadFavorites();
   }, []);
 
   // Обработчик открытия/закрытия модалки
@@ -142,39 +208,77 @@ export function Profile() {
     setIsSettingsOpen(false);
   };
 
+  // Функции для модальных окон заявок
+  const openIncomingModal = () => setIsIncomingModalOpen(true);
+  const closeIncomingModal = () => setIsIncomingModalOpen(false);
+  const openOutgoingModal = () => setIsOutgoingModalOpen(true);
+  const closeOutgoingModal = () => setIsOutgoingModalOpen(false);
+
+  // Функции для карусели достижений
+  const nextAchievements = () => {
+    if (achievements.length > 3) {
+      setCurrentAchievementIndex((prev) => 
+        prev + 3 >= achievements.length ? 0 : prev + 3
+      );
+    }
+  };
+
+  const prevAchievements = () => {
+    if (achievements.length > 3) {
+      setCurrentAchievementIndex((prev) => 
+        prev - 3 < 0 ? Math.max(0, achievements.length - 3) : prev - 3
+      );
+    }
+  };
+
+  const getVisibleAchievements = () => {
+    return achievements.slice(currentAchievementIndex, currentAchievementIndex + 3);
+  };
+
+  // Функции для карусели избранных вопросов
+  const nextFavorites = () => {
+    if (favoriteQuestions.length > 5) {
+      setCurrentFavoriteIndex((prev) => 
+        prev + 5 >= favoriteQuestions.length ? 0 : prev + 5
+      );
+    }
+  };
+
+  const prevFavorites = () => {
+    if (favoriteQuestions.length > 5) {
+      setCurrentFavoriteIndex((prev) => 
+        prev - 5 < 0 ? Math.max(0, favoriteQuestions.length - 5) : prev - 5
+      );
+    }
+  };
+
+  const getVisibleFavorites = () => {
+    return favoriteQuestions.slice(currentFavoriteIndex, currentFavoriteIndex + 5);
+  };
+
+
   // Принять заявку на дружбу
   const handleAcceptRequest = async (friendshipId: number) => {
     try {
-      console.log('Принимаем заявку с ID:', friendshipId);
       const response = await acceptFriendRequest(friendshipId);
-      console.log('Результат принятия заявки:', response);
       
       if (response.success) {
         // Обновляем списки
-        console.log('Обновляем списки друзей и заявок...');
-        const [friendsResponse, incomingResponse, outgoingResponse] = await Promise.all([
+        const [friendsResponse, incomingResponse] = await Promise.all([
           getFriends(),
-          getIncomingRequests(),
-          getOutgoingRequests()
+          getIncomingRequests()
         ]);
-        
-        console.log('Новый список друзей:', friendsResponse);
-        console.log('Новый список входящих заявок:', incomingResponse);
-        console.log('Новый список исходящих заявок:', outgoingResponse);
         
         if (friendsResponse.success) setFriends(friendsResponse.data || []);
         if (incomingResponse.success) setIncomingRequests(incomingResponse.data || []);
-        if (outgoingResponse.success) setOutgoingRequests(outgoingResponse.data || []);
         
         alert('Заявка на дружбу принята!');
       } else {
-        console.error('Ошибка при принятии заявки:', response.message);
         alert(response.message || 'Ошибка при принятии заявки');
       }
     } catch (error) {
-      console.error('Критическая ошибка при принятии заявки:', error);
-      const errorMessage = error instanceof Error ? error.message : 'Неизвестная ошибка';
-      alert(`Ошибка при принятии заявки: ${errorMessage}`);
+      console.error('Ошибка при принятии заявки:', error);
+      alert('Ошибка при принятии заявки');
     }
   };
 
@@ -194,25 +298,6 @@ export function Profile() {
     } catch (error) {
       console.error('Ошибка при отклонении заявки:', error);
       alert('Ошибка при отклонении заявки');
-    }
-  };
-
-  // Отменить исходящую заявку на дружбу
-  const handleCancelRequest = async (friendshipId: number) => {
-    try {
-      const response = await rejectFriendRequest(friendshipId);
-      if (response.success) {
-        // Обновляем список исходящих заявок
-        const outgoingResponse = await getOutgoingRequests();
-        if (outgoingResponse.success) setOutgoingRequests(outgoingResponse.data || []);
-        
-        alert('Заявка на дружбу отменена');
-      } else {
-        alert(response.message || 'Ошибка при отмене заявки');
-      }
-    } catch (error) {
-      console.error('Ошибка при отмене заявки:', error);
-      alert('Ошибка при отмене заявки');
     }
   };
 
@@ -238,6 +323,7 @@ export function Profile() {
       alert('Ошибка при удалении из друзей');
     }
   };
+
 
   // Обработчик изменения полей формы
   const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
@@ -337,18 +423,18 @@ export function Profile() {
       {/* Блок 1.1 - Основная информация */}
       <div className={styles.profileInfoBlock}>
         <div className={styles.avatarSection}>
-          <img
-            src={user.image_url || "/default-avatar.png"}
-            alt="Аватар"
-            className={styles.avatar}
-          />
+    <img
+      src={user.image_url || "/default-avatar.png"}
+      alt="Аватар"
+      className={styles.avatar}
+    />
           <button className={styles.editButton} onClick={openSettings}>
             Редактировать
           </button>
         </div>
         <div className={styles.basicInfo}>
           <h2 className={styles.username}>{user.username}</h2>
-          <p className={styles.friendsCount}>Друзей: 0</p>
+          <p className={styles.friendsCount}>Друзей: {friends.length}</p>
         </div>
       </div>
 
@@ -369,10 +455,52 @@ export function Profile() {
 
       {/* Блок достижений */}
       <div className={styles.achievementsBlock}>
-        <h3 className={styles.blockTitle}>Достижения</h3>
-        <div className={styles.achievementsList}>
-          <div className={styles.emptyMessage}>У вас пока нет достижений</div>
+        <div className={styles.achievementsHeader}>
+          <h3 className={styles.blockTitle}>Достижения</h3>
+          {achievements.length > 3 && (
+            <div className={styles.carouselControls}>
+              <button 
+                className={styles.carouselButton}
+                onClick={prevAchievements}
+                aria-label="Предыдущие достижения"
+              >
+                ←
+              </button>
+              <button 
+                className={styles.carouselButton}
+                onClick={nextAchievements}
+                aria-label="Следующие достижения"
+              >
+                →
+              </button>
+            </div>
+          )}
         </div>
+        
+        <div className={styles.achievementsCarousel}>
+          {achievementsLoading ? (
+            <div className={styles.loading}>Загрузка достижений...</div>
+          ) : achievements.length === 0 ? (
+            <div className={styles.emptyMessage}>У вас пока нет достижений</div>
+          ) : (
+            <div className={styles.achievementsList}>
+              {getVisibleAchievements().map((achievement) => (
+                <div key={achievement.id} className={styles.achievementWrapper}>
+                  <AchievementCard 
+                    achievement={achievement}
+                    className={styles.profileAchievementCard}
+                  />
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+        
+        {achievements.length > 0 && (
+          <div className={styles.achievementsIndicator}>
+            {achievements.length > 3 ? `${currentAchievementIndex + 1}-${Math.min(currentAchievementIndex + 3, achievements.length)} из ${achievements.length}` : `${achievements.length} достижени${achievements.length === 1 ? 'е' : achievements.length < 5 ? 'я' : 'й'}`}
+          </div>
+        )}
       </div>
     </div>
 
@@ -382,159 +510,184 @@ export function Profile() {
       {/* Секция друзей */}
       <div className={styles.friendsSection}>
         <h3 className={styles.blockTitle}>Друзья</h3>
-        <div className={styles.friendsList}>
-          <div className={styles.emptyMessage}>У вас еще нет друзей</div>
-        </div>
+        
+        {friendsLoading ? (
+          <div className={styles.loading}>Загрузка...</div>
+        ) : (
+          <>
+            <div className={styles.friendsStats}>
+              <p>Друзей: {friends.length}</p>
+            </div>
+            
+            <div className={styles.friendsActions}>
+              <button 
+                className={styles.requestButton}
+                onClick={openIncomingModal}
+                style={{
+                  padding: '12px 24px',
+                  fontWeight: 'bold',
+                  fontSize: '1.1rem',
+                  borderRadius: '8px',
+                  border: '2px solid #6b3e15',
+                  background: 'linear-gradient(180deg, #d8a35d, #b0752d)',
+                  color: '#2c1810',
+                  textShadow: '0 1px 0 #f3e0c0',
+                  boxShadow: '0 4px 0 #6b3e15, 0 6px 10px rgba(0, 0, 0, 0.25)',
+                  cursor: 'pointer',
+                  transition: 'all 0.2s ease'
+                }}
+              >
+                Входящие заявки ({incomingRequests.length})
+              </button>
+              <button 
+                className={styles.requestButton}
+                onClick={openOutgoingModal}
+                style={{
+                  padding: '12px 24px',
+                  fontWeight: 'bold',
+                  fontSize: '1.1rem',
+                  borderRadius: '8px',
+                  border: '2px solid #6b3e15',
+                  background: 'linear-gradient(180deg, #d8a35d, #b0752d)',
+                  color: '#2c1810',
+                  textShadow: '0 1px 0 #f3e0c0',
+                  boxShadow: '0 4px 0 #6b3e15, 0 6px 10px rgba(0, 0, 0, 0.25)',
+                  cursor: 'pointer',
+                  transition: 'all 0.2s ease'
+                }}
+              >
+                Отправленные заявки ({outgoingRequests.length})
+              </button>
+            </div>
+            
+            <div className={styles.friendsList}>
+              {friends.length === 0 ? (
+                <div className={styles.emptyMessage}>У вас еще нет друзей</div>
+              ) : (
+                friends.map((friend) => (
+                  <div 
+                    key={friend.id} 
+                    className={styles.friendCard}
+                    style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'space-between',
+                      gap: '12px',
+                      padding: '16px',
+                      background: '#fffaf0',
+                      borderRadius: '8px',
+                      border: '2px solid #6b3e15',
+                      boxShadow: '0 2px 4px rgba(0, 0, 0, 0.1)',
+                      transition: 'all 0.2s ease-in-out'
+                    }}
+                  >
+                    <div className={styles.friendCardContent} style={{ display: 'flex', alignItems: 'center', gap: '12px', flex: 1, minWidth: 0 }}>
+                      <img
+                        src={friend.image_url || "/default-avatar.png"}
+                        alt={`Аватар ${friend.username}`}
+                        className={styles.friendAvatar}
+                      />
+                      <div className={styles.friendInfo}>
+                        <h4 className={styles.friendName}>{friend.username}</h4>
+                      </div>
+                    </div>
+                    <button
+                      className={styles.removeFriendButton}
+                      onClick={() => handleRemoveFriend(friend.id, friend.username)}
+                      style={{
+                        padding: '8px 16px',
+                        background: '#dc3545',
+                        color: 'white',
+                        border: '1px solid #c82333',
+                        borderRadius: '6px',
+                        fontSize: '0.9rem',
+                        fontWeight: '600',
+                        cursor: 'pointer',
+                        transition: 'all 0.2s ease',
+                        flexShrink: 0
+                      }}
+                    >
+                      Удалить
+                    </button>
+                  </div>
+                ))
+              )}
+            </div>
+          </>
+        )}
       </div>
 
       {/* Секция избранных вопросов */}
       <div className={styles.favoriteQuestionsSection}>
-        <h3 className={styles.blockTitle}>Избранные вопросы</h3>
-        <div className={styles.questionsList}>
-          <div className={styles.emptyMessage}>У вас нет избранных вопросов</div>
+        <div className={styles.favoritesHeader}>
+          <h3 className={styles.blockTitle}>Избранные вопросы</h3>
+          {favoriteQuestions.length > 5 && (
+            <div className={styles.carouselControls}>
+              <button 
+                className={styles.carouselButton}
+                onClick={prevFavorites}
+                aria-label="Предыдущие вопросы"
+              >
+                ↑
+              </button>
+              <button 
+                className={styles.carouselButton}
+                onClick={nextFavorites}
+                aria-label="Следующие вопросы"
+              >
+                ↓
+              </button>
+            </div>
+          )}
         </div>
+        
+        <div className={styles.favoritesCarousel}>
+          {favoritesLoading ? (
+            <div className={styles.loading}>Загрузка избранных вопросов...</div>
+          ) : favoriteQuestions.length === 0 ? (
+            <div className={styles.emptyMessage}>У вас нет избранных вопросов</div>
+          ) : (
+            <div className={styles.questionsList}>
+              {getVisibleFavorites().map((favorite) => (
+                <div key={favorite.id} className={styles.questionCard}>
+                  <div className={styles.questionHeader}>
+                    <span className={styles.topicBadge}>
+                      {favorite.question.topic.title}
+                    </span>
+                    <span className={styles.phaseInfo}>
+                      Фаза {favorite.question.topic.phaseId}
+                    </span>
+                  </div>
+                  
+                  <div className={styles.questionContent}>
+                    <p className={styles.questionText}>
+                      {favorite.question.text}
+                    </p>
+                    
+                    <div className={styles.questionMeta}>
+                      <span className={styles.questionType}>
+                        {favorite.question.questionType}
+                      </span>
+                      <span className={styles.addedDate}>
+                        {new Date(favorite.createdAt).toLocaleDateString('ru-RU')}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+        
+        {favoriteQuestions.length > 0 && (
+          <div className={styles.favoritesIndicator}>
+            {favoriteQuestions.length > 5 ? `${currentFavoriteIndex + 1}-${Math.min(currentFavoriteIndex + 5, favoriteQuestions.length)} из ${favoriteQuestions.length}` : `${favoriteQuestions.length} вопрос${favoriteQuestions.length === 1 ? '' : favoriteQuestions.length < 5 ? 'а' : 'ов'}`}
+          </div>
+        )}
       </div>
     </div>
   </div>
 
-  <button className={styles.settingsButton} onClick={openSettings}>
-    Настройки профиля
-  </button>
-
-  {/* Секция друзей и заявок */}
-  <div className={styles.friendsSection}>
-    <div className={styles.tabsContainer}>
-      <button 
-        className={`${styles.tab} ${activeTab === 'friends' ? styles.activeTab : ''}`}
-        onClick={() => setActiveTab('friends')}
-      >
-        Друзья ({friends.length})
-      </button>
-      <button 
-        className={`${styles.tab} ${activeTab === 'incoming' ? styles.activeTab : ''}`}
-        onClick={() => setActiveTab('incoming')}
-      >
-        Входящие ({incomingRequests.length})
-      </button>
-      <button 
-        className={`${styles.tab} ${activeTab === 'outgoing' ? styles.activeTab : ''}`}
-        onClick={() => setActiveTab('outgoing')}
-      >
-        Исходящие ({outgoingRequests.length})
-      </button>
-    </div>
-
-    {friendsLoading ? (
-      <div className={styles.loading}>Загрузка...</div>
-    ) : friendsError ? (
-      <div className={styles.error}>Ошибка: {friendsError}</div>
-    ) : (
-      <div className={styles.tabContent}>
-        {activeTab === 'friends' && (
-          <div className={styles.friendsList}>
-            {friends.length === 0 ? (
-              <div className={styles.emptyMessage}>У вас еще нет друзей</div>
-            ) : (
-              friends.map((friend) => (
-                <div key={friend.id} className={styles.friendCard}>
-                  <img
-                    src={friend.image_url || "/default-avatar.png"}
-                    alt={`Аватар ${friend.username}`}
-                    className={styles.friendAvatar}
-                  />
-                  <div className={styles.friendInfo}>
-                    <h4 className={styles.friendName}>{friend.username}</h4>
-                    <p className={styles.friendEmail}>{friend.email}</p>
-                    {friend.score !== undefined && (
-                      <p className={styles.friendScore}>Очки: {friend.score}</p>
-                    )}
-                  </div>
-                  <button
-                    className={styles.removeButton}
-                    onClick={() => handleRemoveFriend(friend.id, friend.username)}
-                  >
-                    Удалить
-                  </button>
-                </div>
-              ))
-            )}
-          </div>
-        )}
-
-        {activeTab === 'incoming' && (
-          <div className={styles.requestsList}>
-            {incomingRequests.length === 0 ? (
-              <div className={styles.emptyMessage}>Нет входящих заявок</div>
-            ) : (
-              incomingRequests.map((request) => (
-                <div key={request.id} className={styles.requestCard}>
-                  <img
-                    src={request.user?.image_url || "/default-avatar.png"}
-                    alt={`Аватар ${request.user?.username}`}
-                    className={styles.friendAvatar}
-                  />
-                  <div className={styles.friendInfo}>
-                    <h4 className={styles.friendName}>{request.user?.username}</h4>
-                    <p className={styles.friendEmail}>{request.user?.email}</p>
-                    {request.user?.score !== undefined && (
-                      <p className={styles.friendScore}>Очки: {request.user.score}</p>
-                    )}
-                  </div>
-                  <div className={styles.requestButtons}>
-                    <button
-                      className={styles.acceptButton}
-                      onClick={() => handleAcceptRequest(request.id)}
-                    >
-                      Принять
-                    </button>
-                    <button
-                      className={styles.rejectButton}
-                      onClick={() => handleRejectRequest(request.id)}
-                    >
-                      Отклонить
-                    </button>
-                  </div>
-                </div>
-              ))
-            )}
-          </div>
-        )}
-
-        {activeTab === 'outgoing' && (
-          <div className={styles.requestsList}>
-            {outgoingRequests.length === 0 ? (
-              <div className={styles.emptyMessage}>Нет исходящих заявок</div>
-            ) : (
-              outgoingRequests.map((request) => (
-                <div key={request.id} className={styles.requestCard}>
-                  <img
-                    src={request.friend?.image_url || "/default-avatar.png"}
-                    alt={`Аватар ${request.friend?.username}`}
-                    className={styles.friendAvatar}
-                  />
-                  <div className={styles.friendInfo}>
-                    <h4 className={styles.friendName}>{request.friend?.username}</h4>
-                    <p className={styles.friendEmail}>{request.friend?.email}</p>
-                    {request.friend?.score !== undefined && (
-                      <p className={styles.friendScore}>Очки: {request.friend.score}</p>
-                    )}
-                  </div>
-                  <div className={styles.requestButtons}>
-                    <button
-                      className={styles.rejectButton}
-                      onClick={() => handleCancelRequest(request.id)}
-                    >
-                      Отменить
-                    </button>
-                  </div>
-                </div>
-              ))
-            )}
-          </div>
-        )}
-      </div>
-    )}
-  </div>
 
       {/* Модальное окно */}
       {isSettingsOpen && (
@@ -617,6 +770,99 @@ export function Profile() {
                 </button>
               </div>
             </form>
+          </div>
+        </div>
+      )}
+
+      {/* Модальное окно входящих заявок */}
+      {isIncomingModalOpen && (
+        <div className={styles.modalOverlay} onClick={closeIncomingModal}>
+          <div
+            className={styles.modalContent}
+            onClick={e => e.stopPropagation()}
+          >
+            <button className={styles.closeBtn} onClick={closeIncomingModal} aria-label="Закрыть модальное окно">
+              &times;
+            </button>
+            <h2 className={styles.modalHeader}>Входящие заявки ({incomingRequests.length})</h2>
+            
+            <div className={styles.requestsList}>
+              {incomingRequests.length === 0 ? (
+                <div className={styles.emptyMessage}>Нет входящих заявок</div>
+              ) : (
+                incomingRequests.map((request) => (
+                  <div key={request.id} className={styles.requestCard}>
+                    <img
+                      src={request.user?.image_url || "/default-avatar.png"}
+                      alt={`Аватар ${request.user?.username}`}
+                      className={styles.friendAvatar}
+                    />
+                    <div className={styles.friendInfo}>
+                      <h4 className={styles.friendName}>{request.user?.username}</h4>
+                      <p className={styles.friendEmail}>{request.user?.email}</p>
+                      {request.user?.score !== undefined && (
+                        <p className={styles.friendScore}>Очки: {request.user.score}</p>
+                      )}
+                    </div>
+                    <div className={styles.requestButtons}>
+                      <button
+                        className={styles.acceptButton}
+                        onClick={() => handleAcceptRequest(request.id)}
+                      >
+                        Принять
+                      </button>
+                      <button
+                        className={styles.rejectButton}
+                        onClick={() => handleRejectRequest(request.id)}
+                      >
+                        Отклонить
+                      </button>
+                    </div>
+                  </div>
+                ))
+              )}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Модальное окно исходящих заявок */}
+      {isOutgoingModalOpen && (
+        <div className={styles.modalOverlay} onClick={closeOutgoingModal}>
+          <div
+            className={styles.modalContent}
+            onClick={e => e.stopPropagation()}
+          >
+            <button className={styles.closeBtn} onClick={closeOutgoingModal} aria-label="Закрыть модальное окно">
+              &times;
+            </button>
+            <h2 className={styles.modalHeader}>Отправленные заявки ({outgoingRequests.length})</h2>
+            
+            <div className={styles.requestsList}>
+              {outgoingRequests.length === 0 ? (
+                <div className={styles.emptyMessage}>Нет отправленных заявок</div>
+              ) : (
+                outgoingRequests.map((request) => (
+                  <div key={request.id} className={styles.requestCard}>
+                    <img
+                      src={request.friend?.image_url || "/default-avatar.png"}
+                      alt={`Аватар ${request.friend?.username}`}
+                      className={styles.friendAvatar}
+                    />
+                    <div className={styles.friendInfo}>
+                      <h4 className={styles.friendName}>{request.friend?.username}</h4>
+                      <p className={styles.friendEmail}>{request.friend?.email}</p>
+                      {request.friend?.score !== undefined && (
+                        <p className={styles.friendScore}>Очки: {request.friend.score}</p>
+                      )}
+                    </div>
+                    <div className={styles.requestStatus}>
+                      <span className={styles.pendingStatus}>Ожидает ответа</span>
+                    </div>
+                  </div>
+                ))
+              )}
+            </div>
           </div>
         </div>
       )}
