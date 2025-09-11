@@ -1,6 +1,19 @@
+:root {
+  --fantasy-bg: #d6b37a;
+  --fantasy-surface: #f5deb3;
+  --fantasy-surface-2: #fff8dc;
+  --fantasy-border: #8b5a2b;
+  --fantasy-text: #4b2e05;
+  --fantasy-muted: #5c3b09;
+  --fantasy-gold: #d4a017;
+  --fantasy-gold-2: #a97400;
+  --fantasy-accent: #6b3e15;
+}
+
 .page {
   min-height: 100vh;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: linear-gradient(135deg, #f4e1c1, #e6d2b5, #d8c3a5);
+  font-family: 'Cinzel', serif;
   padding: 20px 0;
 }
 
@@ -13,26 +26,23 @@
 .header {
   text-align: center;
   margin-bottom: 40px;
-  color: white;
+  color: var(--fantasy-text);
 }
 
 .title {
   font-size: 48px;
   font-weight: 800;
   margin: 0 0 16px 0;
-  text-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
-  background: linear-gradient(135deg, #ffffff 0%, #f0f9ff 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
+  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.1);
+  letter-spacing: 1px;
+  color: var(--fantasy-text);
 }
 
 .subtitle {
   font-size: 20px;
-  font-weight: 400;
+  font-weight: 500;
   margin: 0;
-  opacity: 0.9;
-  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+  color: var(--fantasy-muted);
 }
 
 /* Адаптивность */

@@ -1,9 +1,22 @@
+:root {
+  --fantasy-bg: #d6b37a;
+  --fantasy-surface: #f5deb3;
+  --fantasy-surface-2: #fff8dc;
+  --fantasy-border: #8b5a2b;
+  --fantasy-text: #4b2e05;
+  --fantasy-muted: #5c3b09;
+  --fantasy-gold: #d4a017;
+  --fantasy-gold-2: #a97400;
+  --fantasy-accent: #6b3e15;
+}
+
 .container {
   max-width: 1200px;
   margin: 0 auto;
   padding: 20px;
   min-height: 100vh;
-  background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+  background: linear-gradient(135deg, #f4e1c1, #e6d2b5, #d8c3a5);
+  font-family: 'Cinzel', serif;
 }
 
 .errorContainer {
@@ -15,40 +28,74 @@
 
 .error {
   text-align: center;
-  background: white;
+  background: linear-gradient(
+    180deg,
+    var(--fantasy-surface),
+    var(--fantasy-surface-2)
+  );
+  color: var(--fantasy-text);
+  border: 2px solid var(--fantasy-border);
   padding: 32px;
   border-radius: 16px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
   max-width: 400px;
+  position: relative;
+  overflow: hidden;
+}
+
+.error::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: linear-gradient(
+    90deg,
+    var(--fantasy-gold),
+    var(--fantasy-gold-2)
+  );
 }
 
 .error h2 {
-  color: #dc2626;
+  color: #d32f2f;
   margin: 0 0 16px 0;
   font-size: 24px;
+  font-weight: 700;
+  text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.1);
 }
 
 .error p {
-  color: #6b7280;
+  color: var(--fantasy-muted);
   margin: 0 0 24px 0;
   line-height: 1.5;
+  font-weight: 500;
 }
 
 .retryButton {
-  background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
-  color: white;
-  border: none;
-  padding: 12px 24px;
+  appearance: none;
+  border: 2px solid var(--fantasy-accent);
+  background: linear-gradient(
+    180deg,
+    var(--fantasy-gold),
+    var(--fantasy-gold-2)
+  );
+  color: #2c1810;
   border-radius: 8px;
+  padding: 12px 24px;
   font-size: 14px;
-  font-weight: 600;
+  font-weight: bold;
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition: all 0.2s ease-in-out;
+  box-shadow: 0 3px 6px rgba(0, 0, 0, 0.2);
+  text-shadow: 0 1px 0 #f3e0c0;
+  font-family: inherit;
 }
 
 .retryButton:hover {
-  background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
+  background: linear-gradient(180deg, #f0c33b, #c48a00);
   transform: translateY(-1px);
+  box-shadow: 0 5px 10px rgba(0, 0, 0, 0.3);
 }
 
 .loadingContainer {
@@ -75,9 +122,10 @@
 }
 
 .loadingContainer p {
-  color: #6b7280;
+  color: var(--fantasy-muted);
   font-size: 16px;
   margin: 0;
+  font-weight: 600;
 }
 
 .resultsHeader {
@@ -86,25 +134,49 @@
   align-items: center;
   margin-bottom: 24px;
   padding: 16px 24px;
-  background: white;
+  background: linear-gradient(
+    180deg,
+    var(--fantasy-surface),
+    var(--fantasy-surface-2)
+  );
+  color: var(--fantasy-text);
+  border: 2px solid var(--fantasy-border);
   border-radius: 12px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  position: relative;
+  overflow: hidden;
+}
+
+.resultsHeader::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: linear-gradient(
+    90deg,
+    var(--fantasy-gold),
+    var(--fantasy-gold-2)
+  );
 }
 
 .resultsHeader h3 {
   margin: 0;
-  color: #1f2937;
+  color: var(--fantasy-text);
   font-size: 18px;
   font-weight: 600;
+  text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.1);
 }
 
 .currentAvatar {
-  color: #6b7280;
+  color: var(--fantasy-muted);
   font-size: 14px;
+  font-weight: 500;
 }
 
 .currentAvatar strong {
-  color: #3b82f6;
+  color: var(--fantasy-gold);
   font-weight: 600;
 }
 
@@ -115,9 +187,31 @@
   justify-content: center;
   min-height: 400px;
   text-align: center;
-  background: white;
+  background: linear-gradient(
+    180deg,
+    var(--fantasy-surface),
+    var(--fantasy-surface-2)
+  );
+  color: var(--fantasy-text);
+  border: 2px solid var(--fantasy-border);
   border-radius: 16px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  position: relative;
+  overflow: hidden;
+}
+
+.emptyState::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: linear-gradient(
+    90deg,
+    var(--fantasy-gold),
+    var(--fantasy-gold-2)
+  );
 }
 
 .emptyIcon {
@@ -128,15 +222,17 @@
 
 .emptyState h3 {
   margin: 0 0 8px 0;
-  color: #1f2937;
+  color: var(--fantasy-text);
   font-size: 24px;
   font-weight: 600;
+  text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.1);
 }
 
 .emptyState p {
   margin: 0;
-  color: #6b7280;
+  color: var(--fantasy-muted);
   font-size: 16px;
+  font-weight: 500;
 }
 
 .avatarsGrid {

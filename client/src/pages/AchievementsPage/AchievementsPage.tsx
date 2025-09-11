@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import styles from './AchievementsPage.module.css';
-import { AchievementCard } from '../../components/Achievement/AchievementCard/AchievementCard';
+import { AchievementGroup } from '../../components/Achievement/AchievementGroup/AchievementGroup';
+import { AchievementModal } from '../../components/Achievement/AchievementModal/AchievementModal';
 import { achievementApi } from '../../api/achievements/achievementApi';
 import type { Achievement, AchievementStats } from '../../types/achievement';
 import { ACHIEVEMENT_CATEGORIES } from '../../types/achievement';
@@ -11,6 +12,9 @@ export function AchievementsPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [activeFilter, setActiveFilter] = useState<string>('all');
+  const [selectedAchievement, setSelectedAchievement] = useState<Achievement | null>(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [expandedGroups, setExpandedGroups] = useState<Set<string>>(new Set());
 
   useEffect(() => {
     loadAchievements();
@@ -69,6 +73,37 @@ export function AchievementsPage() {
     groups[achievement.category].push(achievement);
     return groups;
   }, {} as Record<string, Achievement[]>);
+
+  const handleAchievementClick = (achievement: Achievement) => {
+    setSelectedAchievement(achievement);
+    setIsModalOpen(true);
+  };
+
+  const handleCloseModal = () => {
+    setIsModalOpen(false);
+    setSelectedAchievement(null);
+  };
+
+  const handleToggleGroup = (category: string) => {
+    setExpandedGroups(prev => {
+      const newSet = new Set(prev);
+      if (newSet.has(category)) {
+        newSet.delete(category);
+      } else {
+        newSet.add(category);
+      }
+      return newSet;
+    });
+  };
+
+  const handleExpandAll = () => {
+    const allCategories = Object.keys(groupedAchievements);
+    setExpandedGroups(new Set(allCategories));
+  };
+
+  const handleCollapseAll = () => {
+    setExpandedGroups(new Set());
+  };
 
   if (loading) {
     return (
@@ -157,24 +192,40 @@ export function AchievementsPage() {
           ))}
         </div>
 
+        <div className={styles.groupControls}>
+          <button
+            className={styles.groupControlButton}
+            onClick={handleExpandAll}
+          >
+            Развернуть все
+          </button>
+          <button
+            className={styles.groupControlButton}
+            onClick={handleCollapseAll}
+          >
+            Свернуть все
+          </button>
+        </div>
+
         <div className={styles.achievements}>
           {Object.entries(groupedAchievements).map(([category, categoryAchievements]) => (
-            <div key={category} className={styles.categoryContent}>
-              {activeFilter === 'all' && (
-                <h2 className={styles.categoryHeader}>
-                  {ACHIEVEMENT_CATEGORIES[category as keyof typeof ACHIEVEMENT_CATEGORIES]}
-                </h2>
-              )}
-              {categoryAchievements.map((achievement) => (
-                <AchievementCard
-                  key={achievement.id}
-                  achievement={achievement}
-                />
-              ))}
-            </div>
+            <AchievementGroup
+              key={category}
+              category={category}
+              achievements={categoryAchievements}
+              onAchievementClick={handleAchievementClick}
+              isExpanded={expandedGroups.has(category)}
+              onToggle={() => handleToggleGroup(category)}
+            />
           ))}
         </div>
       </div>
+      
+      <AchievementModal
+        achievement={selectedAchievement}
+        isOpen={isModalOpen}
+        onClose={handleCloseModal}
+      />
     </div>
   );
 }
