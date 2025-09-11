@@ -149,15 +149,16 @@ const purchaseAvatar = async (req, res) => {
       }, { transaction });
 
       // Списываем очки
+      const newScore = user.score - avatar.price;
       await user.update({
-        score: user.score - avatar.price
+        score: newScore
       }, { transaction });
 
       await transaction.commit();
 
       res.json({ 
         success: true, 
-        score: user.score - avatar.price,
+        score: newScore,
         message: 'Аватар успешно куплен' 
       });
     } catch (transactionError) {

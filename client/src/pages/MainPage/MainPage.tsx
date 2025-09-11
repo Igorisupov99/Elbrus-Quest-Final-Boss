@@ -22,7 +22,7 @@ import {
   removeRoom,
 } from '../../store/mainPage/mainPageThunks';
 import { addRoom } from '../../store/mainPage/mainPageSlice';
-import type { MainPageItem, ModalKind } from '../../types/mainPage';
+import type { MainPageItem } from '../../types/mainPage';
 import type { Achievement } from '../../types/achievement';
 
 type ModalKind = 'confirm' | 'password' | null;
@@ -149,7 +149,7 @@ export function MainPage(): JSX.Element {
           const { userId: achievementUserId, achievements } = data;
           
           // Показываем уведомления только для текущего пользователя
-          if (user && Number(achievementUserId) === Number(user.id)) {
+          if (userId && Number(achievementUserId) === Number(userId)) {
             setAchievementNotifications(achievements);
           }
         };

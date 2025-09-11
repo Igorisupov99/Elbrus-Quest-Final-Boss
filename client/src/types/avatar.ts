@@ -36,7 +36,6 @@ export interface AvatarShopState {
   currentAvatar: Avatar | null;
   loading: boolean;
   error: string | null;
-  userScore: number;
 }
 
 export interface AvatarShopFilters {

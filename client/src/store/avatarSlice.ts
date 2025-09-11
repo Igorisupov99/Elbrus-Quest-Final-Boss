@@ -14,7 +14,6 @@ const initialState: AvatarShopState = {
   currentAvatar: null,
   loading: false,
   error: null,
-  userScore: 0,
 };
 
 // Асинхронные thunks
@@ -129,7 +128,6 @@ const avatarSlice = createSlice({
       })
       .addCase(purchaseAvatar.fulfilled, (state, action) => {
         state.loading = false;
-        state.userScore = action.payload.score;
         
         // Добавляем купленный аватар в userAvatars
         const avatarId = action.meta.arg.avatarId;

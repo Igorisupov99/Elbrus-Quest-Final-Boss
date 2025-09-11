@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useMemo } from 'react';
 import { useAppDispatch, useAppSelector } from '../../store/hooks';
 import { 
   fetchAvatars, 
@@ -51,14 +51,17 @@ export const AvatarShop: React.FC = () => {
   const equippedAvatarId = currentAvatar?.id;
 
   // Фильтруем аватары по статусу владения
-  const filteredAvatars = avatars.filter(avatar => {
-    const isOwned = ownedAvatarIds.has(avatar.id);
-    
-    if (filters.showOwned && !isOwned) return false;
-    if (filters.showLocked && isOwned) return false;
-    
-    return true;
-  });
+  // Используем useMemo для оптимизации пересчета при изменении userAvatars
+  const filteredAvatars = useMemo(() => {
+    return avatars.filter(avatar => {
+      const isOwned = ownedAvatarIds.has(avatar.id);
+      
+      if (filters.showOwned && !isOwned) return false;
+      if (filters.showLocked && isOwned) return false;
+      
+      return true;
+    });
+  }, [avatars, userAvatars, filters.showOwned, filters.showLocked]);
 
   const handleFiltersChange = (newFilters: AvatarShopFilters) => {
     setFilters(newFilters);

@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useAppDispatch, useAppSelector } from '../../../store/hooks';
 import { purchaseAvatar, equipAvatar, unequipAvatar } from '../../../store/avatarSlice';
 import { updateUserScore } from '../../../store/authSlice';
@@ -20,25 +20,33 @@ export const AvatarCard: React.FC<AvatarCardProps> = ({
 }) => {
   const dispatch = useAppDispatch();
   const { loading } = useAppSelector((state) => state.avatar);
+  const [isPurchasing, setIsPurchasing] = useState(false);
+  const [isEquipping, setIsEquipping] = useState(false);
 
   const handlePurchase = async () => {
-    if (!isOwned && canAfford) {
+    if (!isOwned && canAfford && !isPurchasing) {
+      setIsPurchasing(true);
       try {
         const result = await dispatch(purchaseAvatar({ avatarId: avatar.id })).unwrap();
         // Обновляем очки пользователя в auth state
         dispatch(updateUserScore(result.score));
       } catch (error) {
         console.error('Ошибка покупки аватара:', error);
+      } finally {
+        setIsPurchasing(false);
       }
     }
   };
 
   const handleEquip = async () => {
-    if (isOwned && !isEquipped) {
+    if (isOwned && !isEquipped && !isEquipping) {
+      setIsEquipping(true);
       try {
         await dispatch(equipAvatar({ avatarId: avatar.id })).unwrap();
       } catch (error) {
         console.error('Ошибка надевания аватара:', error);
+      } finally {
+        setIsEquipping(false);
       }
     }
   };
@@ -94,12 +102,12 @@ export const AvatarCard: React.FC<AvatarCardProps> = ({
           {!isOwned ? (
             <button
               onClick={handlePurchase}
-              disabled={!canAfford || loading}
+              disabled={!canAfford || isPurchasing}
               className={`${styles.button} ${styles.purchaseButton} ${
                 !canAfford ? styles.disabled : ''
               }`}
             >
-              {canAfford ? 'Купить' : 'Недостаточно очков'}
+              {isPurchasing ? 'Покупка...' : canAfford ? 'Купить' : 'Недостаточно очков'}
             </button>
           ) : isEquipped ? (
             <button
@@ -112,10 +120,10 @@ export const AvatarCard: React.FC<AvatarCardProps> = ({
           ) : (
             <button
               onClick={handleEquip}
-              disabled={loading}
+              disabled={isEquipping}
               className={`${styles.button} ${styles.equipButton}`}
             >
-              Надеть
+              {isEquipping ? 'Надевание...' : 'Надеть'}
             </button>
           )}
         </div>
