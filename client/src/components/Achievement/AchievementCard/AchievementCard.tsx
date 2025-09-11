@@ -6,9 +6,10 @@ interface AchievementCardProps {
   achievement: Achievement;
   earnedDate?: string;
   className?: string;
+  onClick?: (achievement: Achievement) => void;
 }
 
-export function AchievementCard({ achievement, earnedDate, className = '' }: AchievementCardProps) {
+export function AchievementCard({ achievement, earnedDate, className = '', onClick }: AchievementCardProps) {
   const isEarned = achievement.earned || !!earnedDate;
   
   const formatDate = (dateString: string) => {
@@ -19,9 +20,16 @@ export function AchievementCard({ achievement, earnedDate, className = '' }: Ach
     });
   };
 
+  const handleClick = () => {
+    if (onClick) {
+      onClick(achievement);
+    }
+  };
+
   return (
     <div 
       className={`${styles.achievementCard} ${isEarned ? styles.earned : styles.notEarned} ${className}`}
+      onClick={handleClick}
     >
       {isEarned && <div className={styles.checkmark}>✓</div>}
       
@@ -34,10 +42,6 @@ export function AchievementCard({ achievement, earnedDate, className = '' }: Ach
           <p className={styles.points}>+{achievement.points} очков</p>
         </div>
       </div>
-
-      <p className={styles.description}>
-        {achievement.description}
-      </p>
 
       <div className={styles.footer}>
         <span className={styles.category}>
