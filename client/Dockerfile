@@ -4,6 +4,7 @@ COPY package.json ./
 COPY package-lock.json ./
 RUN npm ci
 COPY . .
+ENV VITE_SERVER_URL=https://questcode.ru
 RUN npm run build
 RUN ls -al /application
 FROM nginx:alpine   
