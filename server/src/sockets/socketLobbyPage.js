@@ -761,7 +761,7 @@ function initLobbySockets(nsp) {
               nsp.to(roomKey).emit('lobby:incorrectCountUpdate', { incorrectAnswers: 0 });
               
               // Закрываем модалку экзамена
-              nsp.to(roomKey).emit('lobby:closeModal');
+              nsp.to(roomKey).emit('lobby:closeExamModal');
             }
           }
           

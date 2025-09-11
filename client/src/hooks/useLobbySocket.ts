@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { useAppDispatch, useAppSelector } from "../store/hooks";
 import type { RootState } from "../store/store";
 import { type ChatHistoryItem, type IncomingChatMessage, socketClient, type SystemEvent } from "../socket/socketLobbyPage";
-import { initialState, setScores, mergeScores, openModal, setModalResult, closeModal, openExamModal, closeExamModal, setExamQuestions, setExamIndex, clearExamQuestions, openPhaseTransitionModal } from "../store/lobbyPage/lobbySlice";
+import { initialState, setScores, mergeScores, openModal, setModalResult, closeModal, openExamModal, closeExamModal, setExamQuestions, setExamIndex, clearExamQuestions, openPhaseTransitionModal, openExamFailureModal } from "../store/lobbyPage/lobbySlice";
 import {
   setUsers,
   setPoints,
@@ -148,6 +148,10 @@ export function useLobbySocket(lobbyId: number) {
       dispatch(closeModal());
     };
 
+    const onCloseExamModal = () => {
+      dispatch(closeExamModal());
+    };
+
     const onExamReward = (payload: { 
       message: string; 
       rewardPoints: number; 
@@ -192,13 +196,13 @@ export function useLobbySocket(lobbyId: number) {
     }) => {
       console.log('❌ [EXAM] Экзамен провален:', payload);
       
-      // Показываем уведомление о провале экзамена с информацией о повторном прохождении
-      dispatch(setModalResult(payload.message));
-      
-      // Закрываем уведомление через 7 секунд (больше времени для чтения)
-      setTimeout(() => {
-        dispatch(setModalResult(null));
-      }, 7000);
+      // Открываем модальное окно провала экзамена
+      dispatch(openExamFailureModal({
+        correctAnswers: payload.correctAnswers,
+        totalQuestions: payload.totalQuestions,
+        successRate: payload.successRate,
+        phaseId: payload.phaseId,
+      }));
     };
 
     const onExamIncorrectAnswer = (payload: { message: string }) => {
@@ -262,6 +266,7 @@ export function useLobbySocket(lobbyId: number) {
     socket.on("lobby:timeout", onTimeout);
     socket.on("lobby:passTurnNotification", onPassTurnNotification);
     socket.on("lobby:closeModal", onCloseModal);
+    socket.on("lobby:closeExamModal", onCloseExamModal);
 
     return () => {
       socket.emit("leaveLobby");

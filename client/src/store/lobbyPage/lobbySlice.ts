@@ -50,6 +50,13 @@ interface LobbyState {
     phaseNumber: number;
     rewardPoints: number;
   };
+  examFailureModal: {
+    isOpen: boolean;
+    correctAnswers: number;
+    totalQuestions: number;
+    successRate: number;
+    phaseId: number;
+  };
 }
 
 export const initialState: LobbyState = {
@@ -164,6 +171,13 @@ export const initialState: LobbyState = {
     phaseNumber: 1,
     rewardPoints: 0,
   },
+  examFailureModal: {
+    isOpen: false,
+    correctAnswers: 0,
+    totalQuestions: 0,
+    successRate: 0,
+    phaseId: 1,
+  },
 };
 
 const lobbyPageReducer = createSlice({
@@ -247,11 +261,26 @@ const lobbyPageReducer = createSlice({
     },
     closePhaseTransitionModal(state) {
       state.phaseTransitionModal.isOpen = false;
+    },
+    openExamFailureModal(
+      state,
+      action: PayloadAction<{ correctAnswers: number; totalQuestions: number; successRate: number; phaseId: number }>
+    ) {
+      state.examFailureModal = {
+        isOpen: true,
+        correctAnswers: action.payload.correctAnswers,
+        totalQuestions: action.payload.totalQuestions,
+        successRate: action.payload.successRate,
+        phaseId: action.payload.phaseId,
+      };
+    },
+    closeExamFailureModal(state) {
+      state.examFailureModal.isOpen = false;
     }
   },
 });
 
-export const { setUsers, setPoints, updatePointStatus, openModal, closeModal, openExamModal, closeExamModal, setExamQuestions, clearExamQuestions, setExamIndex, setScores, mergeScores, incrementIncorrectAnswers, setIncorrectAnswers, setModalResult, openPhaseTransitionModal, closePhaseTransitionModal } =
+export const { setUsers, setPoints, updatePointStatus, openModal, closeModal, openExamModal, closeExamModal, setExamQuestions, clearExamQuestions, setExamIndex, setScores, mergeScores, incrementIncorrectAnswers, setIncorrectAnswers, setModalResult, openPhaseTransitionModal, closePhaseTransitionModal, openExamFailureModal, closeExamFailureModal } =
   lobbyPageReducer.actions;
 
 export default lobbyPageReducer.reducer;
