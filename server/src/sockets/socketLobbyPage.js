@@ -447,6 +447,10 @@ function initLobbySockets(nsp) {
             // Экзамен завершён
             lobbyExamState.delete(lobbyId);
             
+            // Обнуляем счётчик неправильных ответов после успешной сдачи экзамена
+            incorrectAnswersMap.set(lobbyId, 0);
+            console.log(`🎯 [SOCKET] Счётчик неправильных ответов обнулён для лобби ${lobbyId}`);
+            
             // Начисляем 30 очков каждому игроку в лобби за успешную сдачу экзамена
             try {
               const { User, UserSession } = require("../../db/models");
@@ -495,6 +499,9 @@ function initLobbySockets(nsp) {
                 sessionScore: lobbyTotalScore,
                 userScores: userScores
               });
+              
+              // Отправляем обновление счётчика неправильных ответов (обнуляем после экзамена)
+              nsp.to(roomKey).emit('lobby:incorrectCountUpdate', { incorrectAnswers: 0 });
               
             } catch (error) {
               console.error('Ошибка при начислении очков за экзамен:', error);
