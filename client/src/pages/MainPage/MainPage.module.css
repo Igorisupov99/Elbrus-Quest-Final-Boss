@@ -813,7 +813,10 @@
   border-radius: 8px;
   background: rgba(255, 248, 220, 0.6);
   overflow-y: auto; /* скролл только для сообщений */
-  min-height: calc(100vh - 320px);
+  min-height: 0; /* Allow to shrink */
+  max-height: calc(
+    100vh - 200px
+  ); /* Reduced by 20px to eliminate extra white space */
 }
 
 .message {
