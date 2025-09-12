@@ -13,10 +13,10 @@
   width: 100%;
   padding: 12px 20px;
   display: grid;
-  grid-template-columns: auto 1fr auto;
+  grid-template-columns: auto auto 1fr auto;
   align-items: center;
   gap: 20px;
-  grid-template-areas: "logo search actions";
+  grid-template-areas: 'burger logo search actions';
 }
 
 .logo {
@@ -27,9 +27,11 @@
   text-decoration: none;
   letter-spacing: 1px;
   text-shadow: 1px 1px #000;
-  transition: transform .15s ease;
+  transition: transform 0.15s ease;
 }
-.logo:hover { transform: scale(1.05); }
+.logo:hover {
+  transform: scale(1.05);
+}
 
 .search {
   grid-area: search;
@@ -58,7 +60,7 @@
   border-radius: 8px;
   background: linear-gradient(180deg, #a45c00, #7a3f00);
   border: 2px solid #5a2b00;
-  transition: transform .1s ease, background .15s ease;
+  transition: transform 0.1s ease, background 0.15s ease;
 }
 .profileLink:hover {
   transform: scale(1.05);
@@ -73,7 +75,7 @@
   border-radius: 8px;
   cursor: pointer;
   font-weight: bold;
-  transition: transform .1s ease, background .15s ease;
+  transition: transform 0.1s ease, background 0.15s ease;
 }
 .logoutBtn:hover {
   transform: scale(1.05);
@@ -86,16 +88,90 @@
   gap: 12px;
 }
 
-.loginBtn, .registerBtn {
+.loginBtn,
+.registerBtn {
   padding: 6px 14px;
   border-radius: 8px;
   text-decoration: none;
   font-weight: bold;
-  transition: transform .1s ease, background .15s ease, color .15s ease;
+  transition: transform 0.1s ease, background 0.15s ease, color 0.15s ease;
   will-change: transform;
 }
 .loginBtn:active,
-.registerBtn:active { transform: translateY(1px); }
+.registerBtn:active {
+  transform: translateY(1px);
+}
+
+/* Burger Menu Styles */
+.burgerContainer {
+  grid-area: burger;
+  position: relative;
+}
+
+.burgerButton {
+  background: none;
+  border: none;
+  color: #f5deb3;
+  cursor: pointer;
+  padding: 8px;
+  border-radius: 6px;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.burgerButton:hover {
+  background: rgba(245, 222, 179, 0.1);
+  transform: scale(1.1);
+}
+
+.burgerButton:active {
+  transform: scale(0.95);
+}
+
+.burgerDropdown {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  background: linear-gradient(180deg, #3e2723, #2c1b18);
+  border: 2px solid #8b5a2b;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+  z-index: 1000;
+  min-width: 180px;
+  margin-top: 8px;
+}
+
+.burgerLink {
+  display: block;
+  color: #f5deb3;
+  text-decoration: none;
+  padding: 12px 16px;
+  font-weight: 600;
+  font-size: 0.95rem;
+  border-bottom: 1px solid rgba(139, 90, 43, 0.3);
+  transition: all 0.2s ease;
+}
+
+.burgerLink:last-child {
+  border-bottom: none;
+  border-radius: 0 0 6px 6px;
+}
+
+.burgerLink:first-child {
+  border-radius: 6px 6px 0 0;
+}
+
+.burgerLink:hover {
+  background: linear-gradient(
+    90deg,
+    rgba(164, 92, 0, 0.2),
+    rgba(122, 63, 0, 0.2)
+  );
+  color: #fff6d6;
+  transform: translateX(4px);
+}
 
 .loginBtn {
   color: #f5deb3;
@@ -119,8 +195,8 @@
 }
 
 .loading {
-  opacity: .85;
-  font-size: .95rem;
+  opacity: 0.85;
+  font-size: 0.95rem;
   color: #f5deb3;
 }
 
@@ -128,8 +204,8 @@
   .inner {
     grid-template-columns: 1fr auto;
     grid-template-areas:
-      "logo actions"
-      "search search";
+      'logo actions'
+      'search search';
     row-gap: 10px;
   }
 }
