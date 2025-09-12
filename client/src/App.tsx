@@ -1,4 +1,4 @@
-import { Routes, Route, useLocation } from 'react-router-dom';
+import { Routes, Route } from 'react-router-dom';
 import { Header } from './components/Header/Header';
 import { MainPage } from './pages/MainPage/MainPage';
 import { Register } from './pages/Register/Register';
@@ -15,7 +15,6 @@ import { useAppDispatch } from './store/hooks';
 // import MainPageChat from './components/MainPageChat/MainPageChat';
 
 export function App() {
-  const location = useLocation();
   const dispatch = useAppDispatch();
   useEffect(() => {
     dispatch(initAuth());
