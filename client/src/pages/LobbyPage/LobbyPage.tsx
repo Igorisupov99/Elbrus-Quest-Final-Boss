@@ -65,6 +65,7 @@ export function LobbyPage() {
   const modalResult = useAppSelector(s => s.lobbyPage.modalResult);
 
   const [achievementNotifications, setAchievementNotifications] = useState<Achievement[]>([]);
+  const [inactivePlayerNotification, setInactivePlayerNotification] = useState<string | null>(null);
   
   // Состояние для модального окна действий пользователя
   const [isUserActionsModalOpen, setIsUserActionsModalOpen] = useState(false);
@@ -85,7 +86,14 @@ export function LobbyPage() {
     const point = points.find(p => p.id === pointId);
     if (!point || point.status !== "available") return;
 
-    // Любой игрок может открыть модальное окно, но отвечать может только активный
+    // Проверяем, является ли текущий игрок активным
+    if (user?.id !== activePlayerId) {
+      const activePlayer = usersInLobby.find(u => u.id === activePlayerId);
+      const activePlayerName = activePlayer?.username || 'другой игрок';
+      setInactivePlayerNotification(`Сейчас вопрос выбирает ${activePlayerName}`);
+      setTimeout(() => setInactivePlayerNotification(null), 3000);
+      return;
+    }
 
     try {
       if (pointId !== "exam" && pointId !== "exam2") {
@@ -580,6 +588,28 @@ export function LobbyPage() {
           achievements={achievementNotifications}
           onClose={handleCloseAchievementNotification}
         />
+      )}
+
+      {/* Уведомление для неактивного игрока */}
+      {inactivePlayerNotification && (
+        <div style={{
+          position: 'fixed',
+          top: '20px',
+          left: '50%',
+          transform: 'translateX(-50%)',
+          background: 'rgba(255, 107, 53, 0.95)',
+          color: 'white',
+          padding: '12px 24px',
+          borderRadius: '8px',
+          fontWeight: 'bold',
+          fontSize: '16px',
+          boxShadow: '0 4px 12px rgba(0, 0, 0, 0.3)',
+          zIndex: 9999,
+          animation: 'fadeInOut 3s ease-in-out forwards',
+          fontFamily: 'Cinzel, serif'
+        }}>
+          ⚠️ {inactivePlayerNotification}
+        </div>
       )}
 
     </div>
