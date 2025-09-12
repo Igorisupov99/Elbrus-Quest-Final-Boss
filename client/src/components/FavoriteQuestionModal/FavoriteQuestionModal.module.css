@@ -1,0 +1,280 @@
+/* Фон модального окна */
+.overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.6);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  animation: fadeIn 0.2s ease-out;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+/* Модальное окно */
+.modal {
+  background: #f5deb3;
+  border-radius: 12px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+  max-width: 600px;
+  width: 90%;
+  max-height: 80vh;
+  overflow-y: auto;
+  position: relative;
+  animation: slideIn 0.3s ease-out;
+}
+
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateY(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Кнопка закрытия */
+.closeButton {
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  background: transparent;
+  border: none;
+  font-size: 20px;
+  color: #5c3d2e;
+  cursor: pointer;
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  transition: all 0.2s ease;
+  z-index: 1;
+}
+
+.closeButton:hover {
+  background: rgba(92, 61, 46, 0.1);
+  transform: scale(1.1);
+}
+
+/* Контент модального окна */
+.content {
+  padding: 32px;
+  color: #5c3d2e;
+}
+
+/* Заголовок с бейджами */
+.header {
+  margin-bottom: 24px;
+}
+
+.badges {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.topicBadge {
+  background: linear-gradient(135deg, #d8a35d, #b0752d);
+  color: #2c1810;
+  padding: 6px 12px;
+  border-radius: 6px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  text-shadow: 0 1px 0 #f3e0c0;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+.phaseBadge {
+  background: rgba(139, 69, 19, 0.15);
+  color: #8b4513;
+  padding: 6px 12px;
+  border-radius: 6px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  border: 1px solid rgba(139, 69, 19, 0.3);
+}
+
+/* Секция с вопросом */
+.questionSection {
+  margin-bottom: 24px;
+}
+
+.sectionTitle {
+  font-size: 1.2rem;
+  font-weight: 700;
+  color: #2c1810;
+  margin: 0 0 12px 0;
+  border-bottom: 2px solid #d8a35d;
+  padding-bottom: 8px;
+}
+
+.questionText {
+  margin: 0;
+  font-size: 1rem;
+  line-height: 1.6;
+  color: #5c3d2e;
+  background: #fffaf0;
+  padding: 16px;
+  border-radius: 8px;
+  border: 1px solid rgba(139, 69, 19, 0.2);
+  box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+/* Детали */
+.details {
+  margin-bottom: 32px;
+}
+
+.detailItem {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 12px;
+  padding: 12px 0;
+  border-bottom: 1px solid rgba(139, 69, 19, 0.1);
+}
+
+.detailItem:last-child {
+  border-bottom: none;
+  margin-bottom: 0;
+}
+
+.detailLabel {
+  font-weight: 600;
+  color: #8b4513;
+  flex-shrink: 0;
+  margin-right: 16px;
+}
+
+.detailValue {
+  color: #5c3d2e;
+  text-align: right;
+  font-weight: 500;
+}
+
+/* Футер с кнопками */
+.footer {
+  display: flex;
+  gap: 12px;
+  justify-content: flex-end;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.favoriteButton {
+  padding: 12px 20px;
+  font-weight: bold;
+  font-size: 1rem;
+  border-radius: 8px;
+  border: 2px solid #2563eb;
+  background: linear-gradient(180deg, #3b82f6, #2563eb);
+  color: white;
+  text-shadow: 0 1px 0 rgba(0, 0, 0, 0.2);
+  box-shadow: 0 4px 0 #1d4ed8, 0 6px 10px rgba(0, 0, 0, 0.25);
+  cursor: pointer;
+  transition: all 0.2s ease-in-out;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.favoriteButton:hover {
+  background: linear-gradient(180deg, #4f46e5, #3730a3);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 0 #1d4ed8, 0 8px 12px rgba(0, 0, 0, 0.3);
+}
+
+.favoriteButton:active {
+  transform: translateY(2px);
+  box-shadow: 0 2px 0 #1d4ed8, 0 3px 6px rgba(0, 0, 0, 0.2);
+}
+
+.closeModalButton {
+  padding: 12px 20px;
+  font-weight: bold;
+  font-size: 1rem;
+  border-radius: 8px;
+  border: 2px solid #6b3e15;
+  background: linear-gradient(180deg, #d8a35d, #b0752d);
+  color: #2c1810;
+  text-shadow: 0 1px 0 #f3e0c0;
+  box-shadow: 0 4px 0 #6b3e15, 0 6px 10px rgba(0, 0, 0, 0.25);
+  cursor: pointer;
+  transition: all 0.2s ease-in-out;
+}
+
+.closeModalButton:hover {
+  background: linear-gradient(180deg, #e8b76d, #c6853d);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 0 #6b3e15, 0 8px 12px rgba(0, 0, 0, 0.3);
+}
+
+.closeModalButton:active {
+  transform: translateY(2px);
+  box-shadow: 0 2px 0 #6b3e15, 0 3px 6px rgba(0, 0, 0, 0.2);
+}
+
+/* Адаптивность */
+@media (max-width: 768px) {
+  .modal {
+    width: 95%;
+    max-height: 85vh;
+  }
+  
+  .content {
+    padding: 24px;
+  }
+  
+  .footer {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  
+  .favoriteButton,
+  .closeModalButton {
+    width: 100%;
+    justify-content: center;
+  }
+  
+  .detailItem {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 4px;
+  }
+  
+  .detailValue {
+    text-align: left;
+  }
+}
+
+@media (max-width: 480px) {
+  .badges {
+    justify-content: center;
+  }
+  
+  .topicBadge,
+  .phaseBadge {
+    font-size: 0.8rem;
+    padding: 4px 8px;
+  }
+  
+  .questionText {
+    font-size: 0.9rem;
+    padding: 12px;
+  }
+}

@@ -179,3 +179,26 @@ export const getUserByUsername = async (username: string): Promise<ApiResponse<U
     };
   }
 };
+
+// Проверить статус дружбы с пользователем
+export const checkFriendshipStatus = async (friendId: number): Promise<ApiResponse<{ status: 'none' | 'pending' | 'accepted' | 'blocked', friendship?: Friendship }>> => {
+  try {
+    const response = await api.get(`/api/friendship/status/${friendId}`, {
+      withCredentials: true
+    });
+    return { 
+      success: true, 
+      data: { 
+        status: response.data.status || 'none',
+        friendship: response.data.friendship
+      }
+    };
+  } catch (error: any) {
+    console.error('Ошибка в checkFriendshipStatus:', error);
+    return { 
+      success: false, 
+      data: { status: 'none' },
+      message: error.response?.data?.message || error.message || 'Ошибка при проверке статуса дружбы' 
+    };
+  }
+};

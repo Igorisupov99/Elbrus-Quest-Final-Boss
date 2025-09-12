@@ -95,7 +95,7 @@
   align-items: center;
   justify-content: center;
   position: relative;
-  animation: rotate 1s linear infinite;
+  /* animation: rotate 1s linear infinite; */
 }
 
 .timerCircle::before {

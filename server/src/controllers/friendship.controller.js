@@ -398,6 +398,48 @@ class FriendshipController {
       });
     }
   }
+
+  // Проверить статус дружбы с пользователем
+  async checkFriendshipStatus(req, res) {
+    try {
+      const { friend_id } = req.params;
+      const user_id = req.user.id;
+
+      if (user_id === parseInt(friend_id)) {
+        return res.status(400).json({ 
+          message: 'Нельзя проверить статус дружбы с самим собой' 
+        });
+      }
+
+      // Ищем любую связь между пользователями
+      const friendship = await db.Friendship.findOne({
+        where: {
+          [db.Sequelize.Op.or]: [
+            { user_id, friend_id },
+            { user_id: friend_id, friend_id: user_id }
+          ]
+        }
+      });
+
+      if (!friendship) {
+        return res.json({ 
+          status: 'none',
+          friendship: null
+        });
+      }
+
+      res.json({ 
+        status: friendship.status,
+        friendship: friendship
+      });
+    } catch (error) {
+      console.error('Ошибка при проверке статуса дружбы:', error);
+      res.status(500).json({ 
+        message: 'Ошибка сервера', 
+        error: error.message 
+      });
+    }
+  }
 }
 
 module.exports = new FriendshipController();
