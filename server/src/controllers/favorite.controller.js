@@ -138,6 +138,70 @@ class FavoriteController {
     }
   }
 
+  // Получить публичные избранные вопросы конкретного пользователя
+  async getUserFavoritesById(req, res) {
+    try {
+      const { userId } = req.params;
+      const page = parseInt(req.query.page) || 1;
+      const limit = parseInt(req.query.limit) || 15;
+      const offset = (page - 1) * limit;
+
+      const { count, rows: favorites } = await UserFavoriteQuestion.findAndCountAll({
+        where: { user_id: userId },
+        include: [
+          {
+            model: Question,
+            as: 'question',
+            include: [
+              {
+                model: Topic,
+                as: 'topic',
+                attributes: ['id', 'title', 'phase_id']
+              }
+            ]
+          }
+        ],
+        order: [['createdAt', 'DESC']],
+        limit,
+        offset
+      });
+
+      const formattedFavorites = favorites.map(favorite => ({
+        id: favorite.id,
+        questionId: favorite.question_id,
+        question: {
+          id: favorite.question.id,
+          text: favorite.question.question_text,
+          correctAnswer: favorite.question.correct_answer,
+          questionType: favorite.question.question_type,
+          mentorTip: favorite.question.mentor_tip,
+          topic: {
+            id: favorite.question.topic.id,
+            title: favorite.question.topic.title,
+            phaseId: favorite.question.topic.phase_id
+          }
+        },
+        createdAt: favorite.createdAt
+      }));
+
+      res.json({
+        success: true,
+        data: {
+          favorites: formattedFavorites,
+          pagination: {
+            currentPage: page,
+            totalPages: count > 0 ? Math.ceil(count / limit) : 1,
+            totalItems: count,
+            itemsPerPage: limit
+          }
+        }
+      });
+    } catch (error) {
+      console.error("Ошибка при получении избранных вопросов пользователя:", error);
+      res.status(500).json({ success: false, error: "Внутренняя ошибка сервера" });
+    }
+  }
+
   // Проверить, находится ли вопрос в избранном
   async checkIfFavorite(req, res) {
     try {
