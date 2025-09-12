@@ -1,7 +1,6 @@
-import React, { useState } from 'react';
-import { useAppDispatch, useAppSelector } from '../../../store/hooks';
-import { purchaseAvatar, equipAvatar, unequipAvatar, fetchUserAvatars } from '../../../store/avatarSlice';
-import { updateUserScore } from '../../../store/authSlice';
+import React, { useState, useCallback } from 'react';
+import { useAppDispatch } from '../../../store/hooks';
+import { purchaseAvatar, equipAvatar, unequipAvatar } from '../../../store/avatarSlice';
 import type { Avatar } from '../../../types/avatar';
 import styles from './AvatarCard.module.css';
 
@@ -12,35 +11,33 @@ interface AvatarCardProps {
   canAfford: boolean;
 }
 
-export const AvatarCard: React.FC<AvatarCardProps> = ({
-  avatar,
-  isOwned,
-  isEquipped,
-  canAfford,
+export const AvatarCardComponent: React.FC<AvatarCardProps> = ({ 
+  avatar, 
+  isOwned, 
+  isEquipped, 
+  canAfford 
 }) => {
+  // console.log(`🎭 AvatarCard ${avatar.id} render:`, { isOwned, isEquipped, canAfford });
+  
   const dispatch = useAppDispatch();
-  const { loading } = useAppSelector((state) => state.avatar);
   const [isPurchasing, setIsPurchasing] = useState(false);
   const [isEquipping, setIsEquipping] = useState(false);
 
-  const handlePurchase = async () => {
+  const handlePurchase = useCallback(async () => {
     if (!isOwned && canAfford && !isPurchasing) {
       setIsPurchasing(true);
       try {
-        const result = await dispatch(purchaseAvatar({ avatarId: avatar.id })).unwrap();
-        // Обновляем очки пользователя в auth state
-        dispatch(updateUserScore(result.score));
-        // Обновляем список пользовательских аватаров
-        dispatch(fetchUserAvatars());
+        await dispatch(purchaseAvatar({ avatarId: avatar.id })).unwrap();
+        // Состояние обновляется автоматически в Redux slice
       } catch (error) {
         console.error('Ошибка покупки аватара:', error);
       } finally {
         setIsPurchasing(false);
       }
     }
-  };
+  }, [dispatch, avatar.id, isOwned, canAfford, isPurchasing]);
 
-  const handleEquip = async () => {
+  const handleEquip = useCallback(async () => {
     if (isOwned && !isEquipped && !isEquipping) {
       setIsEquipping(true);
       try {
@@ -51,9 +48,9 @@ export const AvatarCard: React.FC<AvatarCardProps> = ({
         setIsEquipping(false);
       }
     }
-  };
+  }, [dispatch, avatar.id, isOwned, isEquipped, isEquipping]);
 
-  const handleUnequip = async () => {
+  const handleUnequip = useCallback(async () => {
     if (isEquipped) {
       try {
         await dispatch(unequipAvatar()).unwrap();
@@ -61,13 +58,13 @@ export const AvatarCard: React.FC<AvatarCardProps> = ({
         console.error('Ошибка снятия аватара:', error);
       }
     }
-  };
+  }, [dispatch, isEquipped]);
 
-  const getRarityClass = (rarity: string) => {
+  const getRarityClass = useCallback((rarity: string) => {
     return styles[`rarity-${rarity}`];
-  };
+  }, []);
 
-  const getRarityLabel = (rarity: string) => {
+  const getRarityLabel = useCallback((rarity: string) => {
     const labels = {
       common: 'Обычный',
       rare: 'Редкий',
@@ -75,7 +72,7 @@ export const AvatarCard: React.FC<AvatarCardProps> = ({
       legendary: 'Легендарный',
     };
     return labels[rarity as keyof typeof labels] || rarity;
-  };
+  }, []);
 
   return (
     <div className={`${styles.card} ${getRarityClass(avatar.rarity)}`}>
@@ -114,7 +111,7 @@ export const AvatarCard: React.FC<AvatarCardProps> = ({
           ) : isEquipped ? (
             <button
               onClick={handleUnequip}
-              disabled={loading}
+              disabled={isEquipping}
               className={`${styles.button} ${styles.unequipButton}`}
             >
               Снять
@@ -133,3 +130,6 @@ export const AvatarCard: React.FC<AvatarCardProps> = ({
     </div>
   );
 };
+
+// AvatarCard теперь экспортируется как обычный компонент
+// Мемоизация происходит в AvatarCardWrapper

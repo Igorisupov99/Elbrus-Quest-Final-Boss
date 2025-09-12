@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { memo, useCallback } from 'react';
 import type { AvatarShopFilters, AvatarCategory, AvatarRarity } from '../../../types/avatar';
 import styles from './AvatarFilters.module.css';
 
@@ -8,7 +8,7 @@ interface AvatarFiltersProps {
   userScore: number;
 }
 
-export const AvatarFilters: React.FC<AvatarFiltersProps> = ({
+const AvatarFiltersComponent: React.FC<AvatarFiltersProps> = ({
   filters,
   onFiltersChange,
   userScore,
@@ -28,29 +28,29 @@ export const AvatarFilters: React.FC<AvatarFiltersProps> = ({
     { value: 'legendary', label: 'Легендарный', color: '#f59e0b' },
   ];
 
-  const handleCategoryChange = (category: AvatarCategory | undefined) => {
-    onFiltersChange({ ...filters, category });
-  };
+  const handleCategoryChange = useCallback((category: AvatarCategory | undefined) => {
+    onFiltersChange(prev => ({ ...prev, category }));
+  }, [onFiltersChange]);
 
-  const handleRarityChange = (rarity: AvatarRarity | undefined) => {
-    onFiltersChange({ ...filters, rarity });
-  };
+  const handleRarityChange = useCallback((rarity: AvatarRarity | undefined) => {
+    onFiltersChange(prev => ({ ...prev, rarity }));
+  }, [onFiltersChange]);
 
-  const handleShowOwnedChange = (showOwned: boolean) => {
-    onFiltersChange({ ...filters, showOwned });
-  };
+  const handleShowOwnedChange = useCallback((showOwned: boolean) => {
+    onFiltersChange(prev => ({ ...prev, showOwned }));
+  }, [onFiltersChange]);
 
-  const handleShowLockedChange = (showLocked: boolean) => {
-    onFiltersChange({ ...filters, showLocked });
-  };
+  const handleShowLockedChange = useCallback((showLocked: boolean) => {
+    onFiltersChange(prev => ({ ...prev, showLocked }));
+  }, [onFiltersChange]);
 
-  const handleSearchChange = (searchQuery: string) => {
-    onFiltersChange({ ...filters, searchQuery: searchQuery || undefined });
-  };
+  const handleSearchChange = useCallback((searchQuery: string) => {
+    onFiltersChange(prev => ({ ...prev, searchQuery: searchQuery || undefined }));
+  }, [onFiltersChange]);
 
-  const clearFilters = () => {
+  const clearFilters = useCallback(() => {
     onFiltersChange({});
-  };
+  }, [onFiltersChange]);
 
   return (
     <div className={styles.filtersContainer}>
@@ -165,3 +165,6 @@ export const AvatarFilters: React.FC<AvatarFiltersProps> = ({
     </div>
   );
 };
+
+// Экспортируем компонент без мемоизации для стабильности
+export const AvatarFilters = AvatarFiltersComponent;

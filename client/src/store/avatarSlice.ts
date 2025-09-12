@@ -1,6 +1,7 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import type { PayloadAction } from '@reduxjs/toolkit';
 import { avatarApi } from '../api/avatar/avatarApi';
+import { updateUserScore } from './authSlice';
 import type { 
   AvatarShopState, 
   AvatarShopFilters,
@@ -43,7 +44,8 @@ export const fetchCurrentAvatar = createAsyncThunk(
 export const purchaseAvatar = createAsyncThunk(
   'avatar/purchaseAvatar',
   async (data: AvatarPurchaseRequest) => {
-    return await avatarApi.purchaseAvatar(data);
+    const result = await avatarApi.purchaseAvatar(data);
+    return result;
   }
 );
 
@@ -122,69 +124,68 @@ const avatarSlice = createSlice({
 
     // Покупка аватара
     builder
-      .addCase(purchaseAvatar.pending, (state) => {
-        state.loading = true;
-        state.error = null;
-      })
       .addCase(purchaseAvatar.fulfilled, (state, action) => {
-        state.loading = false;
-        
-        // Добавляем купленный аватар в userAvatars
+        // Обновляем userAvatars для корректного отображения статуса
         const avatarId = action.meta.arg.avatarId;
         const avatar = state.avatars.find(a => a.id === avatarId);
         
         if (avatar) {
-          // Проверяем, что аватар еще не добавлен в userAvatars
+          // Проверяем, не добавлен ли уже аватар
           const existingUserAvatar = state.userAvatars.find(ua => ua.avatarId === avatarId);
           if (!existingUserAvatar) {
-            // Добавляем новую запись в userAvatars
-            state.userAvatars.push({
-              id: Date.now(), // Временный ID, сервер должен вернуть правильный
-              userId: 0, // Будет обновлено сервером
+            // Добавляем новый аватар в список пользователя
+            const newUserAvatar = {
+              id: Date.now(), // Временный ID, сервер вернет правильный
+              userId: 0, // Будет заполнено сервером
               avatarId: avatarId,
               isEquipped: false,
               purchasedAt: new Date().toISOString(),
               avatar: avatar
-            });
+            };
+            
+            state.userAvatars.push(newUserAvatar);
           }
         }
+        
+        // Очки пользователя обновляются автоматически в thunk
+        // Но нам нужно обновить их локально, чтобы избежать дополнительного запроса
+        // Это будет сделано через обновление auth состояния в компоненте
       })
       .addCase(purchaseAvatar.rejected, (state, action) => {
-        state.loading = false;
         state.error = action.payload as string || 'Ошибка покупки аватара';
       });
 
     // Надевание аватара
     builder
-      .addCase(equipAvatar.pending, (state) => {
-        state.loading = true;
-        state.error = null;
-      })
       .addCase(equipAvatar.fulfilled, (state, action) => {
-        state.loading = false;
         const avatarId = action.meta.arg.avatarId;
         const avatar = state.avatars.find(a => a.id === avatarId);
+        
         if (avatar) {
+          // Обновляем текущий аватар
           state.currentAvatar = avatar;
+          
+          // Обновляем статус isEquipped для всех аватаров пользователя
+          state.userAvatars.forEach(userAvatar => {
+            userAvatar.isEquipped = userAvatar.avatarId === avatarId;
+          });
         }
       })
       .addCase(equipAvatar.rejected, (state, action) => {
-        state.loading = false;
         state.error = action.payload as string || 'Ошибка надевания аватара';
       });
 
     // Снятие аватара
     builder
-      .addCase(unequipAvatar.pending, (state) => {
-        state.loading = true;
-        state.error = null;
-      })
       .addCase(unequipAvatar.fulfilled, (state) => {
-        state.loading = false;
         state.currentAvatar = null;
+        
+        // Снимаем статус isEquipped со всех аватаров пользователя
+        state.userAvatars.forEach(userAvatar => {
+          userAvatar.isEquipped = false;
+        });
       })
       .addCase(unequipAvatar.rejected, (state, action) => {
-        state.loading = false;
         state.error = action.payload as string || 'Ошибка снятия аватара';
       });
   },

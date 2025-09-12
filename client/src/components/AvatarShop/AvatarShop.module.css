@@ -235,11 +235,26 @@
   font-weight: 500;
 }
 
-.avatarsGrid {
+.avatarGrid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
   gap: 24px;
   margin-bottom: 40px;
+}
+
+.resultsHeader h2 {
+  margin: 0 0 8px 0;
+  color: var(--fantasy-text);
+  font-size: 24px;
+  font-weight: 600;
+  text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.1);
+}
+
+.resultsHeader p {
+  margin: 0;
+  color: var(--fantasy-muted);
+  font-size: 14px;
+  font-weight: 500;
 }
 
 /* Адаптивность */
@@ -254,14 +269,14 @@
     align-items: flex-start;
   }
   
-  .avatarsGrid {
+  .avatarGrid {
     grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
     gap: 16px;
   }
 }
 
 @media (max-width: 480px) {
-  .avatarsGrid {
+  .avatarGrid {
     grid-template-columns: 1fr;
   }
 }
