@@ -132,6 +132,13 @@ function initLobbySockets(nsp) {
           console.log(`🔄 [EXAM] Восстанавливаем экзамен для переподключившегося игрока`);
           console.log(`📊 [EXAM] Состояние: вопрос ${examState.index + 1}/${examState.totalQuestions}, правильных ответов: ${examState.correctAnswers}`);
           
+          // Вычисляем оставшееся время таймера
+          const currentTime = Date.now();
+          const elapsedTime = currentTime - examState.timerStartTime;
+          const timeLeft = Math.max(0, Math.ceil((examState.timerDuration - elapsedTime) / 1000));
+          
+          console.log(`⏰ [EXAM] Восстанавливаем таймер: осталось ${timeLeft} секунд`);
+          
           // Отправляем восстановление экзамена всем игрокам
           nsp.to(roomKey).emit('lobby:examRestore', {
             examId: examState.examId,
@@ -139,11 +146,12 @@ function initLobbySockets(nsp) {
             currentIndex: examState.index,
             correctAnswers: examState.correctAnswers,
             totalQuestions: examState.totalQuestions,
-            currentQuestion: examState.questions[examState.index]
+            currentQuestion: examState.questions[examState.index],
+            timeLeft: timeLeft
           });
           
-          // Сбрасываем таймер для восстановленного экзамена
-          nsp.to(roomKey).emit('lobby:examTimerReset', { timeLeft: 30 });
+          // Отправляем актуальное время таймера
+          nsp.to(roomKey).emit('lobby:examTimerReset', { timeLeft: timeLeft });
         }
       }
     }
@@ -477,7 +485,9 @@ function initLobbySockets(nsp) {
           index: 0, 
           correctAnswers: 0, 
           totalQuestions: questions.length, 
-          examId 
+          examId,
+          timerStartTime: Date.now(),
+          timerDuration: 30000 // 30 секунд в миллисекундах
         });
         nsp.to(roomKey).emit('lobby:examStart', { questions, index: 0 });
       } catch (err) {
@@ -606,6 +616,9 @@ function initLobbySockets(nsp) {
             const nextIndex = state.index + 1;
             if (nextIndex < state.questions.length) {
               state.index = nextIndex;
+              // Обновляем время начала таймера для нового вопроса
+              state.timerStartTime = Date.now();
+              state.timerDuration = 30000;
               lobbyExamState.set(lobbyId, state);
               const nextQuestion = state.questions[nextIndex];
               nsp.to(roomKey).emit('lobby:examNext', { index: nextIndex, question: nextQuestion });
@@ -774,6 +787,9 @@ function initLobbySockets(nsp) {
           const nextIndex = state.index + 1;
           if (nextIndex < state.questions.length) {
             state.index = nextIndex;
+            // Обновляем время начала таймера для нового вопроса
+            state.timerStartTime = Date.now();
+            state.timerDuration = 30000;
             lobbyExamState.set(lobbyId, state);
             const nextQuestion = state.questions[nextIndex];
             nsp.to(roomKey).emit('lobby:examNext', { index: nextIndex, question: nextQuestion });

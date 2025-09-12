@@ -146,6 +146,7 @@ export function useLobbySocket(lobbyId: number, onAnswerInputSync?: (answer: str
       correctAnswers: number;
       totalQuestions: number;
       currentQuestion: any;
+      timeLeft: number;
     }) => {
       console.log('🔄 [EXAM] Восстанавливаем экзамен:', payload);
       
@@ -155,6 +156,7 @@ export function useLobbySocket(lobbyId: number, onAnswerInputSync?: (answer: str
       dispatch(openExamModal());
       
       console.log(`📊 [EXAM] Экзамен восстановлен: вопрос ${payload.currentIndex + 1}/${payload.totalQuestions}, правильных ответов: ${payload.correctAnswers}`);
+      console.log(`⏰ [EXAM] Таймер восстановлен: осталось ${payload.timeLeft} секунд`);
     };
 
     const onExamComplete = () => {
