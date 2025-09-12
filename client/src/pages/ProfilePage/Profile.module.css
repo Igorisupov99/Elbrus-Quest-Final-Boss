@@ -1,17 +1,32 @@
+:root {
+  --fantasy-bg: #d6b37a;
+  --fantasy-surface: #f5deb3;
+  --fantasy-surface-2: #fff8dc;
+  --fantasy-border: #8b5a2b;
+  --fantasy-text: #4b2e05;
+  --fantasy-muted: #5c3b09;
+  --fantasy-gold: #d4a017;
+  --fantasy-gold-2: #a97400;
+  --fantasy-accent: #6b3e15;
+}
+
 /* Основная секция профиля */
 .profileSection {
   min-height: 100vh;
   padding: 20px;
-  background: #fffaf0;
-  color: #5c3d2e;
+  background: linear-gradient(135deg, #f4e1c1, #e6d2b5, #d8c3a5);
+  color: var(--fantasy-text);
+  font-family: 'Cinzel', serif;
 }
 
 .header {
-  color: #5c3d2e;
+  color: var(--fantasy-text);
   font-weight: 700;
   font-size: 2rem;
   margin-bottom: 32px;
   text-align: center;
+  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.1);
+  letter-spacing: 1px;
 }
 
 /* Основной контейнер с двумя блоками */
@@ -41,14 +56,37 @@
 
 /* Блок 1.1 - Основная информация профиля */
 .profileInfoBlock {
-  background: #f5deb3;
+  background: linear-gradient(
+    180deg,
+    var(--fantasy-surface),
+    var(--fantasy-surface-2)
+  );
+  color: var(--fantasy-text);
+  border: 2px solid var(--fantasy-border);
   border-radius: 12px;
   padding: 32px;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
   display: flex;
   align-items: center;
   gap: 32px;
   height: 320px;
+  position: relative;
+  overflow: hidden;
+  transition: all 0.2s ease-in-out;
+}
+
+.profileInfoBlock::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: linear-gradient(
+    90deg,
+    var(--fantasy-gold),
+    var(--fantasy-gold-2)
+  );
 }
 
 .avatarSection {
@@ -69,29 +107,35 @@
 }
 
 .editButton {
-  padding: 12px 24px;
-  font-weight: bold;
-  font-size: 1.1rem;
-  border-radius: 8px;
-  border: 2px solid #6b3e15;
-  background: linear-gradient(180deg, #d8a35d, #b0752d);
+  appearance: none;
+  border: 2px solid var(--fantasy-accent);
+  background: linear-gradient(
+    180deg,
+    var(--fantasy-gold),
+    var(--fantasy-gold-2)
+  );
   color: #2c1810;
-  text-shadow: 0 1px 0 #f3e0c0;
-  box-shadow: 0 4px 0 #6b3e15, 0 6px 10px rgba(0, 0, 0, 0.25);
+  border-radius: 8px;
+  padding: 12px 24px;
+  font-size: 1.1rem;
+  font-weight: bold;
   cursor: pointer;
   transition: all 0.2s ease-in-out;
+  box-shadow: 0 3px 6px rgba(0, 0, 0, 0.2);
+  text-shadow: 0 1px 0 #f3e0c0;
+  font-family: inherit;
 }
 
 .editButton:hover {
-  background: linear-gradient(180deg, #e8b76d, #c6853d);
-  transform: translateY(-2px);
-  box-shadow: 0 6px 0 #6b3e15, 0 8px 12px rgba(0, 0, 0, 0.3);
+  background: linear-gradient(180deg, #f0c33b, #c48a00);
+  transform: translateY(-1px);
+  box-shadow: 0 5px 10px rgba(0, 0, 0, 0.3);
 }
 
-  .editButton:active {
-    transform: translateY(2px);
-    box-shadow: 0 2px 0 #6b3e15, 0 3px 6px rgba(0, 0, 0, 0.2);
-  }
+.editButton:active {
+  transform: translateY(1px);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
 
   .avatarControls {
     margin-top: 16px;
@@ -140,19 +184,44 @@
 
 /* Блок 1.2 - Статистика */
 .statisticsBlock {
-  background: #f5deb3;
+  background: linear-gradient(
+    180deg,
+    var(--fantasy-surface),
+    var(--fantasy-surface-2)
+  );
+  color: var(--fantasy-text);
+  border: 2px solid var(--fantasy-border);
   border-radius: 12px;
   padding: 32px;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  position: relative;
+  overflow: hidden;
+  transition: all 0.2s ease-in-out;
   flex: 1;
+}
+
+.statisticsBlock::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: linear-gradient(
+    90deg,
+    var(--fantasy-gold),
+    var(--fantasy-gold-2)
+  );
 }
 
 .blockTitle {
   font-size: 1.8rem;
   font-weight: 700;
-  color: #2c1810;
+  color: var(--fantasy-text);
   margin: 0 0 24px 0;
   text-align: center;
+  text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.1);
+  letter-spacing: 0.5px;
 }
 
 .statsGrid {
@@ -190,10 +259,33 @@
 
 /* Блок достижений */
 .achievementsBlock {
-  background: #f5deb3;
+  background: linear-gradient(
+    180deg,
+    var(--fantasy-surface),
+    var(--fantasy-surface-2)
+  );
+  color: var(--fantasy-text);
+  border: 2px solid var(--fantasy-border);
   border-radius: 12px;
   padding: 32px;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  position: relative;
+  overflow: hidden;
+  transition: all 0.2s ease-in-out;
+}
+
+.achievementsBlock::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: linear-gradient(
+    90deg,
+    var(--fantasy-gold),
+    var(--fantasy-gold-2)
+  );
 }
 
 .achievementsHeader {
@@ -270,10 +362,34 @@
 /* Блок 2 - Секции друзей и избранных вопросов */
 .friendsSection,
 .favoriteQuestionsSection {
-  background: #f5deb3;
+  background: linear-gradient(
+    180deg,
+    var(--fantasy-surface),
+    var(--fantasy-surface-2)
+  );
+  color: var(--fantasy-text);
+  border: 2px solid var(--fantasy-border);
   border-radius: 12px;
   padding: 24px;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  position: relative;
+  overflow: hidden;
+  transition: all 0.2s ease-in-out;
+}
+
+.friendsSection::before,
+.favoriteQuestionsSection::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: linear-gradient(
+    90deg,
+    var(--fantasy-gold),
+    var(--fantasy-gold-2)
+  );
 }
 
 /* Дополнительные стили для секции друзей */
@@ -473,31 +589,37 @@
   }
   
   .button {
-    flex: 1;
-    text-align: center;
+    appearance: none;
+    border: 2px solid var(--fantasy-accent);
+    background: linear-gradient(
+      180deg,
+      var(--fantasy-gold),
+      var(--fantasy-gold-2)
+    );
+    color: #2c1810;
+    border-radius: 8px;
     padding: 10px 14px;
     font-size: 1rem;
     font-weight: bold;
-    border-radius: 8px;
-    border: 2px solid #6b3e15;
-    color: #2c1810;
-    text-shadow: 0 1px 0 #f3e0c0;
-    box-shadow: 0 4px 0 #6b3e15, 0 6px 10px rgba(0, 0, 0, 0.25);
     cursor: pointer;
     transition: all 0.2s ease-in-out;
-    background: linear-gradient(180deg, #d8a35d, #b0752d);
+    box-shadow: 0 3px 6px rgba(0, 0, 0, 0.2);
+    text-shadow: 0 1px 0 #f3e0c0;
+    font-family: inherit;
+    flex: 1;
+    text-align: center;
     margin: 0 4px;
   }
   
   .button:hover {
-    background: linear-gradient(180deg, #e8b76d, #c6853d);
-    transform: translateY(-2px);
-    box-shadow: 0 6px 0 #6b3e15, 0 8px 12px rgba(0, 0, 0, 0.3);
+    background: linear-gradient(180deg, #f0c33b, #c48a00);
+    transform: translateY(-1px);
+    box-shadow: 0 5px 10px rgba(0, 0, 0, 0.3);
   }
   
   .button:active {
-    transform: translateY(2px);
-    box-shadow: 0 2px 0 #6b3e15, 0 3px 6px rgba(0, 0, 0, 0.2);
+    transform: translateY(1px);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
   }
   
   .saveBtn {
