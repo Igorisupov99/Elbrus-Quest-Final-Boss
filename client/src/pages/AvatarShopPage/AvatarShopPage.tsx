@@ -1,5 +1,5 @@
 import React from 'react';
-import { AvatarShop } from '../../components/AvatarShop/AvatarShop';
+import { SimpleAvatarShop } from '../../components/AvatarShop/SimpleAvatarShop';
 import styles from './AvatarShopPage.module.css';
 
 export const AvatarShopPage: React.FC = () => {
@@ -13,7 +13,7 @@ export const AvatarShopPage: React.FC = () => {
           </p>
         </div>
         
-        <AvatarShop />
+        <SimpleAvatarShop />
       </div>
     </div>
   );

@@ -20,7 +20,6 @@ export default function UserActionsModal({
 }: UserActionsModalProps) {
   const [isProfileModalOpen, setIsProfileModalOpen] = useState(false);
   const [friendshipStatus, setFriendshipStatus] = useState<'none' | 'pending' | 'accepted' | 'blocked' | 'loading'>('loading');
-  const [userId, setUserId] = useState<number | null>(null);
 
   // Проверяем статус дружбы при открытии модального окна
   useEffect(() => {
@@ -37,8 +36,6 @@ export default function UserActionsModal({
       const userResponse = await getUserByUsername(username);
       
       if (userResponse.success && userResponse.data) {
-        setUserId(userResponse.data.id);
-        
         // Затем проверяем статус дружбы
         const statusResponse = await checkFriendshipStatus(userResponse.data.id);
         

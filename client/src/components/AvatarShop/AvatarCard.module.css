@@ -1,0 +1,246 @@
+.card {
+  background: #ffffff;
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  overflow: hidden;
+  transition: all 0.3s ease;
+  position: relative;
+  border: 2px solid transparent;
+}
+
+.card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+}
+
+/* Редкость аватара */
+.rarity-common {
+  border-color: #9ca3af;
+}
+
+.rarity-rare {
+  border-color: #3b82f6;
+}
+
+.rarity-epic {
+  border-color: #8b5cf6;
+}
+
+.rarity-legendary {
+  border-color: #f59e0b;
+}
+
+.imageContainer {
+  position: relative;
+  width: 100%;
+  height: 200px;
+  overflow: hidden;
+  background: #f3f4f6;
+}
+
+.avatarImage {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.3s ease;
+}
+
+.card:hover .avatarImage {
+  transform: scale(1.05);
+}
+
+.equippedBadge {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  background: #10b981;
+  color: white;
+  padding: 4px 8px;
+  border-radius: 12px;
+  font-size: 12px;
+  font-weight: 600;
+  z-index: 1;
+}
+
+.ownedBadge {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  background: #6b7280;
+  color: white;
+  padding: 4px 8px;
+  border-radius: 12px;
+  font-size: 12px;
+  font-weight: 600;
+  z-index: 1;
+}
+
+.content {
+  padding: 16px;
+}
+
+.name {
+  font-size: 18px;
+  font-weight: 600;
+  color: #1f2937;
+  margin: 0 0 8px 0;
+}
+
+.description {
+  font-size: 14px;
+  color: #6b7280;
+  margin: 0 0 12px 0;
+  line-height: 1.4;
+}
+
+.rarity {
+  margin-bottom: 12px;
+}
+
+.rarityLabel {
+  display: inline-block;
+  padding: 4px 8px;
+  border-radius: 8px;
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: uppercase;
+}
+
+.rarity-common .rarityLabel {
+  background: #f3f4f6;
+  color: #6b7280;
+}
+
+.rarity-rare .rarityLabel {
+  background: #dbeafe;
+  color: #1d4ed8;
+}
+
+.rarity-epic .rarityLabel {
+  background: #ede9fe;
+  color: #7c3aed;
+}
+
+.rarity-legendary .rarityLabel {
+  background: #fef3c7;
+  color: #d97706;
+}
+
+.price {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+  padding: 8px 12px;
+  background: #f9fafb;
+  border-radius: 8px;
+}
+
+.priceLabel {
+  font-size: 14px;
+  color: #6b7280;
+}
+
+.priceValue {
+  font-size: 16px;
+  font-weight: 600;
+  color: #1f2937;
+}
+
+.userScore {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+  padding: 8px 12px;
+  background: #f0f9ff;
+  border-radius: 8px;
+}
+
+.scoreLabel {
+  font-size: 14px;
+  color: #0369a1;
+}
+
+.scoreValue {
+  font-size: 16px;
+  font-weight: 600;
+  color: #0369a1;
+}
+
+.actions {
+  padding: 0 16px 16px;
+}
+
+.button {
+  width: 100%;
+  padding: 12px 16px;
+  border: none;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.purchaseButton {
+  background: #10b981;
+  color: white;
+}
+
+.purchaseButton:hover:not(:disabled) {
+  background: #059669;
+}
+
+.purchaseButton:disabled {
+  background: #d1d5db;
+  color: #9ca3af;
+}
+
+.equipButton {
+  background: #3b82f6;
+  color: white;
+}
+
+.equipButton:hover:not(:disabled) {
+  background: #2563eb;
+}
+
+.unequipButton {
+  background: #ef4444;
+  color: white;
+}
+
+.unequipButton:hover:not(:disabled) {
+  background: #dc2626;
+}
+
+/* Адаптивность */
+@media (max-width: 768px) {
+  .card {
+    margin-bottom: 16px;
+  }
+  
+  .imageContainer {
+    height: 150px;
+  }
+  
+  .content {
+    padding: 12px;
+  }
+  
+  .name {
+    font-size: 16px;
+  }
+  
+  .description {
+    font-size: 13px;
+  }
+}
