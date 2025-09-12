@@ -125,6 +125,26 @@ function initLobbySockets(nsp) {
         
         // Уведомляем всех игроков об отмене ожидания
         nsp.to(roomKey).emit('lobby:reconnectCanceled');
+        
+        // Проверяем, был ли активен экзамен и восстанавливаем его
+        const examState = lobbyExamState.get(lobbyId);
+        if (examState) {
+          console.log(`🔄 [EXAM] Восстанавливаем экзамен для переподключившегося игрока`);
+          console.log(`📊 [EXAM] Состояние: вопрос ${examState.index + 1}/${examState.totalQuestions}, правильных ответов: ${examState.correctAnswers}`);
+          
+          // Отправляем восстановление экзамена всем игрокам
+          nsp.to(roomKey).emit('lobby:examRestore', {
+            examId: examState.examId,
+            questions: examState.questions,
+            currentIndex: examState.index,
+            correctAnswers: examState.correctAnswers,
+            totalQuestions: examState.totalQuestions,
+            currentQuestion: examState.questions[examState.index]
+          });
+          
+          // Сбрасываем таймер для восстановленного экзамена
+          nsp.to(roomKey).emit('lobby:examTimerReset', { timeLeft: 30 });
+        }
       }
     }
 

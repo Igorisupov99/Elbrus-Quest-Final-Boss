@@ -138,6 +138,25 @@ export function useLobbySocket(lobbyId: number, onAnswerInputSync?: (answer: str
     const onExamNext = (payload: { index: number; question?: any }) => {
       dispatch(setExamIndex(payload.index));
     };
+
+    const onExamRestore = (payload: { 
+      examId: string;
+      questions: any[];
+      currentIndex: number;
+      correctAnswers: number;
+      totalQuestions: number;
+      currentQuestion: any;
+    }) => {
+      console.log('🔄 [EXAM] Восстанавливаем экзамен:', payload);
+      
+      // Восстанавливаем состояние экзамена
+      dispatch(setExamQuestions(payload.questions));
+      dispatch(setExamIndex(payload.currentIndex));
+      dispatch(openExamModal());
+      
+      console.log(`📊 [EXAM] Экзамен восстановлен: вопрос ${payload.currentIndex + 1}/${payload.totalQuestions}, правильных ответов: ${payload.correctAnswers}`);
+    };
+
     const onExamComplete = () => {
       dispatch(closeExamModal());
       dispatch(clearExamQuestions());
@@ -330,6 +349,7 @@ export function useLobbySocket(lobbyId: number, onAnswerInputSync?: (answer: str
     socket.on("lobby:openModal", onOpenModal);
     socket.on("lobby:examStart", onExamStart);
     socket.on("lobby:examNext", onExamNext);
+    socket.on("lobby:examRestore", onExamRestore);
     socket.on("lobby:examComplete", onExamComplete);
     socket.on("lobby:examReward", onExamReward);
     socket.on("lobby:examFailed", onExamFailed);
@@ -374,6 +394,7 @@ export function useLobbySocket(lobbyId: number, onAnswerInputSync?: (answer: str
       socket.off("lobby:openModal", onOpenModal);
       socket.off("lobby:examStart", onExamStart);
       socket.off("lobby:examNext", onExamNext);
+      socket.off("lobby:examRestore", onExamRestore);
       socket.off("lobby:examComplete", onExamComplete);
       socket.off("lobby:examReward", onExamReward);
       socket.off("lobby:examAnswerSync", onExamAnswerSync);
