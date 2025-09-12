@@ -351,6 +351,43 @@ export function useLobbySocket(lobbyId: number, onAnswerInputSync?: (answer: str
       dispatch(closeReconnectWaitingModal());
     };
 
+    const onActiveQuestion = (payload: { 
+      questionId: number;
+      topic: string;
+      question: string;
+      mentor_tip?: string;
+      pointId: string;
+      timeLeft: number;
+    }) => {
+      console.log('👁️ [INACTIVE] Получен активный вопрос для подключения:', payload);
+      
+      // Восстанавливаем состояние вопроса для неактивного игрока
+      dispatch(openModal({
+        questionId: payload.questionId,
+        topic: payload.topic,
+        question: payload.question,
+        mentor_tip: payload.mentor_tip
+      }));
+      
+      // Устанавливаем currentPointId
+      window.dispatchEvent(new CustomEvent('question:setCurrentPointId', { 
+        detail: { pointId: payload.pointId } 
+      }));
+      
+      // Синхронизируем таймер
+      setTimeout(() => {
+        window.dispatchEvent(new CustomEvent('question:timerReset', { 
+          detail: { timeLeft: payload.timeLeft } 
+        }));
+      }, 200);
+    };
+
+    const onNoActiveQuestion = () => {
+      console.log('❌ [INACTIVE] Нет активного вопроса для подключения');
+      // Эмитим кастомное событие для показа уведомления
+      window.dispatchEvent(new CustomEvent('question:noActiveQuestion'));
+    };
+
     const onFavoriteToggled = (payload: { 
       userId: number; 
       questionId: number; 
@@ -421,6 +458,8 @@ export function useLobbySocket(lobbyId: number, onAnswerInputSync?: (answer: str
     socket.on("lobby:newAchievements", onNewAchievements);
     socket.on("user:newAchievements", onUserNewAchievements);
     socket.on("lobby:closeExamModal", onCloseExamModal);
+    socket.on("lobby:activeQuestion", onActiveQuestion);
+    socket.on("lobby:noActiveQuestion", onNoActiveQuestion);
     socket.on("lobby:favoriteToggled", onFavoriteToggled);
 
     return () => {
@@ -463,6 +502,8 @@ export function useLobbySocket(lobbyId: number, onAnswerInputSync?: (answer: str
       socket.off("lobby:closeModal", onCloseModal);
       socket.off("lobby:newAchievements", onNewAchievements);
       socket.off("user:newAchievements", onUserNewAchievements);
+      socket.off("lobby:activeQuestion", onActiveQuestion);
+      socket.off("lobby:noActiveQuestion", onNoActiveQuestion);
       socket.off("lobby:favoriteToggled", onFavoriteToggled);
       socket.disconnect();
     };
@@ -539,6 +580,10 @@ export function useLobbySocket(lobbyId: number, onAnswerInputSync?: (answer: str
     socketClient.socket.emit("leaveLobby");
   };
 
+  const sendCheckActiveQuestion = () => {
+    socketClient.socket.emit("lobby:checkActiveQuestion");
+  };
+
   return {
     history,
     connected,
@@ -561,5 +606,6 @@ export function useLobbySocket(lobbyId: number, onAnswerInputSync?: (answer: str
     sendExamAnswerInput,
     sendFavoriteToggle,
     sendLeaveLobby,
+    sendCheckActiveQuestion,
   };
 };

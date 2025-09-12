@@ -1018,6 +1018,37 @@ function initLobbySockets(nsp) {
     });
 
     // Обработчик добавления/удаления из избранного
+    // Проверка активного вопроса для неактивных игроков
+    socket.on('lobby:checkActiveQuestion', () => {
+      try {
+        const questionState = lobbyQuestionState.get(lobbyId);
+        
+        if (questionState) {
+          console.log(`🔍 [QUESTION] Неактивный игрок запрашивает активный вопрос: ${questionState.questionId}`);
+          
+          // Вычисляем оставшееся время таймера
+          const currentTime = Date.now();
+          const elapsedTime = currentTime - questionState.timerStartTime;
+          const timeLeft = Math.max(0, Math.ceil((questionState.timerDuration - elapsedTime) / 1000));
+          
+          // Отправляем активный вопрос только этому игроку
+          socket.emit('lobby:activeQuestion', {
+            questionId: questionState.questionId,
+            topic: questionState.topic,
+            question: questionState.question,
+            mentor_tip: questionState.mentor_tip,
+            pointId: questionState.pointId,
+            timeLeft: timeLeft
+          });
+        } else {
+          // Нет активного вопроса
+          socket.emit('lobby:noActiveQuestion');
+        }
+      } catch (error) {
+        console.error('Ошибка при проверке активного вопроса:', error);
+      }
+    });
+
     socket.on('lobby:favoriteToggle', async (payload) => {
       try {
         console.log('⭐ [FAVORITE] Получен запрос на изменение избранного:', payload);

@@ -15,7 +15,7 @@ import type { Achievement } from "../../types/achievement";
 import PhaseTransitionModal from "../../components/common/modals/PhaseTransitionModal";
 import ExamFailureModal from "../../components/common/modals/ExamFailureModal";
 import { ReconnectWaitingModal } from "../../components/common/modals/ReconnectWaitingModal";
-import { CloseConfirmModal } from "../../components/common/modals/CloseConfirmModal";
+// import { CloseConfirmModal } from "../../components/common/modals/CloseConfirmModal"; // Больше не нужен
 
 export function LobbyPage() {
   const { id } = useParams<{ id: string }>();
@@ -50,6 +50,7 @@ export function LobbyPage() {
     sendAnswerInput,
     sendExamAnswerInput,
     sendLeaveLobby,
+    sendCheckActiveQuestion,
   } = useLobbySocket(
     lobbyId,
     (answer: string) => setSyncedAnswer(answer),
@@ -68,7 +69,6 @@ export function LobbyPage() {
 
   const [achievementNotifications, setAchievementNotifications] = useState<Achievement[]>([]);
   const [inactivePlayerNotification, setInactivePlayerNotification] = useState<string | null>(null);
-  const [showCloseConfirm, setShowCloseConfirm] = useState(false);
   
   // Состояние для модального окна действий пользователя
   const [isUserActionsModalOpen, setIsUserActionsModalOpen] = useState(false);
@@ -89,12 +89,10 @@ export function LobbyPage() {
     const point = points.find(p => p.id === pointId);
     if (!point || point.status !== "available") return;
 
-    // Проверяем, является ли текущий игрок активным
+    // Если неактивный игрок пытается открыть вопрос, запрашиваем у сервера активный вопрос
     if (user?.id !== activePlayerId) {
-      const activePlayer = usersInLobby.find(u => u.id === activePlayerId);
-      const activePlayerName = activePlayer?.username || 'другой игрок';
-      setInactivePlayerNotification(`Сейчас вопрос выбирает ${activePlayerName}`);
-      setTimeout(() => setInactivePlayerNotification(null), 3000);
+      console.log('👁️ [INACTIVE] Неактивный игрок запрашивает активный вопрос');
+      sendCheckActiveQuestion();
       return;
     }
 
@@ -202,12 +200,22 @@ export function LobbyPage() {
       setCurrentPointId(pointId);
     };
 
+    const handleNoActiveQuestion = () => {
+      console.log('❌ [INACTIVE] Нет активного вопроса - показываем уведомление');
+      const activePlayer = usersInLobby.find(u => u.id === activePlayerId);
+      const activePlayerName = activePlayer?.username || 'другой игрок';
+      setInactivePlayerNotification(`Сейчас вопрос выбирает ${activePlayerName}`);
+      setTimeout(() => setInactivePlayerNotification(null), 3000);
+    };
+
     window.addEventListener('question:setCurrentPointId', handleSetCurrentPointId as EventListener);
+    window.addEventListener('question:noActiveQuestion', handleNoActiveQuestion as EventListener);
     
     return () => {
       window.removeEventListener('question:setCurrentPointId', handleSetCurrentPointId as EventListener);
+      window.removeEventListener('question:noActiveQuestion', handleNoActiveQuestion as EventListener);
     };
-  }, []);
+  }, [usersInLobby, activePlayerId]);
 
   const handleCloseAchievementNotification = () => {
     setAchievementNotifications([]);
@@ -232,22 +240,13 @@ export function LobbyPage() {
       return;
     }
 
-    // Если неактивный игрок - показываем подтверждение
-    setShowCloseConfirm(true);
-  };
-
-  const handleConfirmClose = () => {
-    console.log('🔒 [INACTIVE] Неактивный игрок подтвердил закрытие вопроса');
-    setShowCloseConfirm(false);
+    // Если неактивный игрок - закрываем локально (можно переоткрыть)
+    console.log('🔒 [INACTIVE] Неактивный игрок закрывает вопрос локально');
     dispatch(closeModalAction());
     setCurrentPointId(null);
-    // Отправляем событие закрытия на сервер
-    sendCloseModal();
   };
 
-  const handleCancelClose = () => {
-    setShowCloseConfirm(false);
-  };
+  // Функции handleConfirmClose и handleCancelClose больше не нужны
 
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -528,11 +527,7 @@ export function LobbyPage() {
           }}
         />
 
-        <CloseConfirmModal
-          isOpen={showCloseConfirm}
-          onConfirm={handleConfirmClose}
-          onCancel={handleCancelClose}
-        />
+        {/* CloseConfirmModal больше не нужен - неактивные игроки могут закрывать локально */}
       </div>
 
       <div className={styles.sidebar}>
