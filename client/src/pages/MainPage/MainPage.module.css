@@ -297,6 +297,233 @@
   justify-content: flex-end;
 }
 
+/* ===== Inline Filter Li Styling ===== */
+.filterRow {
+  display: flex;
+  flex-direction: column;
+  background: linear-gradient(
+    180deg,
+    var(--fantasy-surface),
+    var(--fantasy-surface-2)
+  );
+  color: var(--fantasy-text);
+  border: 2px solid var(--fantasy-border);
+  border-radius: 12px;
+  padding: 16px 20px; /* Slightly smaller padding than roomRow */
+  margin-bottom: 16px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  position: relative;
+}
+
+.filterRow::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: linear-gradient(
+    90deg,
+    var(--fantasy-gold),
+    var(--fantasy-gold-2)
+  );
+}
+
+.filterHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 16px;
+}
+
+.filterTitle {
+  color: var(--fantasy-text);
+  font-weight: 700;
+  font-size: 1.2rem; /* Slightly smaller than roomItem */
+  letter-spacing: 0.5px;
+  text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.1);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.filterCloseButton {
+  appearance: none;
+  border: 2px solid var(--fantasy-accent);
+  background: linear-gradient(
+    180deg,
+    var(--fantasy-gold),
+    var(--fantasy-gold-2)
+  );
+  color: #2c1810;
+  border-radius: 8px;
+  padding: 10px 14px;
+  font-size: 16px;
+  font-weight: bold;
+  cursor: pointer;
+  transition: all 0.2s ease-in-out;
+  box-shadow: 0 3px 6px rgba(0, 0, 0, 0.2);
+  text-shadow: 0 1px 0 #f3e0c0;
+  min-width: 40px;
+  min-height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.filterCloseButton:hover {
+  background: linear-gradient(180deg, #f0c33b, #c48a00);
+  transform: translateY(-1px);
+  box-shadow: 0 5px 10px rgba(0, 0, 0, 0.3);
+}
+
+.filterCloseButton:active {
+  transform: translateY(1px);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+.filterContent {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.filterInlineSection {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.filterInlineLabel {
+  color: var(--fantasy-text);
+  font-weight: 600;
+  font-size: 0.9rem;
+  min-width: 90px;
+  flex-shrink: 0;
+}
+
+.filterInlineInput {
+  background: rgba(255, 248, 220, 0.8);
+  border: 1px solid rgba(0, 0, 0, 0.2);
+  border-radius: 6px;
+  padding: 6px 10px;
+  font-size: 0.9rem;
+  color: var(--fantasy-text);
+  font-family: inherit;
+  min-width: 120px;
+  max-width: 200px;
+}
+
+.filterInlineInput:focus {
+  outline: none;
+  border-color: var(--fantasy-gold);
+  box-shadow: 0 0 0 2px rgba(212, 160, 23, 0.2);
+}
+
+.filterInlineInput::placeholder {
+  color: var(--fantasy-muted);
+  opacity: 0.7;
+}
+
+.filterInlineOptions {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.filterInlineOption {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  cursor: pointer;
+  font-size: 0.9rem;
+}
+
+.filterInlineOption input[type='radio'] {
+  appearance: none;
+  width: 14px;
+  height: 14px;
+  border: 2px solid var(--fantasy-border);
+  border-radius: 50%;
+  background: rgba(255, 248, 220, 0.8);
+  cursor: pointer;
+  position: relative;
+  transition: all 0.2s ease;
+}
+
+.filterInlineOption input[type='radio']:checked {
+  border-color: var(--fantasy-gold);
+  background: var(--fantasy-gold);
+}
+
+.filterInlineOption input[type='radio']:checked::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+  background: white;
+}
+
+.filterInlineOption span {
+  color: var(--fantasy-text);
+  font-weight: 500;
+}
+
+.filterInlineRange {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.filterRangeSeparator {
+  color: var(--fantasy-text);
+  font-weight: bold;
+  font-size: 1rem;
+}
+
+.filterInlineActions {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 8px;
+}
+
+.filterInlineClearButton {
+  appearance: none;
+  border: 2px solid var(--fantasy-accent);
+  background: linear-gradient(
+    180deg,
+    var(--fantasy-gold),
+    var(--fantasy-gold-2)
+  );
+  color: #2c1810;
+  border-radius: 8px;
+  padding: 10px 14px;
+  font-size: 16px;
+  font-weight: bold;
+  cursor: pointer;
+  transition: all 0.2s ease-in-out;
+  box-shadow: 0 3px 6px rgba(0, 0, 0, 0.2);
+  text-shadow: 0 1px 0 #f3e0c0;
+  min-width: 40px;
+  min-height: 40px;
+}
+
+.filterInlineClearButton:hover {
+  background: linear-gradient(180deg, #f0c33b, #c48a00);
+  transform: translateY(-1px);
+  box-shadow: 0 5px 10px rgba(0, 0, 0, 0.3);
+}
+
+.filterInlineClearButton:active {
+  transform: translateY(1px);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
 .filterButton {
   appearance: none;
   border: 2px solid var(--fantasy-accent);

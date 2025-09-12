@@ -75,7 +75,9 @@ export function MainPage(): JSX.Element {
   const [maxInputValue, setMaxInputValue] = useState('');
 
   // Achievement notification states
-  const [achievementNotifications, setAchievementNotifications] = useState<Achievement[]>([]);
+  const [achievementNotifications, setAchievementNotifications] = useState<
+    Achievement[]
+  >([]);
 
   const handleCloseAchievementNotification = () => {
     setAchievementNotifications([]);
@@ -144,16 +146,19 @@ export function MainPage(): JSX.Element {
         mainSocketClient.setupRoomUpdateListener(roomUpdateListener);
 
         // Set up achievement listener
-        const achievementListener = (data: { userId: number; achievements: Achievement[] }) => {
+        const achievementListener = (data: {
+          userId: number;
+          achievements: Achievement[];
+        }) => {
           console.log('🏆 [MAIN] Received user:newAchievements:', data);
           const { userId: achievementUserId, achievements } = data;
-          
+
           // Показываем уведомления только для текущего пользователя
           if (userId && Number(achievementUserId) === Number(userId)) {
             setAchievementNotifications(achievements);
           }
         };
-        
+
         console.log('🏆 Setting up achievement listener...');
         mainSocketClient.setupAchievementListener(achievementListener);
 
@@ -175,7 +180,10 @@ export function MainPage(): JSX.Element {
     const handleClickOutside = (event: MouseEvent) => {
       if (isFilterOpen) {
         const target = event.target as Element;
-        if (!target.closest(`.${styles.filterContainer}`)) {
+        if (
+          !target.closest(`.${styles.filterContainer}`) &&
+          !target.closest(`.${styles.filterRow}`)
+        ) {
           setIsFilterOpen(false);
         }
       }
@@ -333,27 +341,56 @@ export function MainPage(): JSX.Element {
               Фильтр
               <FilterIcon />
             </button>
+          </div>
 
-            {isFilterOpen && (
-              <div className={styles.filterDropdown}>
-                <div className={styles.filterSection}>
-                  <h3 className={styles.filterSectionTitle}>
-                    🔍 Поиск по названию
-                  </h3>
+          {/* Inline Filter Li Element */}
+          {isFilterOpen && (
+            <li
+              className={styles.filterRow}
+              onClick={(e) => e.stopPropagation()}
+            >
+              <div className={styles.filterHeader}>
+                <span className={styles.filterTitle}>🔍 Настройки фильтра</span>
+                <button
+                  className={styles.filterCloseButton}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setIsFilterOpen(false);
+                  }}
+                  title="Закрыть фильтр"
+                >
+                  ✕
+                </button>
+              </div>
+
+              <div
+                className={styles.filterContent}
+                onClick={(e) => e.stopPropagation()}
+              >
+                <div className={styles.filterInlineSection}>
+                  <label className={styles.filterInlineLabel}>
+                    🔍 Название:
+                  </label>
                   <input
                     type="text"
                     value={nameFilter}
                     onChange={(e) => setNameFilter(e.target.value)}
                     onKeyDown={handleKeyDown}
+                    onClick={(e) => e.stopPropagation()}
                     placeholder="Введите название комнаты..."
-                    className={styles.filterInput}
+                    className={styles.filterInlineInput}
                   />
                 </div>
 
-                <div className={styles.filterSection}>
-                  <h3 className={styles.filterSectionTitle}>🔒 Приватность</h3>
-                  <div className={styles.filterOptions}>
-                    <label className={styles.filterOption}>
+                <div className={styles.filterInlineSection}>
+                  <label className={styles.filterInlineLabel}>
+                    🔒 Приватность:
+                  </label>
+                  <div className={styles.filterInlineOptions}>
+                    <label
+                      className={styles.filterInlineOption}
+                      onClick={(e) => e.stopPropagation()}
+                    >
                       <input
                         type="radio"
                         name="privacy"
@@ -364,10 +401,14 @@ export function MainPage(): JSX.Element {
                             e.target.value as 'all' | 'public' | 'private'
                           )
                         }
+                        onClick={(e) => e.stopPropagation()}
                       />
-                      <span>Все комнаты</span>
+                      <span>Все</span>
                     </label>
-                    <label className={styles.filterOption}>
+                    <label
+                      className={styles.filterInlineOption}
+                      onClick={(e) => e.stopPropagation()}
+                    >
                       <input
                         type="radio"
                         name="privacy"
@@ -378,10 +419,14 @@ export function MainPage(): JSX.Element {
                             e.target.value as 'all' | 'public' | 'private'
                           )
                         }
+                        onClick={(e) => e.stopPropagation()}
                       />
                       <span>Публичные</span>
                     </label>
-                    <label className={styles.filterOption}>
+                    <label
+                      className={styles.filterInlineOption}
+                      onClick={(e) => e.stopPropagation()}
+                    >
                       <input
                         type="radio"
                         name="privacy"
@@ -392,17 +437,16 @@ export function MainPage(): JSX.Element {
                             e.target.value as 'all' | 'public' | 'private'
                           )
                         }
+                        onClick={(e) => e.stopPropagation()}
                       />
                       <span>Приватные</span>
                     </label>
                   </div>
                 </div>
 
-                <div className={styles.filterSection}>
-                  <h3 className={styles.filterSectionTitle}>
-                    👥 Количество игроков
-                  </h3>
-                  <div className={styles.playerCountRange}>
+                <div className={styles.filterInlineSection}>
+                  <label className={styles.filterInlineLabel}>👥 Игроки:</label>
+                  <div className={styles.filterInlineRange}>
                     <input
                       type="text"
                       value={minInputValue}
@@ -417,10 +461,11 @@ export function MainPage(): JSX.Element {
                         }
                       }}
                       onKeyDown={handleKeyDown}
-                      className={styles.filterInput}
+                      onClick={(e) => e.stopPropagation()}
+                      className={styles.filterInlineInput}
                       placeholder="Мин"
                     />
-                    <span className={styles.rangeSeparator}>-</span>
+                    <span className={styles.filterRangeSeparator}>-</span>
                     <input
                       type="text"
                       value={maxInputValue}
@@ -435,13 +480,14 @@ export function MainPage(): JSX.Element {
                         }
                       }}
                       onKeyDown={handleKeyDown}
-                      className={styles.filterInput}
+                      onClick={(e) => e.stopPropagation()}
+                      className={styles.filterInlineInput}
                       placeholder="Макс"
                     />
                   </div>
                 </div>
 
-                <div className={styles.filterActions}>
+                <div className={styles.filterInlineActions}>
                   <button
                     onClick={() => {
                       setNameFilter('');
@@ -450,20 +496,15 @@ export function MainPage(): JSX.Element {
                       setMinInputValue('');
                       setMaxInputValue('');
                     }}
-                    className={styles.clearButton}
+                    className={styles.filterInlineClearButton}
                   >
-                    Очистить
-                  </button>
-                  <button
-                    onClick={() => setIsFilterOpen(false)}
-                    className={styles.applyButton}
-                  >
-                    Применить
+                    Очистить фильтры
                   </button>
                 </div>
               </div>
-            )}
-          </div>
+            </li>
+          )}
+
           {filteredRooms.map((item) => (
             <li
               key={item.id}
