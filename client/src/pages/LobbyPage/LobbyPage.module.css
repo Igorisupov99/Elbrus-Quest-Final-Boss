@@ -84,6 +84,22 @@ html, body {
   color: #5c3d2e;
 }
 
+/* Анимация для уведомления неактивного игрока */
+@keyframes fadeInOut {
+  0% {
+    opacity: 0;
+    transform: translateX(-50%) translateY(-10px);
+  }
+  10%, 90% {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+  }
+  100% {
+    opacity: 0;
+    transform: translateX(-50%) translateY(-10px);
+  }
+}
+
 .chatList {
   flex: 1;
   padding: 8px;
