@@ -976,7 +976,22 @@ export function Profile() {
                     borderRadius: '6px',
                     display: 'flex',
                     alignItems: 'center',
-                    gap: '6px'
+                    gap: '6px',
+                    cursor: 'pointer',
+                    transition: 'all 0.2s ease'
+                  }}
+                  onClick={() => navigate(`/user/${searchResult.id}`)}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.background = '#e6f3ff';
+                    e.currentTarget.style.borderColor = '#5dade2';
+                    e.currentTarget.style.transform = 'translateY(-1px)';
+                    e.currentTarget.style.boxShadow = '0 4px 8px rgba(0, 123, 255, 0.2)';
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.background = '#f0f8ff';
+                    e.currentTarget.style.borderColor = '#87ceeb';
+                    e.currentTarget.style.transform = 'translateY(0)';
+                    e.currentTarget.style.boxShadow = 'none';
                   }}
                 >
                   <img
@@ -998,10 +1013,14 @@ export function Profile() {
                         margin: '0 0 1px 0',
                         fontSize: '0.9rem',
                         fontWeight: '700',
-                        color: '#2c1810'
+                        color: '#2c1810',
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '4px'
                       }}
                     >
                       {searchResult.username}
+                      <span style={{ fontSize: '0.7rem', color: '#666' }}>👆</span>
                     </h5>
                     {searchResult.score !== undefined && (
                       <p 
@@ -1091,7 +1110,10 @@ export function Profile() {
                     
                     return (
                       <button
-                        onClick={() => handleSendFriendRequest(searchResult.id, searchResult.username)}
+                        onClick={(e) => {
+                          e.stopPropagation(); // Предотвращаем всплытие события
+                          handleSendFriendRequest(searchResult.id, searchResult.username);
+                        }}
                         style={{
                           padding: '6px 10px',
                           background: 'linear-gradient(135deg, #28a745, #20c997)',
@@ -1574,6 +1596,12 @@ export function Profile() {
                   incomingRequests.map((request) => (
                     <div 
                       key={request.id} 
+                      onClick={() => {
+                        if (request.user?.id) {
+                          closeIncomingModal();
+                          navigate(`/user/${request.user.id}`);
+                        }
+                      }}
                       style={{
                         display: 'flex',
                         alignItems: 'center',
@@ -1586,7 +1614,8 @@ export function Profile() {
                         boxShadow: '0 4px 12px rgba(0, 0, 0, 0.08)',
                         transition: 'all 0.2s ease',
                         position: 'relative',
-                        overflow: 'hidden'
+                        overflow: 'hidden',
+                        cursor: 'pointer'
                       }}
                       onMouseEnter={(e) => {
                         e.currentTarget.style.transform = 'translateY(-2px)';
@@ -1670,7 +1699,10 @@ export function Profile() {
                         }}
                       >
                         <button
-                          onClick={() => handleAcceptRequest(request.id)}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleAcceptRequest(request.id);
+                          }}
                           style={{
                             padding: '10px 20px',
                             background: 'linear-gradient(135deg, #8b4513, #a0522d)',
@@ -1698,7 +1730,10 @@ export function Profile() {
                           ✅ Принять
                         </button>
                         <button
-                          onClick={() => handleRejectRequest(request.id)}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleRejectRequest(request.id);
+                          }}
                           style={{
                             padding: '10px 20px',
                             background: 'linear-gradient(135deg, #dc3545, #c82333)',
@@ -1875,6 +1910,12 @@ export function Profile() {
                   outgoingRequests.map((request) => (
                     <div 
                       key={request.id} 
+                      onClick={() => {
+                        if (request.friend?.id) {
+                          closeOutgoingModal();
+                          navigate(`/user/${request.friend.id}`);
+                        }
+                      }}
                       style={{
                         display: 'flex',
                         alignItems: 'center',
@@ -1887,7 +1928,8 @@ export function Profile() {
                         boxShadow: '0 4px 12px rgba(0, 0, 0, 0.08)',
                         transition: 'all 0.2s ease',
                         position: 'relative',
-                        overflow: 'hidden'
+                        overflow: 'hidden',
+                        cursor: 'pointer'
                       }}
                       onMouseEnter={(e) => {
                         e.currentTarget.style.transform = 'translateY(-2px)';

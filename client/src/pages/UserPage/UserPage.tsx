@@ -3,19 +3,22 @@ import { useParams, useNavigate } from "react-router-dom";
 import axios from "axios";
 import api from "../../api/axios";
 import { 
-  getFriends, 
   checkFriendshipStatus,
   sendFriendRequest,
-  type User as FriendUser, 
+  acceptFriendRequest,
+  rejectFriendRequest,
+  removeFriend,
+  getIncomingRequests,
+  getOutgoingRequests,
+  type User as FriendUser,
+  type Friendship, 
 } from "../../api/friendship/friendshipApi";
-import { achievementApi } from "../../api/achievements/achievementApi";
 import { AchievementCard } from "../../components/Achievement/AchievementCard/AchievementCard";
 import { AchievementModal } from "../../components/Achievement/AchievementModal/AchievementModal";
 import { FavoriteQuestionModal } from "../../components/FavoriteQuestionModal/FavoriteQuestionModal";
 import type { Achievement } from "../../types/achievement";
-import { favoriteApi } from "../../api/favorites/favoriteApi";
 import type { FavoriteQuestion } from "../../types/favorite";
-import { useAppDispatch, useAppSelector } from "../../store/hooks";
+import { useAppSelector } from "../../store/hooks";
 import styles from "../ProfilePage/Profile.module.css";
 
 interface User {
@@ -36,7 +39,6 @@ interface ApiResponse<T> {
 export function UserPage() {
   const { userId } = useParams<{ userId: string }>();
   const navigate = useNavigate();
-  const dispatch = useAppDispatch();
   const currentUser = useAppSelector(state => state.auth.user);
   
   const [user, setUser] = useState<User | null>(null);
@@ -50,6 +52,8 @@ export function UserPage() {
   
   // Для статуса дружбы
   const [friendshipStatus, setFriendshipStatus] = useState<'none' | 'pending' | 'accepted' | 'blocked' | 'loading'>('loading');
+  const [incomingRequest, setIncomingRequest] = useState<Friendship | null>(null);
+  const [outgoingRequest, setOutgoingRequest] = useState<Friendship | null>(null);
 
   // Для достижений
   const [achievements, setAchievements] = useState<Achievement[]>([]);
@@ -136,19 +140,44 @@ export function UserPage() {
     loadUserFriends();
   }, [user?.id]);
 
-  // Проверка статуса дружбы
+  // Проверка статуса дружбы и заявок
   useEffect(() => {
     if (!user?.id) return;
 
     const checkStatus = async () => {
       try {
         setFriendshipStatus('loading');
-        const response = await checkFriendshipStatus(user.id);
+        setIncomingRequest(null);
+        setOutgoingRequest(null);
         
-        if (response.success && response.data) {
-          setFriendshipStatus(response.data.status);
+        // Проверяем общий статус дружбы
+        const statusResponse = await checkFriendshipStatus(user.id);
+        
+        if (statusResponse.success && statusResponse.data) {
+          setFriendshipStatus(statusResponse.data.status);
         } else {
           setFriendshipStatus('none');
+        }
+
+        // Если статус pending, проверяем входящие и исходящие заявки
+        if (statusResponse.success && statusResponse.data?.status === 'pending') {
+          // Проверяем входящие заявки
+          const incomingResponse = await getIncomingRequests();
+          if (incomingResponse.success && incomingResponse.data) {
+            const foundIncomingRequest = incomingResponse.data.find(
+              (request: Friendship) => request.user?.id === user.id
+            );
+            setIncomingRequest(foundIncomingRequest || null);
+          }
+
+          // Проверяем исходящие заявки
+          const outgoingResponse = await getOutgoingRequests();
+          if (outgoingResponse.success && outgoingResponse.data) {
+            const foundOutgoingRequest = outgoingResponse.data.find(
+              (request: Friendship) => request.friend?.id === user.id
+            );
+            setOutgoingRequest(foundOutgoingRequest || null);
+          }
         }
       } catch (error) {
         console.error('Ошибка при проверке статуса дружбы:', error);
@@ -167,18 +196,17 @@ export function UserPage() {
       setAchievementsLoading(true);
       try {
         // Получаем достижения конкретного пользователя
-        const response = await api.get<ApiResponse<{ achievements: any[] }>>(`/api/achievement/user/${user.id}`, {
+        const response = await api.get<ApiResponse<{ achievements: Achievement[] }>>(`/api/achievement/user/${user.id}`, {
           withCredentials: true,
         });
 
         if (response.data.success && response.data.data.achievements) {
-          const earnedAchievements = response.data.data.achievements
-            .filter(ua => ua.achievement)
-            .map(ua => ({
-              ...ua.achievement,
-              earned: true,
-              earned_at: ua.earned_at
-            }));
+          // Если это уже массив достижений, используем их напрямую
+          const earnedAchievements = response.data.data.achievements.map(achievement => ({
+            ...achievement,
+            earned: true,
+            earned_at: achievement.earned_at || new Date().toISOString()
+          }));
           setAchievements(earnedAchievements);
         } else {
           setAchievements([]);
@@ -326,6 +354,71 @@ export function UserPage() {
     }
   };
 
+  // Принять заявку на дружбу
+  const handleAcceptRequest = async () => {
+    if (!incomingRequest?.id) return;
+
+    try {
+      const response = await acceptFriendRequest(incomingRequest.id);
+      
+      if (response.success) {
+        setFriendshipStatus('accepted');
+        setIncomingRequest(null);
+        alert(`Заявка на дружбу от ${user?.username} принята!`);
+      } else {
+        alert(response.message || 'Ошибка при принятии заявки');
+      }
+    } catch (error) {
+      console.error('Ошибка при принятии заявки:', error);
+      alert('Ошибка при принятии заявки');
+    }
+  };
+
+  // Отклонить заявку на дружбу
+  const handleRejectRequest = async () => {
+    if (!incomingRequest?.id) return;
+
+    try {
+      const response = await rejectFriendRequest(incomingRequest.id);
+      
+      if (response.success) {
+        setFriendshipStatus('none');
+        setIncomingRequest(null);
+        alert(`Заявка на дружбу от ${user?.username} отклонена`);
+      } else {
+        alert(response.message || 'Ошибка при отклонении заявки');
+      }
+    } catch (error) {
+      console.error('Ошибка при отклонении заявки:', error);
+      alert('Ошибка при отклонении заявки');
+    }
+  };
+
+  // Удалить из друзей
+  const handleRemoveFriend = async () => {
+    if (!user?.id) return;
+
+    if (!confirm(`Вы уверены, что хотите удалить ${user.username} из друзей?`)) {
+      return;
+    }
+
+    try {
+      const response = await removeFriend(user.id);
+      
+      if (response.success) {
+        setFriendshipStatus('none');
+        setIncomingRequest(null);
+        setOutgoingRequest(null);
+        alert(`${user.username} удален из друзей`);
+      } else {
+        alert(response.message || 'Ошибка при удалении из друзей');
+      }
+    } catch (error) {
+      console.error('Ошибка при удалении из друзей:', error);
+      alert('Ошибка при удалении из друзей');
+    }
+  };
+
   // Переход на страницу друга
   const handleFriendClick = (friendId: number) => {
     navigate(`/user/${friendId}`);
@@ -379,7 +472,7 @@ export function UserPage() {
                 className={styles.avatar}
               />
               
-              {/* Кнопка добавления в друзья */}
+              {/* Кнопки управления дружбой */}
               {friendshipStatus === 'none' && (
                 <button 
                   className={styles.editButton}
@@ -393,7 +486,60 @@ export function UserPage() {
                 </button>
               )}
               
-              {friendshipStatus === 'pending' && (
+              {friendshipStatus === 'pending' && incomingRequest && (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', alignItems: 'center' }}>
+                  <div style={{ 
+                    fontSize: '0.9rem', 
+                    color: '#8b4513', 
+                    fontWeight: '600',
+                    textAlign: 'center',
+                    marginBottom: '4px'
+                  }}>
+                    Входящая заявка на дружбу
+                  </div>
+                  <div style={{ display: 'flex', gap: '8px' }}>
+                    <button
+                      className={styles.editButton}
+                      onClick={handleAcceptRequest}
+                      style={{
+                        background: 'linear-gradient(135deg, #28a745, #20c997)',
+                        borderColor: '#1e7e34',
+                        padding: '8px 16px',
+                        fontSize: '0.9rem'
+                      }}
+                    >
+                      ✅ Принять
+                    </button>
+                    <button
+                      className={styles.editButton}
+                      onClick={handleRejectRequest}
+                      style={{
+                        background: 'linear-gradient(135deg, #dc3545, #c82333)',
+                        borderColor: '#b21e2f',
+                        padding: '8px 16px',
+                        fontSize: '0.9rem'
+                      }}
+                    >
+                      ❌ Отклонить
+                    </button>
+                  </div>
+                </div>
+              )}
+              
+              {friendshipStatus === 'pending' && !incomingRequest && outgoingRequest && (
+                <div 
+                  className={styles.editButton}
+                  style={{
+                    background: 'linear-gradient(135deg, #ffc107, #e0a800)',
+                    borderColor: '#d39e00',
+                    cursor: 'default'
+                  }}
+                >
+                  Заявка отправлена
+                </div>
+              )}
+
+              {friendshipStatus === 'pending' && !incomingRequest && !outgoingRequest && (
                 <div 
                   className={styles.editButton}
                   style={{
@@ -407,15 +553,31 @@ export function UserPage() {
               )}
               
               {friendshipStatus === 'accepted' && (
-                <div 
-                  className={styles.editButton}
-                  style={{
-                    background: 'linear-gradient(135deg, #17a2b8, #138496)',
-                    borderColor: '#117a8b',
-                    cursor: 'default'
-                  }}
-                >
-                  ✓ В друзьях
+                <div style={{ display: 'flex', flexDirection: 'row', gap: '12px', alignItems: 'center' }}>
+                  <div 
+                    className={styles.editButton}
+                    style={{
+                      background: 'linear-gradient(135deg, #17a2b8, #138496)',
+                      borderColor: '#117a8b',
+                      cursor: 'default',
+                      padding: '8px 16px',
+                      fontSize: '0.9rem'
+                    }}
+                  >
+                    ✓ В друзьях
+                  </div>
+                  <button
+                    className={styles.editButton}
+                    onClick={handleRemoveFriend}
+                    style={{
+                      background: 'linear-gradient(135deg, #dc3545, #c82333)',
+                      borderColor: '#b21e2f',
+                      padding: '8px 16px',
+                      fontSize: '0.9rem'
+                    }}
+                  >
+                    🗑️ Удалить из друзей
+                  </button>
                 </div>
               )}
             </div>
