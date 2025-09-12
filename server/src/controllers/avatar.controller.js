@@ -54,7 +54,7 @@ const getAvatars = async (req, res) => {
       
       return {
         ...avatar.toJSON(),
-        isUnlocked: isOwned
+        isOwned: isOwned
       };
     }).filter(Boolean);
 
