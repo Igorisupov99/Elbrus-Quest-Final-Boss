@@ -463,6 +463,11 @@ function initLobbySockets(nsp) {
           console.log(`🗑️ [QUESTION] Очищено состояние вопроса после ответа для лобби ${lobbyId}`);
         }
         
+        // Уведомляем всех игроков о сбросе активного поинта
+        nsp.to(roomKey).emit('lobby:activePointChanged', {
+          activePointId: null
+        });
+        
         console.log(`🔄 [SOCKET] Передаем ход следующему игроку`);
         await passTurnToNextPlayer();
       } catch (err) {
@@ -500,6 +505,11 @@ function initLobbySockets(nsp) {
           console.log(`🗑️ [QUESTION] Очищено состояние вопроса после таймаута для лобби ${lobbyId}`);
         }
         
+        // Уведомляем всех игроков о сбросе активного поинта
+        nsp.to(roomKey).emit('lobby:activePointChanged', {
+          activePointId: null
+        });
+        
         await passTurnToNextPlayer();
       }
       
@@ -516,6 +526,11 @@ function initLobbySockets(nsp) {
         lobbyQuestionState.delete(lobbyId);
         console.log(`🗑️ [QUESTION] Очищено состояние вопроса для лобби ${lobbyId}`);
       }
+      
+      // Уведомляем всех игроков о сбросе активного поинта
+      nsp.to(roomKey).emit('lobby:activePointChanged', {
+        activePointId: null
+      });
       
       nsp.to(roomKey).emit('lobby:closeModal');
       console.log('🔒 [SOCKET] Событие closeModal переслано в комнату:', roomKey);
@@ -538,6 +553,11 @@ function initLobbySockets(nsp) {
         });
         
         console.log(`📝 [QUESTION] Сохранено состояние вопроса ${payload.questionId} для лобби ${lobbyId}`);
+        
+        // Уведомляем всех игроков об активном поинте
+        nsp.to(roomKey).emit('lobby:activePointChanged', {
+          activePointId: payload.pointId || String(payload.questionId)
+        });
         
         nsp.to(roomKey).emit('lobby:openModal', payload);
       } catch (err) {
@@ -1019,28 +1039,42 @@ function initLobbySockets(nsp) {
 
     // Обработчик добавления/удаления из избранного
     // Проверка активного вопроса для неактивных игроков
-    socket.on('lobby:checkActiveQuestion', () => {
+    socket.on('lobby:checkActiveQuestion', (payload) => {
       try {
+        const requestedPointId = payload?.pointId;
         const questionState = lobbyQuestionState.get(lobbyId);
         
         if (questionState) {
-          console.log(`🔍 [QUESTION] Неактивный игрок запрашивает активный вопрос: ${questionState.questionId}`);
+          console.log(`🔍 [QUESTION] Неактивный игрок запрашивает вопрос для поинта: ${requestedPointId}, активный поинт: ${questionState.pointId}`);
           
-          // Вычисляем оставшееся время таймера
-          const currentTime = Date.now();
-          const elapsedTime = currentTime - questionState.timerStartTime;
-          const timeLeft = Math.max(0, Math.ceil((questionState.timerDuration - elapsedTime) / 1000));
-          
-          // Отправляем активный вопрос только этому игроку
-          socket.emit('lobby:activeQuestion', {
-            questionId: questionState.questionId,
-            topic: questionState.topic,
-            question: questionState.question,
-            mentor_tip: questionState.mentor_tip,
-            pointId: questionState.pointId,
-            timeLeft: timeLeft
-          });
+          // Проверяем, соответствует ли запрашиваемый поинт активному вопросу
+          if (requestedPointId === questionState.pointId) {
+            // Вычисляем оставшееся время таймера
+            const currentTime = Date.now();
+            const elapsedTime = currentTime - questionState.timerStartTime;
+            const timeLeft = Math.max(0, Math.ceil((questionState.timerDuration - elapsedTime) / 1000));
+            
+            console.log(`✅ [QUESTION] Поинты совпадают! Отправляем активный вопрос`);
+            
+            // Отправляем активный вопрос только этому игроку
+            socket.emit('lobby:activeQuestion', {
+              questionId: questionState.questionId,
+              topic: questionState.topic,
+              question: questionState.question,
+              mentor_tip: questionState.mentor_tip,
+              pointId: questionState.pointId,
+              timeLeft: timeLeft
+            });
+          } else {
+            console.log(`❌ [QUESTION] Поинты не совпадают! Запрошен: ${requestedPointId}, активный: ${questionState.pointId}`);
+            // Отправляем уведомление о том, что это не тот поинт
+            socket.emit('lobby:wrongPoint', { 
+              requestedPointId, 
+              activePointId: questionState.pointId 
+            });
+          }
         } else {
+          console.log(`❌ [QUESTION] Нет активного вопроса`);
           // Нет активного вопроса
           socket.emit('lobby:noActiveQuestion');
         }

@@ -388,6 +388,23 @@ export function useLobbySocket(lobbyId: number, onAnswerInputSync?: (answer: str
       window.dispatchEvent(new CustomEvent('question:noActiveQuestion'));
     };
 
+    const onWrongPoint = (payload: { requestedPointId: string; activePointId: string }) => {
+      console.log('❌ [INACTIVE] Неправильный поинт! Запрошен:', payload.requestedPointId, 'активный:', payload.activePointId);
+      // Эмитим кастомное событие для показа уведомления о неправильном поинте
+      window.dispatchEvent(new CustomEvent('question:wrongPoint', { 
+        detail: payload 
+      }));
+    };
+
+    const onActivePointChanged = (payload: { activePointId: string | null }) => {
+      console.log('🎯 [ACTIVE POINT] Изменение активного поинта для всех игроков:', payload.activePointId);
+      
+      // Эмитим кастомное событие для синхронизации активного поинта у всех игроков
+      window.dispatchEvent(new CustomEvent('lobby:activePointChanged', { 
+        detail: payload 
+      }));
+    };
+
     const onFavoriteToggled = (payload: { 
       userId: number; 
       questionId: number; 
@@ -460,6 +477,8 @@ export function useLobbySocket(lobbyId: number, onAnswerInputSync?: (answer: str
     socket.on("lobby:closeExamModal", onCloseExamModal);
     socket.on("lobby:activeQuestion", onActiveQuestion);
     socket.on("lobby:noActiveQuestion", onNoActiveQuestion);
+    socket.on("lobby:wrongPoint", onWrongPoint);
+    socket.on("lobby:activePointChanged", onActivePointChanged);
     socket.on("lobby:favoriteToggled", onFavoriteToggled);
 
     return () => {
@@ -504,6 +523,8 @@ export function useLobbySocket(lobbyId: number, onAnswerInputSync?: (answer: str
       socket.off("user:newAchievements", onUserNewAchievements);
       socket.off("lobby:activeQuestion", onActiveQuestion);
       socket.off("lobby:noActiveQuestion", onNoActiveQuestion);
+      socket.off("lobby:wrongPoint", onWrongPoint);
+      socket.off("lobby:activePointChanged", onActivePointChanged);
       socket.off("lobby:favoriteToggled", onFavoriteToggled);
       socket.disconnect();
     };
@@ -580,8 +601,8 @@ export function useLobbySocket(lobbyId: number, onAnswerInputSync?: (answer: str
     socketClient.socket.emit("leaveLobby");
   };
 
-  const sendCheckActiveQuestion = () => {
-    socketClient.socket.emit("lobby:checkActiveQuestion");
+  const sendCheckActiveQuestion = (pointId?: string) => {
+    socketClient.socket.emit("lobby:checkActiveQuestion", { pointId });
   };
 
   return {

@@ -69,6 +69,7 @@ export function LobbyPage() {
 
   const [achievementNotifications, setAchievementNotifications] = useState<Achievement[]>([]);
   const [inactivePlayerNotification, setInactivePlayerNotification] = useState<string | null>(null);
+  const [activeQuestionPointId, setActiveQuestionPointId] = useState<string | null>(null);
   
   // Состояние для модального окна действий пользователя
   const [isUserActionsModalOpen, setIsUserActionsModalOpen] = useState(false);
@@ -89,10 +90,10 @@ export function LobbyPage() {
     const point = points.find(p => p.id === pointId);
     if (!point || point.status !== "available") return;
 
-    // Если неактивный игрок пытается открыть вопрос, запрашиваем у сервера активный вопрос
+    // Если неактивный игрок пытается открыть вопрос, запрашиваем у сервера активный вопрос для этого поинта
     if (user?.id !== activePlayerId) {
-      console.log('👁️ [INACTIVE] Неактивный игрок запрашивает активный вопрос');
-      sendCheckActiveQuestion();
+      console.log('👁️ [INACTIVE] Неактивный игрок запрашивает активный вопрос для поинта:', pointId);
+      sendCheckActiveQuestion(pointId);
       return;
     }
 
@@ -208,14 +209,37 @@ export function LobbyPage() {
       setTimeout(() => setInactivePlayerNotification(null), 3000);
     };
 
+    const handleWrongPoint = (event: CustomEvent) => {
+      const { activePointId } = event.detail;
+      console.log('❌ [INACTIVE] Неправильный поинт - показываем уведомление');
+      
+      // Находим название активного поинта
+      const activePoint = points.find(p => p.id === activePointId);
+      const activePointTitle = activePoint?.title || `поинт ${activePointId}`;
+      
+      setInactivePlayerNotification(`Активный вопрос находится в "${activePointTitle}"`);
+      setTimeout(() => setInactivePlayerNotification(null), 3000);
+    };
+
+    const handleActivePointChanged = (event: CustomEvent) => {
+      const { activePointId } = event.detail;
+      setActiveQuestionPointId(activePointId);
+    };
+
     window.addEventListener('question:setCurrentPointId', handleSetCurrentPointId as EventListener);
     window.addEventListener('question:noActiveQuestion', handleNoActiveQuestion as EventListener);
+    window.addEventListener('question:wrongPoint', handleWrongPoint as EventListener);
+    window.addEventListener('lobby:activePointChanged', handleActivePointChanged as EventListener);
     
     return () => {
       window.removeEventListener('question:setCurrentPointId', handleSetCurrentPointId as EventListener);
       window.removeEventListener('question:noActiveQuestion', handleNoActiveQuestion as EventListener);
+      window.removeEventListener('question:wrongPoint', handleWrongPoint as EventListener);
+      window.removeEventListener('lobby:activePointChanged', handleActivePointChanged as EventListener);
     };
-  }, [usersInLobby, activePlayerId]);
+  }, [usersInLobby, activePlayerId, points]);
+
+  // Локальное отслеживание больше не нужно - используем глобальные события через сокеты
 
   const handleCloseAchievementNotification = () => {
     setAchievementNotifications([]);
@@ -436,6 +460,7 @@ export function LobbyPage() {
             top={point.top}
             left={point.left}
             status={point.status}
+            isActive={activeQuestionPointId === point.id}
             onClick={openModal}
           />
         ))}
