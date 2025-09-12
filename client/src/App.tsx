@@ -21,14 +21,9 @@ export function App() {
     dispatch(initAuth());
   }, [dispatch]);
 
-  const hideHeaderRoutes = ['/lobby'];
-  const shouldHideHeader = hideHeaderRoutes.some((route) =>
-    location.pathname.startsWith(route)
-  );
-
   return (
     <>
-      {!shouldHideHeader && <Header />}
+      <Header />
       <Routes>
         <Route
           path="/"
@@ -57,21 +52,21 @@ export function App() {
           }
         />
         <Route path="/achievements" element={<AchievementsPage />} />
-        <Route 
-          path="/favorites" 
+        <Route
+          path="/favorites"
           element={
             <PrivateRoute>
               <FavoritesPage />
             </PrivateRoute>
-          } 
+          }
         />
-        <Route 
-          path="/avatar-shop" 
+        <Route
+          path="/avatar-shop"
           element={
             <PrivateRoute>
               <AvatarShopPage />
             </PrivateRoute>
-          } 
+          }
         />
       </Routes>
     </>
