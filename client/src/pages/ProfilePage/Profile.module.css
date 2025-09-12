@@ -520,12 +520,60 @@
     color: #5c3d2e;
     font-weight: 600;
   }
-
 .error {
   color: #d32f2f;
   background: #ffebee;
   border-radius: 8px;
   margin-bottom: 16px;
+}
+
+:root {
+  --fantasy-bg: #d6b37a;
+  --fantasy-surface: #f5deb3;
+  --fantasy-surface-2: #fff8dc;
+  --fantasy-border: #8b5a2b;
+  --fantasy-text: #4b2e05;
+  --fantasy-muted: #5c3b09;
+  --fantasy-gold: #d4a017;
+  --fantasy-gold-2: #a97400;
+  --fantasy-accent: #6b3e15;
+}
+
+/* Контейнер для аватара и информации */
+.profileContainer {
+  display: flex;
+  flex-direction: row;
+  align-items: flex-start;
+  gap: 32px;
+
+  width: 100%;
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 24px;
+  background: linear-gradient(
+    180deg,
+    var(--fantasy-surface),
+    var(--fantasy-surface-2)
+  );
+  border: 2px solid var(--fantasy-border);
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  position: relative;
+  overflow: hidden;
+}
+
+.profileContainer::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: linear-gradient(
+    90deg,
+    var(--fantasy-gold),
+    var(--fantasy-gold-2)
+  );
 }
 
 /* Адаптивность */
@@ -609,7 +657,12 @@
   
   .avatar {
     width: 200px;
-    height: 100px;
+    height: 200px;
+    border-radius: 12px;
+    object-fit: cover;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+    background: #ddd;
+    border: 3px solid var(--fantasy-gold);
   }
   
   .basicInfo {
@@ -623,12 +676,84 @@
   .friendsCount {
     font-size: 1.1rem;
   }
+
+  .avatarName {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--fantasy-text);
+  }
+  
+  .avatarRarity {
+    font-size: 12px;
+    padding: 2px 8px;
+    border-radius: 12px;
+    background: var(--fantasy-gold);
+    color: #2c1810;
+    text-transform: uppercase;
+    font-weight: 600;
+  }
+  
+  .userInfo {
+    flex: 1;
+    font-size: 1.1rem;
+    line-height: 1.6;
+    color: var(--fantasy-text);
+  }
+  
+  .scoreInfo {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin: 12px 0;
+    padding: 8px 12px;
+    background: linear-gradient(135deg, var(--fantasy-gold) 0%, var(--fantasy-gold-2) 100%);
+    border-radius: 20px;
+    color: #2c1810;
+    font-weight: 600;
+    box-shadow: 0 2px 8px rgba(212, 160, 23, 0.3);
+    width: fit-content;
+  }
+  
+  .scoreIcon {
+    font-size: 18px;
+  }
+  
+  .scoreAmount {
+    font-size: 16px;
+    font-weight: 700;
+  }
+  
+  .scoreLabel {
+    font-size: 14px;
+  }
+  
+  .shopLink {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 16px;
+    background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+    color: white;
+    text-decoration: none;
+    border-radius: 8px;
+    font-weight: 600;
+    font-size: 14px;
+    transition: all 0.2s ease;
+    box-shadow: 0 2px 8px rgba(59, 130, 246, 0.3);
+  }
+  
+  .shopLink:hover {
+    background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(59, 130, 246, 0.4);
+  }
   
   /* Кнопка под контейнером */
   .settingsButton {
-    padding: 12px 28px;
+    margin-top: 16px;
+    padding: 10px 14px;
     font-weight: bold;
-    font-size: 1.1rem;
+    font-size: 1rem;
     border-radius: 8px;
     border: 2px solid #6b3e15;
     background: linear-gradient(180deg, #d8a35d, #b0752d);
@@ -637,7 +762,6 @@
     box-shadow: 0 4px 0 #6b3e15, 0 6px 10px rgba(0, 0, 0, 0.25);
     cursor: pointer;
     transition: all 0.2s ease-in-out;
-    align-self: center;  /* центрировать кнопку по ширине родителя */
   }
   
   .statValue {

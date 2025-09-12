@@ -34,7 +34,7 @@
   width: 340px;
   display: flex;
   flex-direction: column;
-  height: calc(100vh - 100px);
+  height: calc(100vh - 40px); /* Account for 20px top + 20px bottom padding */
 }
 
 /* page title */
@@ -543,6 +543,9 @@
   padding: 12px;
   box-shadow: 0 6px 16px rgba(0, 0, 0, 0.25);
   min-height: 0; /* чтобы chatList не ломал высоту */
+  max-width: 100%; /* Ensure chat doesn't exceed container width */
+  box-sizing: border-box;
+  overflow: hidden; /* Prevent any child elements from overflowing */
 }
 
 .chatTitle {
@@ -621,18 +624,22 @@
   gap: 8px;
   margin-top: 10px;
   align-items: center;
+  box-sizing: border-box;
+  overflow: hidden; /* Prevent children from overflowing */
 }
 
 .chatInput {
   flex: 1;
+  min-width: 0; /* Allow input to shrink properly */
   height: 40px;
-  border-radius: 10px;
+  border-radius: 8px;
   border: 1px solid rgba(0, 0, 0, 0.2);
   background: #fffaf0;
   outline: none;
   padding: 0 12px;
   color: #5c3d2e;
   font-family: inherit;
+  box-sizing: border-box;
 }
 
 .chatInput::placeholder {
@@ -648,20 +655,26 @@
   font-size: 1rem;
   color: #2c1810;
   text-shadow: 0 1px 0 #f3e0c0;
-  box-shadow: 0 4px 0 #6b3e15, 0 6px 10px rgba(0, 0, 0, 0.25);
+  /* box-shadow: 0 4px 0 #6b3e15, 0 6px 10px rgba(0, 0, 0, 0.25); */
   cursor: pointer;
   transition: all 0.2s ease-in-out;
   font-family: inherit;
+  flex-shrink: 0; /* Prevent button from shrinking */
+  max-width: 120px; /* Limit button width to prevent overflow */
+  box-sizing: border-box;
+  white-space: nowrap; /* Prevent text wrapping */
+  overflow: hidden; /* Hide any overflow text */
+  text-overflow: ellipsis; /* Add ellipsis if text is too long */
 }
 
 .sendButton:hover {
   background: linear-gradient(180deg, #e8b76d, #c6853d);
-  transform: translateY(-2px);
-  box-shadow: 0 6px 0 #6b3e15, 0 8px 12px rgba(0, 0, 0, 0.3);
+  /* transform: translateY(-2px); */
+  /* box-shadow: 0 6px 0 #6b3e15, 0 8px 12px rgba(0, 0, 0, 0.3); */
 }
 
 .sendButton:active {
-  transform: translateY(2px);
+  transform: translateY(1px);
   box-shadow: 0 2px 0 #6b3e15, 0 3px 6px rgba(0, 0, 0, 0.2);
 }
 

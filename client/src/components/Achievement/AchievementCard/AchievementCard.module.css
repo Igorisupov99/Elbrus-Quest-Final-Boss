@@ -7,11 +7,29 @@
   position: relative;
   overflow: hidden;
   border: 2px solid transparent;
+  cursor: pointer;
 }
 
 .achievementCard:hover {
   transform: translateY(-2px);
   box-shadow: 0 8px 16px rgba(0, 0, 0, 0.15);
+  border-color: #d4a017;
+}
+
+.achievementCard:hover::after {
+  content: "Нажмите для подробностей";
+  position: absolute;
+  bottom: 8px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: rgba(0, 0, 0, 0.8);
+  color: white;
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 11px;
+  white-space: nowrap;
+  pointer-events: none;
+  z-index: 10;
 }
 
 .earned {
@@ -34,7 +52,7 @@
   display: flex;
   align-items: center;
   gap: 12px;
-  margin-bottom: 8px;
+  margin-bottom: 12px;
 }
 
 .icon {
@@ -67,12 +85,6 @@
   margin: 0;
 }
 
-.description {
-  font-size: 14px;
-  color: #6b7280;
-  margin: 0 0 12px 0;
-  line-height: 1.4;
-}
 
 .footer {
   display: flex;
