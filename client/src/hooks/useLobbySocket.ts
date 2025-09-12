@@ -3,6 +3,7 @@ import { useAppDispatch, useAppSelector } from "../store/hooks";
 import type { RootState } from "../store/store";
 import { type ChatHistoryItem, type IncomingChatMessage, socketClient, type SystemEvent } from "../socket/socketLobbyPage";
 import { initialState, setScores, mergeScores, openModal, setModalResult, closeModal, openExamModal, closeExamModal, setExamQuestions, setExamIndex, clearExamQuestions, openPhaseTransitionModal, openExamFailureModal, openReconnectWaitingModal, closeReconnectWaitingModal } from "../store/lobbyPage/lobbySlice";
+import { updateUserScore } from "../store/authSlice";
 import {
   setUsers,
   setPoints,
@@ -191,6 +192,9 @@ export function useLobbySocket(lobbyId: number, onAnswerInputSync?: (answer: str
           dispatch(mergeScores({
             userScore: currentUserScore.userScore
           }));
+          
+          // Обновляем глобальное состояние пользователя для отображения в магазине
+          dispatch(updateUserScore(currentUserScore.userScore));
         }
       }
 

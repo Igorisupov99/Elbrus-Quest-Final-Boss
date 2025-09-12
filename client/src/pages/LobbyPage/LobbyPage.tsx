@@ -10,6 +10,7 @@ import api from "../../api/axios";
 import { useLobbySocket } from "../../hooks/useLobbySocket";
 import { useAppDispatch, useAppSelector } from "../../store/hooks";
 import { updatePointStatus, mergeScores, openModal as openModalAction, closeModal as closeModalAction, openExamModal as openExamModalAction, closeExamModal as closeExamModalAction, setModalResult, closePhaseTransitionModal, closeExamFailureModal, closeReconnectWaitingModal } from "../../store/lobbyPage/lobbySlice";
+import { updateUserScore } from "../../store/authSlice";
 import { AchievementNotification } from "../../components/Achievement/AchievementNotification/AchievementNotification";
 import type { Achievement } from "../../types/achievement";
 import PhaseTransitionModal from "../../components/common/modals/PhaseTransitionModal";
@@ -272,6 +273,9 @@ export function LobbyPage() {
         sessionScore: Number(nextSessionScore),
         incorrectAnswers: Number(nextIncorrect),
       }));
+      
+      // Обновляем глобальное состояние пользователя для отображения в магазине
+      dispatch(updateUserScore(Number(nextUserScore)));
     }
     
     if (correct && currentPointId) {
