@@ -129,6 +129,41 @@ export function useLobbySocket(lobbyId: number, onAnswerInputSync?: (answer: str
     const onOpenModal = (payload: { questionId: number; topic: string; question: string }) => {
       dispatch(openModal(payload));
     };
+
+    const onQuestionRestore = (payload: { 
+      questionId: number;
+      topic: string;
+      question: string;
+      mentor_tip?: string;
+      timeLeft: number;
+      pointId?: string;
+    }) => {
+      console.log('🔄 [QUESTION] Восстанавливаем вопрос:', payload);
+      
+      // Восстанавливаем состояние вопроса
+      dispatch(openModal({
+        questionId: payload.questionId,
+        topic: payload.topic,
+        question: payload.question,
+        mentor_tip: payload.mentor_tip
+      }));
+      
+      // Эмитим кастомное событие для установки currentPointId в LobbyPage
+      window.dispatchEvent(new CustomEvent('question:setCurrentPointId', { 
+        detail: { pointId: payload.pointId || String(payload.questionId) } 
+      }));
+      
+      console.log(`📝 [QUESTION] Вопрос восстановлен: ID ${payload.questionId}, тема "${payload.topic}"`);
+      console.log(`⏰ [QUESTION] Таймер восстановлен: осталось ${payload.timeLeft} секунд`);
+      
+      // Эмитим кастомное событие для синхронизации таймера в QuestionModal
+      // Добавляем задержку, чтобы модальное окно успело открыться
+      setTimeout(() => {
+        window.dispatchEvent(new CustomEvent('question:timerReset', { 
+          detail: { timeLeft: payload.timeLeft } 
+        }));
+      }, 200); // 200мс задержка
+    };
     const onExamStart = (payload: { questions: any[]; index: number }) => {
       dispatch(setExamQuestions(payload.questions));
       dispatch(setExamIndex(payload.index));
@@ -280,8 +315,22 @@ export function useLobbySocket(lobbyId: number, onAnswerInputSync?: (answer: str
 
     const onExamTimerReset = (payload: { timeLeft: number }) => {
       // Синхронизируем таймер для всех игроков
-      // Это событие будет обработано в ExamModal через пропсы
       console.log('⏰ Синхронизация таймера экзамена:', payload.timeLeft);
+      
+      // Эмитим кастомное событие для синхронизации таймера в ExamModal
+      window.dispatchEvent(new CustomEvent('exam:timerReset', { 
+        detail: { timeLeft: payload.timeLeft } 
+      }));
+    };
+
+    const onTimerReset = (payload: { timeLeft: number }) => {
+      // Синхронизируем таймер обычного вопроса для всех игроков
+      console.log('⏰ Синхронизация таймера вопроса:', payload.timeLeft);
+      
+      // Эмитим кастомное событие для синхронизации таймера в QuestionModal
+      window.dispatchEvent(new CustomEvent('question:timerReset', { 
+        detail: { timeLeft: payload.timeLeft } 
+      }));
     };
 
     const onReconnectWaiting = (payload: { activePlayerName: string; timeLeft: number }) => {
@@ -349,6 +398,7 @@ export function useLobbySocket(lobbyId: number, onAnswerInputSync?: (answer: str
     socket.on("lobby:correctAnswer", onCorrectAnswer);
     socket.on("lobby:examCorrectAnswer", onExamCorrectAnswer);
     socket.on("lobby:openModal", onOpenModal);
+    socket.on("lobby:questionRestore", onQuestionRestore);
     socket.on("lobby:examStart", onExamStart);
     socket.on("lobby:examNext", onExamNext);
     socket.on("lobby:examRestore", onExamRestore);
@@ -361,6 +411,7 @@ export function useLobbySocket(lobbyId: number, onAnswerInputSync?: (answer: str
     socket.on("lobby:answerInput", onAnswerInput);
     socket.on("lobby:examAnswerInput", onExamAnswerInput);
     socket.on("lobby:examTimerReset", onExamTimerReset);
+    socket.on("lobby:timerReset", onTimerReset);
     socket.on("lobby:reconnectWaiting", onReconnectWaiting);
     socket.on("lobby:reconnectTimeout", onReconnectTimeout);
     socket.on("lobby:reconnectCanceled", onReconnectCanceled);
@@ -394,6 +445,7 @@ export function useLobbySocket(lobbyId: number, onAnswerInputSync?: (answer: str
       socket.off("lobby:timeout", onTimeout);
       socket.off("lobby:passTurnNotification", onPassTurnNotification);
       socket.off("lobby:openModal", onOpenModal);
+      socket.off("lobby:questionRestore", onQuestionRestore);
       socket.off("lobby:examStart", onExamStart);
       socket.off("lobby:examNext", onExamNext);
       socket.off("lobby:examRestore", onExamRestore);
@@ -404,6 +456,7 @@ export function useLobbySocket(lobbyId: number, onAnswerInputSync?: (answer: str
       socket.off("lobby:answerInput", onAnswerInput);
       socket.off("lobby:examAnswerInput", onExamAnswerInput);
       socket.off("lobby:examTimerReset", onExamTimerReset);
+      socket.off("lobby:timerReset", onTimerReset);
       socket.off("lobby:reconnectWaiting", onReconnectWaiting);
       socket.off("lobby:reconnectTimeout", onReconnectTimeout);
       socket.off("lobby:reconnectCanceled", onReconnectCanceled);
@@ -432,7 +485,7 @@ export function useLobbySocket(lobbyId: number, onAnswerInputSync?: (answer: str
     socketClient.socket.emit("lobby:examComplete", { lobbyId, correctAnswers, totalQuestions});
   };
   
-  const sendOpenModal = (payload: { questionId: number; topic: string; question: string }) => {
+  const sendOpenModal = (payload: { questionId: number; topic: string; question: string; mentor_tip?: string; pointId?: string }) => {
     socketClient.socket.emit("lobby:openModal", payload);
   };
   const sendOpenExam = (payload?: { questions?: any[]; examId?: string }) => {

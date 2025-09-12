@@ -4,7 +4,8 @@ const { incorrectAnswersMap } = require("../controllers/question.controller");
 const lobbyUsers = new Map();
 const lobbyPoints = new Map();
 const lobbyTimeouts = new Map();
-const lobbyExamState = new Map(); // lobbyId -> { questions: any[], index: number, correctAnswers: number, totalQuestions: number, examId: string }
+const lobbyExamState = new Map(); // lobbyId -> { questions: any[], index: number, correctAnswers: number, totalQuestions: number, examId: string, questionStartTime: number }
+const lobbyQuestionState = new Map(); // lobbyId -> { questionId: number, topic: string, question: string, mentor_tip: string, pointId: string, timerStartTime: number, timerDuration: number }
 const lobbyReconnectTimers = new Map(); // lobbyId -> { timerId: number, activePlayerId: number, activePlayerName: string }
 
 function initLobbySockets(nsp) {
@@ -115,7 +116,7 @@ function initLobbySockets(nsp) {
     }
 
     // Функция для отмены таймера ожидания переподключения
-    function cancelReconnectTimer() {
+    async function cancelReconnectTimer() {
       if (lobbyReconnectTimers.has(lobbyId)) {
         const timer = lobbyReconnectTimers.get(lobbyId);
         clearTimeout(timer.timerId);
@@ -152,6 +153,39 @@ function initLobbySockets(nsp) {
           
           // Отправляем актуальное время таймера
           nsp.to(roomKey).emit('lobby:examTimerReset', { timeLeft: timeLeft });
+        }
+        
+        // Проверяем, был ли активен обычный вопрос и восстанавливаем его
+        // ТОЛЬКО если это переподключение активного игрока (есть reconnectTimer для этого игрока)
+        const questionState = lobbyQuestionState.get(lobbyId);
+        if (questionState && reconnectTimer && reconnectTimer.activePlayerId === socket.user.id) {
+          console.log(`🔄 [QUESTION] Восстанавливаем вопрос для переподключившегося АКТИВНОГО игрока`);
+          console.log(`📝 [QUESTION] Вопрос ID: ${questionState.questionId}, тема: ${questionState.topic}`);
+          
+          // Вычисляем оставшееся время таймера
+          const currentTime = Date.now();
+          const elapsedTime = currentTime - questionState.timerStartTime;
+          const timeLeft = Math.max(0, Math.ceil((questionState.timerDuration - elapsedTime) / 1000));
+          
+          console.log(`⏰ [QUESTION] Восстанавливаем таймер: осталось ${timeLeft} секунд`);
+          
+          // Если время еще есть - восстанавливаем вопрос
+          if (timeLeft > 0) {
+            // Отправляем восстановление вопроса всем игрокам
+            nsp.to(roomKey).emit('lobby:questionRestore', {
+              questionId: questionState.questionId,
+              topic: questionState.topic,
+              question: questionState.question,
+              mentor_tip: questionState.mentor_tip,
+              pointId: questionState.pointId,
+              timeLeft: timeLeft
+            });
+          } else {
+            // Время истекло во время отключения - очищаем состояние и передаем ход
+            console.log(`⏰ [QUESTION] Время истекло во время отключения, передаем ход`);
+            lobbyQuestionState.delete(lobbyId);
+            await passTurnToNextPlayer();
+          }
         }
       }
     }
@@ -204,7 +238,7 @@ function initLobbySockets(nsp) {
     const reconnectTimer = lobbyReconnectTimers.get(lobbyId);
     if (reconnectTimer && reconnectTimer.activePlayerId === socket.user.id) {
       console.log(`✅ [RECONNECT] Игрок ${socket.user.username} вернулся, отменяем таймер ожидания`);
-      cancelReconnectTimer();
+      await cancelReconnectTimer();
     }
 
     // --- создание / получение UserSession ---
@@ -422,6 +456,13 @@ function initLobbySockets(nsp) {
         }
 
         nsp.to(roomKey).emit('lobby:updatePointStatus', { pointId, status });
+        
+        // Очищаем состояние вопроса после ответа
+        if (lobbyQuestionState.has(lobbyId)) {
+          lobbyQuestionState.delete(lobbyId);
+          console.log(`🗑️ [QUESTION] Очищено состояние вопроса после ответа для лобби ${lobbyId}`);
+        }
+        
         console.log(`🔄 [SOCKET] Передаем ход следующему игроку`);
         await passTurnToNextPlayer();
       } catch (err) {
@@ -452,6 +493,13 @@ function initLobbySockets(nsp) {
 
       if (activeUserSession && activeUserSession.user_id === socket.user.id) {
         console.log('⏰ [SOCKET] Timeout от активного игрока, передаем ход следующему');
+        
+        // Очищаем состояние вопроса при таймауте
+        if (lobbyQuestionState.has(lobbyId)) {
+          lobbyQuestionState.delete(lobbyId);
+          console.log(`🗑️ [QUESTION] Очищено состояние вопроса после таймаута для лобби ${lobbyId}`);
+        }
+        
         await passTurnToNextPlayer();
       }
       
@@ -462,6 +510,13 @@ function initLobbySockets(nsp) {
     // Синхронное закрытие модалки всем в лобби
     socket.on('lobby:closeModal', () => {
       console.log('🔒 [SOCKET] Получено lobby:closeModal, пересылаю всем игрокам');
+      
+      // Очищаем состояние вопроса при закрытии
+      if (lobbyQuestionState.has(lobbyId)) {
+        lobbyQuestionState.delete(lobbyId);
+        console.log(`🗑️ [QUESTION] Очищено состояние вопроса для лобби ${lobbyId}`);
+      }
+      
       nsp.to(roomKey).emit('lobby:closeModal');
       console.log('🔒 [SOCKET] Событие closeModal переслано в комнату:', roomKey);
     });
@@ -470,6 +525,20 @@ function initLobbySockets(nsp) {
     socket.on('lobby:openModal', (payload) => {
       try {
         if (!payload?.questionId || !payload?.question) return;
+        
+        // Сохраняем состояние вопроса
+        lobbyQuestionState.set(lobbyId, {
+          questionId: payload.questionId,
+          topic: payload.topic || '',
+          question: payload.question,
+          mentor_tip: payload.mentor_tip || '',
+          pointId: payload.pointId || String(payload.questionId),
+          timerStartTime: Date.now(),
+          timerDuration: 30000 // 30 секунд в миллисекундах
+        });
+        
+        console.log(`📝 [QUESTION] Сохранено состояние вопроса ${payload.questionId} для лобби ${lobbyId}`);
+        
         nsp.to(roomKey).emit('lobby:openModal', payload);
       } catch (err) {
         console.error('Ошибка в lobby:openModal:', err);
@@ -1038,6 +1107,7 @@ function initLobbySockets(nsp) {
           lobbyPoints.delete(lobbyId);
           lobbyTimeouts.delete(lobbyId);
           lobbyReconnectTimers.delete(lobbyId);
+          lobbyQuestionState.delete(lobbyId);
         }, 5 * 60 * 1000);
         lobbyTimeouts.set(lobbyId, timeoutId);
       }

@@ -37,6 +37,7 @@ export function LobbyPage() {
     connecting,
     sendChatMessage,
     sendAnswer,
+    sendTimeout,
     sendOpenModal,
     sendOpenExam,
     sendExamAnswerProgress,
@@ -108,7 +109,8 @@ export function LobbyPage() {
           questionId: res.data.question_id, 
           topic: res.data.topic_title || "Без названия", 
           question: res.data.question_text,
-          mentor_tip: res.data.mentor_tip || null
+          mentor_tip: res.data.mentor_tip || null,
+          pointId: pointId
         };
         
         setCurrentPointId(pointId);
@@ -192,15 +194,41 @@ export function LobbyPage() {
     };
   }, [user]);
 
+  // Обработчик установки currentPointId при восстановлении вопроса
+  useEffect(() => {
+    const handleSetCurrentPointId = (event: CustomEvent) => {
+      const { pointId } = event.detail;
+      console.log('🔄 [QUESTION] Устанавливаем currentPointId при восстановлении:', pointId);
+      setCurrentPointId(pointId);
+    };
+
+    window.addEventListener('question:setCurrentPointId', handleSetCurrentPointId as EventListener);
+    
+    return () => {
+      window.removeEventListener('question:setCurrentPointId', handleSetCurrentPointId as EventListener);
+    };
+  }, []);
+
   const handleCloseAchievementNotification = () => {
     setAchievementNotifications([]);
   };
 
   const handleQuestionModalClose = () => {
-    // Если текущий игрок активный - закрываем сразу
+    // Если текущий игрок активный - закрываем и засчитываем как неправильный ответ
     if (user?.id === activePlayerId) {
-      dispatch(closeModalAction());
-      setCurrentPointId(null);
+      console.log('🔒 [ACTIVE] Активный игрок закрывает вопрос - засчитываем как неправильный ответ');
+      
+      if (!currentPointId) return;
+      
+      // Засчитываем неправильный ответ при закрытии активным игроком
+      const newIncorrectCount = (incorrectAnswers || 0) + 1;
+      dispatch(mergeScores({
+        incorrectAnswers: newIncorrectCount
+      }));
+      
+      // Отправляем событие закрытия активным игроком (засчитывается как неправильный ответ)
+      sendTimeout(currentPointId);
+      
       return;
     }
 
@@ -209,9 +237,12 @@ export function LobbyPage() {
   };
 
   const handleConfirmClose = () => {
+    console.log('🔒 [INACTIVE] Неактивный игрок подтвердил закрытие вопроса');
     setShowCloseConfirm(false);
     dispatch(closeModalAction());
     setCurrentPointId(null);
+    // Отправляем событие закрытия на сервер
+    sendCloseModal();
   };
 
   const handleCancelClose = () => {
@@ -367,6 +398,8 @@ export function LobbyPage() {
   const handleTimeoutClose = () => {
     if (!currentPointId) return;
     
+    console.log('⏰ [TIMEOUT] Время истекло для вопроса:', currentPointId);
+    
     // Засчитываем неправильный ответ при истечении времени
     const newIncorrectCount = (incorrectAnswers || 0) + 1;
     dispatch(mergeScores({
@@ -376,11 +409,11 @@ export function LobbyPage() {
     // Отправляем обновление счетчика всем игрокам без показа уведомления
     sendIncorrectCountUpdate(newIncorrectCount);
     
-    // Передаем ход следующему игроку
-    sendPassTurn();
+    // Отправляем событие таймаута на сервер (сервер сам передаст ход)
+    sendTimeout(currentPointId);
     
     // Показываем уведомление о передаче хода
-    dispatch(setModalResult('Ход будет передан следующему игроку'));
+    dispatch(setModalResult('⏰ Время истекло! Ход передается следующему игроку'));
     setTimeout(() => {
       dispatch(setModalResult(null));
       dispatch(closeModalAction());
