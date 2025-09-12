@@ -5,7 +5,7 @@ import { Button } from "../../components/common/Button/Button";
 import { Point, type POIStatus } from "../../components/map/Point/Point";
 import { QuestionModal } from "../../components/common/modals/QuestionModal/QuestionModal";
 import { ExamModal } from "../../components/common/modals/ExamModal/ExamModal";
-import { UserActionsModal } from "../../components/common/modals/UserActionsModal";
+import UserActionsModal from "../../components/common/modals/UserActionsModal/UserActionsModal";
 import api from "../../api/axios";
 import { useLobbySocket } from "../../hooks/useLobbySocket";
 import { useAppDispatch, useAppSelector } from "../../store/hooks";

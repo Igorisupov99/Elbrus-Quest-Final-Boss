@@ -34,4 +34,7 @@ router.get('/outgoing-requests', friendshipController.getOutgoingRequests);
 // Поиск пользователей для добавления в друзья
 router.get('/search', friendshipController.searchUsers);
 
+// Проверить статус дружбы с пользователем
+router.get('/status/:friend_id', friendshipController.checkFriendshipStatus);
+
 module.exports = router;

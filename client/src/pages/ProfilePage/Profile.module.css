@@ -317,11 +317,14 @@
   border-radius: 8px;
   padding: 16px;
   transition: all 0.2s ease;
+  cursor: pointer;
 }
 
 .questionCard:hover {
   border-color: rgba(139, 69, 19, 0.4);
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+  transform: translateY(-2px);
+  background: #fff8dc;
 }
 
 .questionHeader {
@@ -525,6 +528,13 @@
   background: #ffebee;
   border-radius: 8px;
   margin-bottom: 16px;
+}
+
+.errorWithMargin {
+  color: #d32f2f;
+  background: #ffebee;
+  border-radius: 8px;
+  margin-bottom: 1rem;
 }
 
 :root {
@@ -793,6 +803,8 @@
     flex-direction: column;
     gap: 16px;
     margin-bottom: 24px;
+    align-items: stretch; /* Кнопки растягиваются на всю ширину контейнера */
+    width: 100%;
   }
 
   .requestButton {
@@ -807,6 +819,7 @@
     box-shadow: 0 4px 0 #6b3e15, 0 6px 10px rgba(0, 0, 0, 0.25);
     cursor: pointer;
     transition: all 0.2s ease;
+    box-sizing: border-box; /* Включаем padding и border в общую ширину */
   }
 
   .requestButton:hover {
@@ -909,19 +922,34 @@
     align-items: center;
     justify-content: space-between;
     gap: 12px;
-    padding: 16px;
+    padding: 18px;
     background: #fffaf0;
-    border-radius: 8px;
-    border: 2px solid #6b3e15;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    border-radius: 12px;
+    border: 3px solid #6b3e15;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
     transition: all 0.2s ease-in-out;
+    position: relative;
+    overflow: hidden;
+  }
+
+  /* Добавляем декоративную полоску сверху */
+  .friendCard::before,
+  .requestCard::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 4px;
+    background: linear-gradient(90deg, #d8a35d, #b0752d);
   }
 
   .friendCard:hover,
   .requestCard:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
-    border-color: #8b5a1f;
+    transform: translateY(-3px);
+    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.2);
+    border-color: #8b5a2b;
+    background: #fff8dc;
   }
 
   .friendCardContent {
@@ -939,6 +967,15 @@
     object-fit: cover;
     background: #ddd;
     flex-shrink: 0;
+    border: 3px solid #d8a35d;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+    transition: all 0.2s ease;
+  }
+
+  .friendCard:hover .friendAvatar {
+    border-color: #b0752d;
+    transform: scale(1.05);
+    box-shadow: 0 3px 12px rgba(0, 0, 0, 0.2);
   }
 
   .friendInfo {
