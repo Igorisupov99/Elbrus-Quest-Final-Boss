@@ -6,7 +6,7 @@ html, body {
 
 .lobbyPage {
   display: flex;
-  height: 100vh;
+  height: calc(100vh - 70px); /* вычитаем высоту хедера */
   background: linear-gradient(135deg, #f4e1c1, #e6d2b5, #d8c3a5);
   font-family: 'Cinzel', serif;
   padding: 20px;
