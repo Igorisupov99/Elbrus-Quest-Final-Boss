@@ -51,6 +51,7 @@ export function LobbyPage() {
     sendExamAnswerInput,
     sendLeaveLobby,
     sendCheckActiveQuestion,
+    sendCheckActiveExam,
   } = useLobbySocket(
     lobbyId,
     (answer: string) => setSyncedAnswer(answer),
@@ -90,10 +91,17 @@ export function LobbyPage() {
     const point = points.find(p => p.id === pointId);
     if (!point || point.status !== "available") return;
 
-    // Если неактивный игрок пытается открыть вопрос, запрашиваем у сервера активный вопрос для этого поинта
+    // Если неактивный игрок пытается открыть вопрос или экзамен
     if (user?.id !== activePlayerId) {
-      console.log('👁️ [INACTIVE] Неактивный игрок запрашивает активный вопрос для поинта:', pointId);
-      sendCheckActiveQuestion(pointId);
+      if (pointId === "exam" || pointId === "exam2") {
+        // Для экзамена запрашиваем активный экзамен
+        console.log('👁️ [INACTIVE] Неактивный игрок запрашивает активный экзамен для поинта:', pointId);
+        sendCheckActiveExam(pointId);
+      } else {
+        // Для обычного вопроса запрашиваем активный вопрос
+        console.log('👁️ [INACTIVE] Неактивный игрок запрашивает активный вопрос для поинта:', pointId);
+        sendCheckActiveQuestion(pointId);
+      }
       return;
     }
 
@@ -226,15 +234,38 @@ export function LobbyPage() {
       setActiveQuestionPointId(activePointId);
     };
 
+    const handleNoActiveExam = () => {
+      console.log('❌ [INACTIVE] Нет активного экзамена - показываем уведомление');
+      const activePlayer = usersInLobby.find(u => u.id === activePlayerId);
+      const activePlayerName = activePlayer?.username || 'другой игрок';
+      setInactivePlayerNotification(`Сейчас экзамен выбирает ${activePlayerName}`);
+      setTimeout(() => setInactivePlayerNotification(null), 3000);
+    };
+
+    const handleWrongExam = (event: CustomEvent) => {
+      const { activeExamId } = event.detail;
+      console.log('❌ [INACTIVE] Неправильный экзамен - показываем уведомление');
+      
+      // Находим название активного экзамена
+      const examName = activeExamId === 'exam2' ? 'Экзамен 2' : 'Экзамен';
+      
+      setInactivePlayerNotification(`Активный экзамен: "${examName}"`);
+      setTimeout(() => setInactivePlayerNotification(null), 3000);
+    };
+
     window.addEventListener('question:setCurrentPointId', handleSetCurrentPointId as EventListener);
     window.addEventListener('question:noActiveQuestion', handleNoActiveQuestion as EventListener);
     window.addEventListener('question:wrongPoint', handleWrongPoint as EventListener);
+    window.addEventListener('exam:noActiveExam', handleNoActiveExam as EventListener);
+    window.addEventListener('exam:wrongExam', handleWrongExam as EventListener);
     window.addEventListener('lobby:activePointChanged', handleActivePointChanged as EventListener);
     
     return () => {
       window.removeEventListener('question:setCurrentPointId', handleSetCurrentPointId as EventListener);
       window.removeEventListener('question:noActiveQuestion', handleNoActiveQuestion as EventListener);
       window.removeEventListener('question:wrongPoint', handleWrongPoint as EventListener);
+      window.removeEventListener('exam:noActiveExam', handleNoActiveExam as EventListener);
+      window.removeEventListener('exam:wrongExam', handleWrongExam as EventListener);
       window.removeEventListener('lobby:activePointChanged', handleActivePointChanged as EventListener);
     };
   }, [usersInLobby, activePlayerId, points]);

@@ -128,9 +128,10 @@ function initLobbySockets(nsp) {
         nsp.to(roomKey).emit('lobby:reconnectCanceled');
         
         // Проверяем, был ли активен экзамен и восстанавливаем его
+        // ТОЛЬКО если это переподключение активного игрока (есть reconnectTimer для этого игрока)
         const examState = lobbyExamState.get(lobbyId);
-        if (examState) {
-          console.log(`🔄 [EXAM] Восстанавливаем экзамен для переподключившегося игрока`);
+        if (examState && reconnectTimer && reconnectTimer.activePlayerId === socket.user.id) {
+          console.log(`🔄 [EXAM] Восстанавливаем экзамен для переподключившегося АКТИВНОГО игрока`);
           console.log(`📊 [EXAM] Состояние: вопрос ${examState.index + 1}/${examState.totalQuestions}, правильных ответов: ${examState.correctAnswers}`);
           
           // Вычисляем оставшееся время таймера
@@ -225,6 +226,23 @@ function initLobbySockets(nsp) {
         console.log(
           `🎮 Ход передан от ${currentActivePlayer.player_name} к ${nextPlayer.player_name}`
         );
+
+        // Очищаем состояние экзамена и вопроса при смене игрока
+        // Это предотвращает ситуацию, когда новый активный игрок получает старое состояние
+        if (lobbyExamState.has(lobbyId)) {
+          lobbyExamState.delete(lobbyId);
+          console.log(`🗑️ [EXAM] Очищено состояние экзамена при смене игрока для лобби ${lobbyId}`);
+        }
+        
+        if (lobbyQuestionState.has(lobbyId)) {
+          lobbyQuestionState.delete(lobbyId);
+          console.log(`🗑️ [QUESTION] Очищено состояние вопроса при смене игрока для лобби ${lobbyId}`);
+        }
+
+        // Уведомляем всех игроков о сбросе активного поинта
+        nsp.to(roomKey).emit('lobby:activePointChanged', {
+          activePointId: null
+        });
 
         await emitUsersList();
       } catch (err) {
@@ -1080,6 +1098,52 @@ function initLobbySockets(nsp) {
         }
       } catch (error) {
         console.error('Ошибка при проверке активного вопроса:', error);
+      }
+    });
+
+    // Проверка активного экзамена для неактивных игроков
+    socket.on('lobby:checkActiveExam', (payload) => {
+      try {
+        const requestedExamId = payload?.examId;
+        const examState = lobbyExamState.get(lobbyId);
+        
+        if (examState) {
+          console.log(`🔍 [EXAM] Неактивный игрок запрашивает экзамен для поинта: ${requestedExamId}, активный экзамен: ${examState.examId}`);
+          
+          // Проверяем, соответствует ли запрашиваемый экзамен активному
+          if (requestedExamId === examState.examId) {
+            // Вычисляем оставшееся время таймера
+            const currentTime = Date.now();
+            const elapsedTime = currentTime - examState.timerStartTime;
+            const timeLeft = Math.max(0, Math.ceil((examState.timerDuration - elapsedTime) / 1000));
+            
+            console.log(`✅ [EXAM] Экзамены совпадают! Отправляем активный экзамен`);
+            
+            // Отправляем активный экзамен только этому игроку
+            socket.emit('lobby:activeExam', {
+              examId: examState.examId,
+              questions: examState.questions,
+              currentIndex: examState.index,
+              correctAnswers: examState.correctAnswers,
+              totalQuestions: examState.totalQuestions,
+              currentQuestion: examState.questions[examState.index],
+              timeLeft: timeLeft
+            });
+          } else {
+            console.log(`❌ [EXAM] Экзамены не совпадают! Запрошен: ${requestedExamId}, активный: ${examState.examId}`);
+            // Отправляем уведомление о том, что это не тот экзамен
+            socket.emit('lobby:wrongExam', { 
+              requestedExamId, 
+              activeExamId: examState.examId 
+            });
+          }
+        } else {
+          console.log(`❌ [EXAM] Нет активного экзамена`);
+          // Нет активного экзамена
+          socket.emit('lobby:noActiveExam');
+        }
+      } catch (error) {
+        console.error('Ошибка при проверке активного экзамена:', error);
       }
     });
 
