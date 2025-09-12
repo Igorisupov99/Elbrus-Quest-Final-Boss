@@ -1,4 +1,4 @@
-import { Routes, Route, useLocation } from 'react-router-dom';
+import { Routes, Route } from 'react-router-dom';
 import { Header } from './components/Header/Header';
 import { MainPage } from './pages/MainPage/MainPage';
 import { Register } from './pages/Register/Register';
@@ -15,20 +15,14 @@ import { useAppDispatch } from './store/hooks';
 // import MainPageChat from './components/MainPageChat/MainPageChat';
 
 export function App() {
-  const location = useLocation();
   const dispatch = useAppDispatch();
   useEffect(() => {
     dispatch(initAuth());
   }, [dispatch]);
 
-  const hideHeaderRoutes = ['/lobby'];
-  const shouldHideHeader = hideHeaderRoutes.some((route) =>
-    location.pathname.startsWith(route)
-  );
-
   return (
     <>
-      {!shouldHideHeader && <Header />}
+      <Header />
       <Routes>
         <Route
           path="/"
@@ -57,21 +51,21 @@ export function App() {
           }
         />
         <Route path="/achievements" element={<AchievementsPage />} />
-        <Route 
-          path="/favorites" 
+        <Route
+          path="/favorites"
           element={
             <PrivateRoute>
               <FavoritesPage />
             </PrivateRoute>
-          } 
+          }
         />
-        <Route 
-          path="/avatar-shop" 
+        <Route
+          path="/avatar-shop"
           element={
             <PrivateRoute>
               <AvatarShopPage />
             </PrivateRoute>
-          } 
+          }
         />
       </Routes>
     </>

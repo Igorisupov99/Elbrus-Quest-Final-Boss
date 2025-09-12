@@ -31,6 +31,7 @@ interface ExamModalProps {
 export function ExamModal({
   isOpen,
   onClose,
+  lobbyId: _lobbyId,
   currentUserId,
   activePlayerId,
   activePlayerName,
@@ -130,25 +131,16 @@ export function ExamModal({
   // Синхронизация таймера через сокеты
   useEffect(() => {
     if (onTimerReset) {
-      // const handleTimerReset = (timeLeft: number) => {
-      //   setTimeLeft(timeLeft);
-      //   setTimerActive(true);
-      // };
-      
-      // Здесь можно добавить слушатель события, если нужно
       // Пока просто используем пропс для синхронизации
+      // Можно добавить слушатель события при необходимости
     }
   }, [onTimerReset]);
 
   // Синхронизация ответа активного игрока
   useEffect(() => {
     if (onAnswerSync) {
-      // const handleAnswerSync = (answer: string, activePlayerName: string) => {
-      //   setAnswer(answer);
-      // };
-      
-      // Здесь можно добавить слушатель события, если нужно
       // Пока просто используем пропс для синхронизации
+      // Можно добавить слушатель события при необходимости
     }
   }, [onAnswerSync]);
 
@@ -244,7 +236,6 @@ export function ExamModal({
         {result && (
           <p className={styles.result}>{result}</p>
         )}
-
 
         {correctAnswer && (
           <div className={styles.correctAnswerSection}>

@@ -5,7 +5,7 @@ import { Button } from "../../components/common/Button/Button";
 import { Point, type POIStatus } from "../../components/map/Point/Point";
 import { QuestionModal } from "../../components/common/modals/QuestionModal/QuestionModal";
 import { ExamModal } from "../../components/common/modals/ExamModal/ExamModal";
-import { UserActionsModal } from "../../components/common/modals/UserActionsModal";
+import UserActionsModal from "../../components/common/modals/UserActionsModal/UserActionsModal";
 import api from "../../api/axios";
 import { useLobbySocket } from "../../hooks/useLobbySocket";
 import { useAppDispatch, useAppSelector } from "../../store/hooks";
@@ -16,6 +16,7 @@ import type { Achievement } from "../../types/achievement";
 import PhaseTransitionModal from "../../components/common/modals/PhaseTransitionModal";
 import ExamFailureModal from "../../components/common/modals/ExamFailureModal";
 import { ReconnectWaitingModal } from "../../components/common/modals/ReconnectWaitingModal";
+import { CloseConfirmModal } from "../../components/common/modals/CloseConfirmModal";
 
 export function LobbyPage() {
   const { id } = useParams<{ id: string }>();
@@ -48,6 +49,7 @@ export function LobbyPage() {
     sendPassTurnNotification,
     sendAnswerInput,
     sendExamAnswerInput,
+    sendLeaveLobby,
   } = useLobbySocket(
     lobbyId,
     (answer: string) => setSyncedAnswer(answer),
@@ -65,6 +67,8 @@ export function LobbyPage() {
   const modalResult = useAppSelector(s => s.lobbyPage.modalResult);
 
   const [achievementNotifications, setAchievementNotifications] = useState<Achievement[]>([]);
+  const [inactivePlayerNotification, setInactivePlayerNotification] = useState<string | null>(null);
+  const [showCloseConfirm, setShowCloseConfirm] = useState(false);
   
   // Состояние для модального окна действий пользователя
   const [isUserActionsModalOpen, setIsUserActionsModalOpen] = useState(false);
@@ -85,7 +89,14 @@ export function LobbyPage() {
     const point = points.find(p => p.id === pointId);
     if (!point || point.status !== "available") return;
 
-    // Любой игрок может открыть модальное окно, но отвечать может только активный
+    // Проверяем, является ли текущий игрок активным
+    if (user?.id !== activePlayerId) {
+      const activePlayer = usersInLobby.find(u => u.id === activePlayerId);
+      const activePlayerName = activePlayer?.username || 'другой игрок';
+      setInactivePlayerNotification(`Сейчас вопрос выбирает ${activePlayerName}`);
+      setTimeout(() => setInactivePlayerNotification(null), 3000);
+      return;
+    }
 
     try {
       if (pointId !== "exam" && pointId !== "exam2") {
@@ -186,6 +197,28 @@ export function LobbyPage() {
     setAchievementNotifications([]);
   };
 
+  const handleQuestionModalClose = () => {
+    // Если текущий игрок активный - закрываем сразу
+    if (user?.id === activePlayerId) {
+      dispatch(closeModalAction());
+      setCurrentPointId(null);
+      return;
+    }
+
+    // Если неактивный игрок - показываем подтверждение
+    setShowCloseConfirm(true);
+  };
+
+  const handleConfirmClose = () => {
+    setShowCloseConfirm(false);
+    dispatch(closeModalAction());
+    setCurrentPointId(null);
+  };
+
+  const handleCancelClose = () => {
+    setShowCloseConfirm(false);
+  };
+
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -195,7 +228,10 @@ export function LobbyPage() {
     setInput("");
   };
 
-  const handleExitLobby = () => navigate("/");
+  const handleExitLobby = () => {
+    sendLeaveLobby(); // Отправляем намеренный выход из лобби
+    navigate("/");
+  };
 
   const handleUserClick = (username: string) => {
     // Не открываем модальное окно для своего собственного имени
@@ -379,7 +415,7 @@ export function LobbyPage() {
         {/* Модальные окна рендерятся внутри области карты */}
          <QuestionModal
            isOpen={modal.isOpen}
-           onClose={() => { dispatch(closeModalAction()); setCurrentPointId(null); }}
+           onClose={handleQuestionModalClose}
            topic={modal.topic}
            question={modal.question}
            questionId={modal.questionId}
@@ -461,6 +497,12 @@ export function LobbyPage() {
             console.log('⏰ Время ожидания переподключения истекло');
             dispatch(closeReconnectWaitingModal());
           }}
+        />
+
+        <CloseConfirmModal
+          isOpen={showCloseConfirm}
+          onConfirm={handleConfirmClose}
+          onCancel={handleCancelClose}
         />
       </div>
 
@@ -580,6 +622,28 @@ export function LobbyPage() {
           achievements={achievementNotifications}
           onClose={handleCloseAchievementNotification}
         />
+      )}
+
+      {/* Уведомление для неактивного игрока */}
+      {inactivePlayerNotification && (
+        <div style={{
+          position: 'fixed',
+          top: '20px',
+          left: '50%',
+          transform: 'translateX(-50%)',
+          background: 'rgba(255, 107, 53, 0.95)',
+          color: 'white',
+          padding: '12px 24px',
+          borderRadius: '8px',
+          fontWeight: 'bold',
+          fontSize: '16px',
+          boxShadow: '0 4px 12px rgba(0, 0, 0, 0.3)',
+          zIndex: 9999,
+          animation: 'fadeInOut 3s ease-in-out forwards',
+          fontFamily: 'Cinzel, serif'
+        }}>
+          ⚠️ {inactivePlayerNotification}
+        </div>
       )}
 
     </div>
