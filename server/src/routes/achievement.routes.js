@@ -6,6 +6,9 @@ const authMiddleware = require('../middlewares/auth.middleware');
 // Получить все достижения пользователя
 router.get('/user', authMiddleware, achievementController.getUserAchievements);
 
+// Получить все достижения конкретного пользователя
+router.get('/user/:userId', authMiddleware, achievementController.getUserAchievementsById);
+
 // Получить все доступные достижения
 router.get('/all', achievementController.getAllAchievements);
 

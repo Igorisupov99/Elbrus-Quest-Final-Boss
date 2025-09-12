@@ -23,7 +23,7 @@ import { favoriteApi } from "../../api/favorites/favoriteApi";
 import type { FavoriteQuestion } from "../../types/favorite";
 import { useAppDispatch, useAppSelector } from "../../store/hooks";
 import { fetchCurrentAvatar } from "../../store/avatarSlice";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import styles from "./Profile.module.css";
 
 interface User {
@@ -42,6 +42,7 @@ interface ApiResponse<T> {
 }
 
 export function Profile() {
+  const navigate = useNavigate();
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
@@ -489,6 +490,11 @@ export function Profile() {
     }
     
     return 'none';
+  };
+
+  // Переход на страницу друга
+  const handleFriendClick = (friendId: number) => {
+    navigate(`/user/${friendId}`);
   };
 
 
@@ -1125,6 +1131,7 @@ export function Profile() {
                   <div 
                     key={friend.id} 
                     className={styles.friendCard}
+                    onClick={() => handleFriendClick(friend.id)}
                     style={{
                       display: 'flex',
                       alignItems: 'center',
@@ -1137,7 +1144,8 @@ export function Profile() {
                       boxShadow: '0 4px 12px rgba(0, 0, 0, 0.15)',
                       transition: 'all 0.2s ease-in-out',
                       position: 'relative',
-                      overflow: 'hidden'
+                      overflow: 'hidden',
+                      cursor: 'pointer'
                     }}
                     onMouseEnter={(e) => {
                       e.currentTarget.style.transform = 'translateY(-3px)';
@@ -1196,7 +1204,10 @@ export function Profile() {
                     </div>
                     <button
                       className={styles.removeFriendButton}
-                      onClick={() => handleRemoveFriend(friend.id, friend.username)}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleRemoveFriend(friend.id, friend.username);
+                      }}
                       style={{
                         padding: '8px 16px',
                         background: 'linear-gradient(135deg, #dc3545, #c82333)',

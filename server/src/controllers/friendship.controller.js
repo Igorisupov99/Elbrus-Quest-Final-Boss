@@ -267,11 +267,64 @@ class FriendshipController {
       ];
 
       res.json({ 
+        success: true,
         data: allFriends 
       });
     } catch (error) {
       console.error('Ошибка при получении списка друзей:', error);
       res.status(500).json({ 
+        success: false,
+        message: 'Ошибка сервера', 
+        error: error.message 
+      });
+    }
+  }
+
+  // Получить список друзей конкретного пользователя
+  async getUserFriends(req, res) {
+    try {
+      const { userId } = req.params;
+
+      // Получаем друзей, которых добавил пользователь
+      const sentFriends = await db.Friendship.findAll({
+        where: {
+          user_id: userId,
+          status: 'accepted'
+        },
+        include: [{
+          model: db.User,
+          as: 'friend',
+          attributes: ['id', 'username', 'email', 'image_url', 'score']
+        }]
+      });
+
+      // Получаем друзей, которые добавили пользователя
+      const receivedFriends = await db.Friendship.findAll({
+        where: {
+          friend_id: userId,
+          status: 'accepted'
+        },
+        include: [{
+          model: db.User,
+          as: 'user',
+          attributes: ['id', 'username', 'email', 'image_url', 'score']
+        }]
+      });
+
+      // Объединяем списки друзей
+      const allFriends = [
+        ...sentFriends.map(f => f.friend),
+        ...receivedFriends.map(f => f.user)
+      ];
+
+      res.json({ 
+        success: true,
+        data: allFriends 
+      });
+    } catch (error) {
+      console.error('Ошибка при получении списка друзей пользователя:', error);
+      res.status(500).json({ 
+        success: false,
         message: 'Ошибка сервера', 
         error: error.message 
       });

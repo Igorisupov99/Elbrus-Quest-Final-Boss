@@ -16,6 +16,9 @@ router.delete('/:questionId', favoriteController.removeFromFavorites);
 // GET /api/favorites - Получить все избранные вопросы пользователя
 router.get('/', favoriteController.getUserFavorites);
 
+// GET /api/favorites/user/:userId - Получить публичные избранные вопросы конкретного пользователя
+router.get('/user/:userId', favoriteController.getUserFavoritesById);
+
 // GET /api/favorites/:questionId/check - Проверить, находится ли вопрос в избранном
 router.get('/:questionId/check', favoriteController.checkIfFavorite);
 

@@ -1,4 +1,4 @@
-import { Routes, Route, useLocation } from 'react-router-dom';
+import { Routes, Route } from 'react-router-dom';
 import { Header } from './components/Header/Header';
 import { MainPage } from './pages/MainPage/MainPage';
 import { Register } from './pages/Register/Register';
@@ -8,6 +8,7 @@ import { LobbyPage } from './pages/LobbyPage/LobbyPage';
 import { AchievementsPage } from './pages/AchievementsPage/AchievementsPage';
 import { FavoritesPage } from './pages/FavoritesPage';
 import { AvatarShopPage } from './pages/AvatarShopPage/AvatarShopPage';
+import { UserPage } from './pages/UserPage';
 import { PrivateRoute } from './components/PrivateRoute/PrivateRoute';
 import { useEffect } from 'react';
 import { initAuth } from './store/authThunks';
@@ -15,7 +16,6 @@ import { useAppDispatch } from './store/hooks';
 // import MainPageChat from './components/MainPageChat/MainPageChat';
 
 export function App() {
-  const location = useLocation();
   const dispatch = useAppDispatch();
   useEffect(() => {
     dispatch(initAuth());
@@ -65,6 +65,14 @@ export function App() {
           element={
             <PrivateRoute>
               <AvatarShopPage />
+            </PrivateRoute>
+          }
+        />
+        <Route
+          path="/user/:userId"
+          element={
+            <PrivateRoute>
+              <UserPage />
             </PrivateRoute>
           }
         />
