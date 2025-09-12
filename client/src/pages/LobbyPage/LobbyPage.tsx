@@ -15,6 +15,7 @@ import type { Achievement } from "../../types/achievement";
 import PhaseTransitionModal from "../../components/common/modals/PhaseTransitionModal";
 import ExamFailureModal from "../../components/common/modals/ExamFailureModal";
 import { ReconnectWaitingModal } from "../../components/common/modals/ReconnectWaitingModal";
+import { CloseConfirmModal } from "../../components/common/modals/CloseConfirmModal";
 
 export function LobbyPage() {
   const { id } = useParams<{ id: string }>();
@@ -66,6 +67,7 @@ export function LobbyPage() {
 
   const [achievementNotifications, setAchievementNotifications] = useState<Achievement[]>([]);
   const [inactivePlayerNotification, setInactivePlayerNotification] = useState<string | null>(null);
+  const [showCloseConfirm, setShowCloseConfirm] = useState(false);
   
   // Состояние для модального окна действий пользователя
   const [isUserActionsModalOpen, setIsUserActionsModalOpen] = useState(false);
@@ -192,6 +194,28 @@ export function LobbyPage() {
 
   const handleCloseAchievementNotification = () => {
     setAchievementNotifications([]);
+  };
+
+  const handleQuestionModalClose = () => {
+    // Если текущий игрок активный - закрываем сразу
+    if (user?.id === activePlayerId) {
+      dispatch(closeModalAction());
+      setCurrentPointId(null);
+      return;
+    }
+
+    // Если неактивный игрок - показываем подтверждение
+    setShowCloseConfirm(true);
+  };
+
+  const handleConfirmClose = () => {
+    setShowCloseConfirm(false);
+    dispatch(closeModalAction());
+    setCurrentPointId(null);
+  };
+
+  const handleCancelClose = () => {
+    setShowCloseConfirm(false);
   };
 
 
@@ -387,7 +411,7 @@ export function LobbyPage() {
         {/* Модальные окна рендерятся внутри области карты */}
          <QuestionModal
            isOpen={modal.isOpen}
-           onClose={() => { dispatch(closeModalAction()); setCurrentPointId(null); }}
+           onClose={handleQuestionModalClose}
            topic={modal.topic}
            question={modal.question}
            questionId={modal.questionId}
@@ -469,6 +493,12 @@ export function LobbyPage() {
             console.log('⏰ Время ожидания переподключения истекло');
             dispatch(closeReconnectWaitingModal());
           }}
+        />
+
+        <CloseConfirmModal
+          isOpen={showCloseConfirm}
+          onConfirm={handleConfirmClose}
+          onCancel={handleCancelClose}
         />
       </div>
 
