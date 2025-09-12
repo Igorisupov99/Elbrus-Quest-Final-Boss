@@ -434,24 +434,29 @@ export function UserPage() {
         <button 
           onClick={() => navigate(-1)}
           style={{
+            appearance: 'none',
             padding: '8px 16px',
-            background: 'linear-gradient(135deg, #d8a35d, #b0752d)',
+            background: 'linear-gradient(180deg, #d4a017, #a97400)',
             color: '#2c1810',
-            border: '2px solid #8b5a2b',
+            border: '2px solid #6b3e15',
             borderRadius: '8px',
             fontSize: '1rem',
-            fontWeight: '600',
+            fontWeight: 'bold',
             cursor: 'pointer',
-            transition: 'all 0.2s ease',
-            boxShadow: '0 2px 6px rgba(0, 0, 0, 0.15)'
+            transition: 'all 0.2s ease-in-out',
+            boxShadow: '0 3px 6px rgba(0, 0, 0, 0.2)',
+            textShadow: '0 1px 0 #f3e0c0',
+            fontFamily: 'inherit'
           }}
           onMouseEnter={(e) => {
-            e.currentTarget.style.background = 'linear-gradient(135deg, #e8b76d, #c6853d)';
-            e.currentTarget.style.transform = 'translateY(-2px)';
+            e.currentTarget.style.background = 'linear-gradient(180deg, #f0c33b, #c48a00)';
+            e.currentTarget.style.transform = 'translateY(-1px)';
+            e.currentTarget.style.boxShadow = '0 5px 10px rgba(0, 0, 0, 0.3)';
           }}
           onMouseLeave={(e) => {
-            e.currentTarget.style.background = 'linear-gradient(135deg, #d8a35d, #b0752d)';
+            e.currentTarget.style.background = 'linear-gradient(180deg, #d4a017, #a97400)';
             e.currentTarget.style.transform = 'translateY(0)';
+            e.currentTarget.style.boxShadow = '0 3px 6px rgba(0, 0, 0, 0.2)';
           }}
         >
           ← Назад
@@ -478,8 +483,8 @@ export function UserPage() {
                   className={styles.editButton}
                   onClick={handleSendFriendRequest}
                   style={{
-                    background: 'linear-gradient(135deg, #28a745, #20c997)',
-                    borderColor: '#1e7e34'
+                    background: 'linear-gradient(180deg, #d4a017, #a97400)',
+                    borderColor: '#6b3e15'
                   }}
                 >
                   Добавить в друзья
@@ -502,8 +507,8 @@ export function UserPage() {
                       className={styles.editButton}
                       onClick={handleAcceptRequest}
                       style={{
-                        background: 'linear-gradient(135deg, #28a745, #20c997)',
-                        borderColor: '#1e7e34',
+                        background: 'linear-gradient(180deg, #d4a017, #a97400)',
+                        borderColor: '#6b3e15',
                         padding: '8px 16px',
                         fontSize: '0.9rem'
                       }}
@@ -514,7 +519,7 @@ export function UserPage() {
                       className={styles.editButton}
                       onClick={handleRejectRequest}
                       style={{
-                        background: 'linear-gradient(135deg, #dc3545, #c82333)',
+                        background: 'linear-gradient(180deg, #dc3545, #c82333)',
                         borderColor: '#b21e2f',
                         padding: '8px 16px',
                         fontSize: '0.9rem'
@@ -530,8 +535,8 @@ export function UserPage() {
                 <div 
                   className={styles.editButton}
                   style={{
-                    background: 'linear-gradient(135deg, #ffc107, #e0a800)',
-                    borderColor: '#d39e00',
+                    background: 'linear-gradient(180deg, #d4a017, #a97400)',
+                    borderColor: '#6b3e15',
                     cursor: 'default'
                   }}
                 >
@@ -543,8 +548,8 @@ export function UserPage() {
                 <div 
                   className={styles.editButton}
                   style={{
-                    background: 'linear-gradient(135deg, #ffc107, #e0a800)',
-                    borderColor: '#d39e00',
+                    background: 'linear-gradient(180deg, #d4a017, #a97400)',
+                    borderColor: '#6b3e15',
                     cursor: 'default'
                   }}
                 >
@@ -557,8 +562,8 @@ export function UserPage() {
                   <div 
                     className={styles.editButton}
                     style={{
-                      background: 'linear-gradient(135deg, #17a2b8, #138496)',
-                      borderColor: '#117a8b',
+                      background: 'linear-gradient(180deg, #d4a017, #a97400)',
+                      borderColor: '#6b3e15',
                       cursor: 'default',
                       padding: '8px 16px',
                       fontSize: '0.9rem'
@@ -673,8 +678,8 @@ export function UserPage() {
                     justifyContent: 'space-between',
                     padding: '12px 20px',
                     marginBottom: '20px',
-                    background: 'linear-gradient(135deg, #d8a35d, #b0752d)',
-                    color: '#2c1810',
+                    background: 'linear-gradient(180deg, #f5deb3, #fff8dc)',
+                    color: '#4b2e05',
                     borderRadius: '8px',
                     border: '2px solid #8b5a2b',
                     boxShadow: '0 3px 6px rgba(0, 0, 0, 0.15)',
@@ -765,9 +770,9 @@ export function UserPage() {
                           justifyContent: 'space-between',
                           gap: '12px',
                           padding: '18px',
-                          background: '#fffaf0',
+                          background: 'linear-gradient(180deg, #f5deb3, #fff8dc)',
                           borderRadius: '12px',
-                          border: '3px solid #6b3e15',
+                          border: '2px solid #8b5a2b',
                           boxShadow: '0 4px 12px rgba(0, 0, 0, 0.15)',
                           transition: 'all 0.2s ease-in-out',
                           position: 'relative',
@@ -784,7 +789,7 @@ export function UserPage() {
                           e.currentTarget.style.transform = 'translateY(0)';
                           e.currentTarget.style.boxShadow = '0 4px 12px rgba(0, 0, 0, 0.15)';
                           e.currentTarget.style.borderColor = '#6b3e15';
-                          e.currentTarget.style.background = '#fffaf0';
+                          e.currentTarget.style.background = 'linear-gradient(180deg, #f5deb3, #fff8dc)';
                         }}
                       >
                         {/* Декоративная полоска сверху */}
@@ -795,7 +800,7 @@ export function UserPage() {
                             left: 0,
                             right: 0,
                             height: '4px',
-                            background: 'linear-gradient(90deg, #d8a35d, #b0752d)'
+                            background: 'linear-gradient(90deg, #d4a017, #a97400)'
                           }}
                         />
                         <div className={styles.friendCardContent}>
