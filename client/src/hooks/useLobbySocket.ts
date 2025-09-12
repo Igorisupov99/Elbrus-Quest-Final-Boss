@@ -351,7 +351,8 @@ export function useLobbySocket(lobbyId: number, onAnswerInputSync?: (answer: str
     socket.on("lobby:favoriteToggled", onFavoriteToggled);
 
     return () => {
-      socket.emit("leaveLobby");
+      // Не отправляем leaveLobby при размонтировании - пусть сработает обычный disconnect
+      // socket.emit("leaveLobby");
       socket.off("connect", onConnect);
       socket.off("disconnect", onDisconnect);
       socket.off("connect_error", onConnectError);
@@ -458,6 +459,10 @@ export function useLobbySocket(lobbyId: number, onAnswerInputSync?: (answer: str
     socketClient.socket.emit("lobby:favoriteToggle", { questionId, isFavorite });
   };
 
+  const sendLeaveLobby = () => {
+    socketClient.socket.emit("leaveLobby");
+  };
+
   return {
     history,
     connected,
@@ -479,5 +484,6 @@ export function useLobbySocket(lobbyId: number, onAnswerInputSync?: (answer: str
     sendAnswerInput,
     sendExamAnswerInput,
     sendFavoriteToggle,
+    sendLeaveLobby,
   };
 };

@@ -47,6 +47,7 @@ export function LobbyPage() {
     sendPassTurnNotification,
     sendAnswerInput,
     sendExamAnswerInput,
+    sendLeaveLobby,
   } = useLobbySocket(
     lobbyId,
     (answer: string) => setSyncedAnswer(answer),
@@ -194,7 +195,10 @@ export function LobbyPage() {
     setInput("");
   };
 
-  const handleExitLobby = () => navigate("/");
+  const handleExitLobby = () => {
+    sendLeaveLobby(); // Отправляем намеренный выход из лобби
+    navigate("/");
+  };
 
   const handleUserClick = (username: string) => {
     // Не открываем модальное окно для своего собственного имени
