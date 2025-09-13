@@ -1,5 +1,6 @@
 const db = require('../../db/models');
 const { incorrectAnswersMap } = require("../controllers/question.controller");
+const messageManager = require('../services/MessageManager');
 
 const lobbyUsers = new Map();
 const lobbyPoints = new Map();
@@ -367,6 +368,97 @@ function initLobbySockets(nsp) {
       } catch (err) {
         console.error('Ошибка при сохранении сообщения:', err);
         socket.emit('error', { message: 'Не удалось сохранить сообщение' });
+      }
+    });
+
+    // AI-помощник в чате лобби
+    socket.on('ai:question', async (data) => {
+      try {
+        const { message, context, questionId, lobbyId: dataLobbyId, cost = 100 } = data;
+        const userId = socket.user.id;
+        
+        console.log(`🤖 AI question from ${socket.user.username} in lobby ${lobbyId}: ${message}`);
+        
+        // Проверяем очки пользователя - сначала из основной таблицы User
+        const user = await db.User.findByPk(userId);
+        console.log(`🔍 [AI] Поиск пользователя ${userId}:`, user);
+        
+        if (!user) {
+          socket.emit('ai:response', {
+            message: '❌ Ошибка: пользователь не найден',
+            questionId: questionId
+          });
+          return;
+        }
+        
+        const currentScore = Number(user.score) || 0;
+        console.log(`💰 [AI] Текущие очки пользователя ${socket.user.username} из User: ${currentScore}, требуется: ${cost}`);
+        
+        if (currentScore < cost) {
+          socket.emit('ai:response', {
+            message: `❌ У вас недостаточно очков для запроса к AI. Требуется: ${cost}, у вас: ${currentScore}`,
+            questionId: questionId
+          });
+          return;
+        }
+        
+        // Списываем очки из основной таблицы User
+        await user.update({
+          score: currentScore - cost
+        });
+        
+        console.log(`💰 Списали ${cost} очков с пользователя ${socket.user.username}. Осталось: ${currentScore - cost}`);
+        
+        const response = await messageManager.sendMessage(
+          userId, 
+          message, 
+          'mentor', 
+          context
+        );
+        
+        // Отправляем ответ всем игрокам в комнате для отображения в модальном окне
+        nsp.to(roomKey).emit('ai:response', {
+          message: response.message,
+          questionId: questionId,
+          usage: response.usage,
+          newScore: currentScore - cost,
+          userId: userId,
+          username: socket.user.username
+        });
+        
+        // Отправляем сообщение в чат от ai-mentor
+        const chatMessage = {
+          id: Date.now(),
+          text: `Ответ на вопрос такой-то: ${response.message}`,
+          user: { id: 'ai-mentor', username: 'ai-mentor' },
+          createdAt: new Date().toISOString(),
+          isAI: true,
+          usage: response.usage
+        };
+
+        // Сохраняем сообщение в базу данных
+        await db.ChatGameSession.create({
+          game_session_id: lobbyId,
+          user_id: 'ai-mentor',
+          message: chatMessage.text,
+          created_at: new Date()
+        });
+
+        // Отправляем сообщение всем в лобби
+        nsp.to(roomKey).emit('lobby:chatMessage', chatMessage);
+        
+        // Уведомляем всех об обновлении очков
+        nsp.to(roomKey).emit('lobby:scoreUpdate', {
+          userId: userId,
+          newScore: currentScore - cost,
+          cost: cost
+        });
+        
+        console.log('🤖 AI response sent to lobby chat:', response.message);
+        
+      } catch (error) {
+        console.error('❌ AI Socket Error in lobby:', error);
+        socket.emit('error', { message: 'AI-ментор временно недоступен' });
       }
     });
 

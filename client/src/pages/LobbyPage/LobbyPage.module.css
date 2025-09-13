@@ -142,6 +142,32 @@ html, body {
   word-break: break-word;
 }
 
+/* AI Message styling */
+.aiMessage {
+  background: linear-gradient(135deg, #ff6b6b 0%, #ee5a24 100%);
+  color: white;
+  border-radius: 8px;
+  padding: 8px 12px;
+  margin: 4px 0;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.aiMessage .author {
+  font-weight: bold;
+  margin-right: 8px;
+}
+
+.aiMessage .text {
+  color: white;
+}
+
+.usageInfo {
+  font-size: 11px;
+  color: rgba(255, 255, 255, 0.8);
+  margin-top: 4px;
+  font-style: italic;
+}
+
 .chatForm {
   display: flex;
   gap: 8px;
@@ -162,6 +188,67 @@ html, body {
 
 .chatInput::placeholder {
   color: #a0522d;
+}
+
+/* AI Input Section */
+.aiInputSection {
+  display: flex;
+  gap: 8px;
+  margin-top: 10px;
+  align-items: center;
+  box-sizing: border-box;
+  overflow: hidden; /* Prevent children from overflowing */
+}
+
+.aiInput {
+  flex: 1;
+  min-width: 0; /* Allow input to shrink properly */
+  height: 40px;
+  border-radius: 10px;
+  border: 1px solid rgba(0, 0, 0, 0.2);
+  background: #fffaf0;
+  outline: none;
+  padding: 0 12px;
+  color: #5c3d2e;
+  font-family: inherit;
+  box-sizing: border-box;
+}
+
+.aiInput::placeholder {
+  color: #a0522d;
+}
+
+.aiInput:disabled {
+  background: #f5f5f5;
+  color: #999;
+  cursor: not-allowed;
+}
+
+.aiSendButton {
+  background: linear-gradient(135deg, #4ecdc4 0%, #44a08d 100%);
+  color: white;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 10px;
+  cursor: pointer;
+  font-size: 14px;
+  transition: all 0.3s ease;
+  font-weight: 500;
+  font-family: inherit;
+  white-space: nowrap;
+  height: 40px;
+  box-sizing: border-box;
+}
+
+.aiSendButton:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(78, 205, 196, 0.4);
+}
+
+.aiSendButton:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  transform: none;
 }
 
 .mapButton {

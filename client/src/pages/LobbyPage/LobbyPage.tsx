@@ -30,6 +30,11 @@ export function LobbyPage() {
   const { user } = useAppSelector(s => s.auth)
   const { userScore, sessionScore, incorrectAnswers } = useAppSelector(s => s.lobbyPage.scores);
   const phaseTransitionModal = useAppSelector(s => s.lobbyPage.phaseTransitionModal);
+  
+  // Логирование очков для отладки
+  useEffect(() => {
+    console.log(`💰 [LobbyPage] Текущие очки пользователя: ${userScore}`);
+  }, [userScore]);
   const examFailureModal = useAppSelector(s => s.lobbyPage.examFailureModal);
   const reconnectWaitingModal = useAppSelector(s => s.lobbyPage.reconnectWaitingModal);
   const {
@@ -53,6 +58,7 @@ export function LobbyPage() {
     sendLeaveLobby,
     sendCheckActiveQuestion,
     sendCheckActiveExam,
+    sendAIQuestion,
   } = useLobbySocket(
     lobbyId,
     (answer: string) => setSyncedAnswer(answer),
@@ -313,6 +319,7 @@ export function LobbyPage() {
     setInput("");
   };
 
+
   const handleExitLobby = () => {
     sendLeaveLobby(); // Отправляем намеренный выход из лобби
     navigate("/");
@@ -517,6 +524,7 @@ export function LobbyPage() {
              usersInLobby.find(u => u.id === activePlayerId)?.username ?? ''
            }
            mentor_tip={modal.mentor_tip}
+           userScore={userScore}
            sharedResult={modalResult}
            onAnswerSync={(answer: string, activePlayerName: string) => {
              // Синхронизируем ответ активного игрока
@@ -647,6 +655,8 @@ export function LobbyPage() {
                 className={
                   m.user.username === "system"
                     ? styles.systemMessage
+                    : (m as any).isAI
+                    ? styles.aiMessage
                     : styles.message
                 }
                 title={new Date(m.createdAt).toLocaleString()}
@@ -655,9 +665,15 @@ export function LobbyPage() {
                   <span className={styles.author}>{m.user.username}:</span>
                 )}
                 <span className={styles.text}>{m.text}</span>
+                {(m as any).usage && (
+                  <div className={styles.usageInfo}>
+                    Токены: {(m as any).usage.totalTokens}
+                  </div>
+                )}
               </div>
             ))}
           </div>
+
 
           <form className={styles.chatForm} onSubmit={handleSubmit}>
             <input
