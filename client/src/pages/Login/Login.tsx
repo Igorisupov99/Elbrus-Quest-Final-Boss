@@ -97,9 +97,6 @@ export function Login() {
           <p>
             Нет аккаунта? <Link to="/register">Присоединиться к команде</Link>
           </p>
-          <p>
-            <Link to="/forgot-password">Забыли пароль?</Link>
-          </p>
         </div>
       </div>
 

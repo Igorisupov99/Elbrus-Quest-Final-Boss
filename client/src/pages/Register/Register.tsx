@@ -64,12 +64,12 @@ export function Register() {
     <div className={styles.registerPage}>
       <div className={styles.registerCard}>
         <h1 className={styles.title}>Создание героя</h1>
-        <p className={styles.subtitle}>Укажите email, имя и пароль</p>
+        <p className={styles.subtitle}>Укажите почту, имя и пароль</p>
 
         <form onSubmit={handleSubmit(onSubmit)} className={styles.form}>
           <Input
             name="email"
-            label="Email"
+            label="Почта"
             type="email"
             placeholder="you@example.com"
             register={register}
