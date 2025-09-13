@@ -104,7 +104,7 @@ export function Header() {
 
         {/* Лого/домой */}
         <Link to="/" className={styles.logo}>
-          ElbrusRPG
+          QuestCode
         </Link>
 
         <nav className={styles.actions} aria-label="user actions">
