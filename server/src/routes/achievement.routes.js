@@ -10,6 +10,6 @@ router.get('/user', authMiddleware, achievementController.getUserAchievements);
 router.get('/user/:userId', authMiddleware, achievementController.getUserAchievementsById);
 
 // Получить все доступные достижения
-router.get('/all', achievementController.getAllAchievements);
+router.get('/all', authMiddleware, achievementController.getAllAchievements);
 
 module.exports = router;

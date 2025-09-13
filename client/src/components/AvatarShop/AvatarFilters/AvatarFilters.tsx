@@ -29,24 +29,24 @@ const AvatarFiltersComponent: React.FC<AvatarFiltersProps> = ({
   ];
 
   const handleCategoryChange = useCallback((category: AvatarCategory | undefined) => {
-    onFiltersChange({ ...filters, category });
-  }, [onFiltersChange, filters]);
+    onFiltersChange((prev) => ({ ...prev, category }));
+  }, [onFiltersChange]);
 
   const handleRarityChange = useCallback((rarity: AvatarRarity | undefined) => {
-    onFiltersChange({ ...filters, rarity });
-  }, [onFiltersChange, filters]);
+    onFiltersChange((prev) => ({ ...prev, rarity }));
+  }, [onFiltersChange]);
 
   const handleShowOwnedChange = useCallback((showOwned: boolean) => {
-    onFiltersChange({ ...filters, showOwned });
-  }, [onFiltersChange, filters]);
+    onFiltersChange((prev) => ({ ...prev, showOwned }));
+  }, [onFiltersChange]);
 
   const handleShowLockedChange = useCallback((showLocked: boolean) => {
-    onFiltersChange({ ...filters, showLocked });
-  }, [onFiltersChange, filters]);
+    onFiltersChange((prev) => ({ ...prev, showLocked }));
+  }, [onFiltersChange]);
 
   const handleSearchChange = useCallback((searchQuery: string) => {
-    onFiltersChange({ ...filters, searchQuery: searchQuery || undefined });
-  }, [onFiltersChange, filters]);
+    onFiltersChange((prev) => ({ ...prev, searchQuery: searchQuery || undefined }));
+  }, [onFiltersChange]);
 
   const clearFilters = useCallback(() => {
     onFiltersChange(() => ({}));

@@ -1312,9 +1312,9 @@ export function Profile() {
             <div className={styles.emptyMessage}>У вас нет избранных вопросов</div>
           ) : (
             <div className={styles.questionsList}>
-              {getVisibleFavorites().map((favorite) => (
+              {getVisibleFavorites().map((favorite, index) => (
                 <div 
-                  key={favorite.id} 
+                  key={`favorite-${favorite.id}-${favorite.question.id}-${index}`} 
                   className={styles.questionCard}
                   onClick={() => handleQuestionClick(favorite)}
                 >
@@ -1579,9 +1579,9 @@ export function Profile() {
                     Нет входящих заявок
                   </div>
                 ) : (
-                  incomingRequests.map((request) => (
+                  incomingRequests.map((request, index) => (
                     <div 
-                      key={request.id} 
+                      key={`incoming-${request.id}-${index}`} 
                       onClick={() => {
                         if (request.user?.id) {
                           closeIncomingModal();
@@ -1892,9 +1892,9 @@ export function Profile() {
                     Нет отправленных заявок
                   </div>
                 ) : (
-                  outgoingRequests.map((request) => (
+                  outgoingRequests.map((request, index) => (
                     <div 
-                      key={request.id} 
+                      key={`outgoing-${request.id}-${index}`} 
                       onClick={() => {
                         if (request.friend?.id) {
                           closeOutgoingModal();

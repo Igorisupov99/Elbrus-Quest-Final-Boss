@@ -8,7 +8,7 @@ export const achievementApi = {
     stats: AchievementStats;
   }> {
     const response = await axios.get('/api/achievement/user');
-    return response.data;
+    return response.data.data; // Извлекаем data из ответа
   },
 
   // Получить все доступные достижения

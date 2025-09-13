@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import styles from './AchievementsPage.module.css';
+import { AchievementCard } from '../../components/Achievement/AchievementCard/AchievementCard';
 import { AchievementGroup } from '../../components/Achievement/AchievementGroup/AchievementGroup';
 import { AchievementModal } from '../../components/Achievement/AchievementModal/AchievementModal';
 import { achievementApi } from '../../api/achievements/achievementApi';
@@ -25,30 +26,29 @@ export function AchievementsPage() {
       setLoading(true);
       setError(null);
       
-      // Загружаем все достижения
+      // Загружаем все достижения (API уже возвращает их с флагом earned)
       const allData = await achievementApi.getAllAchievements();
       
+      setAchievements(allData.achievements);
+      
+      // Пытаемся загрузить статистику пользователя
       try {
-        // Пытаемся загрузить пользовательские достижения
         const userData = await achievementApi.getUserAchievements();
         setStats(userData.stats);
-        
-        // Объединяем данные о достижениях с информацией о получении
-        const earnedIds = new Set(userData.achievements.map(ua => ua.achievement.id));
-        const mergedAchievements = allData.achievements.map(achievement => ({
-          ...achievement,
-          earned: earnedIds.has(achievement.id)
-        }));
-        
-        setAchievements(mergedAchievements);
       } catch (userError) {
-        // Если пользователь не авторизован, показываем просто все достижения
-        setAchievements(allData.achievements);
+        // Если пользователь не авторизован, вычисляем статистику из загруженных достижений
+        const earnedCount = allData.achievements.filter(a => a.earned).length;
+        const totalPoints = allData.achievements
+          .filter(a => a.earned)
+          .reduce((sum, a) => sum + a.points, 0);
+        
         setStats({
           totalAchievements: allData.achievements.length,
-          earnedAchievements: 0,
-          totalBonusPoints: 0,
-          completionPercentage: 0
+          earnedAchievements: earnedCount,
+          totalBonusPoints: totalPoints,
+          completionPercentage: allData.achievements.length > 0 
+            ? Math.round((earnedCount / allData.achievements.length) * 100) 
+            : 0
         });
       }
     } catch (err) {
@@ -66,13 +66,22 @@ export function AchievementsPage() {
     return achievement.category === activeFilter;
   });
 
-  const groupedAchievements = filteredAchievements.reduce((groups, achievement) => {
-    if (!groups[achievement.category]) {
-      groups[achievement.category] = [];
-    }
-    groups[achievement.category].push(achievement);
-    return groups;
-  }, {} as Record<string, Achievement[]>);
+
+
+  // Группируем ачивки только для основных фильтров (all, earned, not_earned)
+  const shouldGroupAchievements = ['all', 'earned', 'not_earned'].includes(activeFilter);
+  
+  const groupedAchievements = shouldGroupAchievements 
+    ? filteredAchievements.reduce((groups, achievement) => {
+        if (!groups[achievement.category]) {
+          groups[achievement.category] = [];
+        }
+        groups[achievement.category].push(achievement);
+        return groups;
+      }, {} as Record<string, Achievement[]>)
+    : {};
+
+
 
   const handleAchievementClick = (achievement: Achievement) => {
     setSelectedAchievement(achievement);
@@ -104,6 +113,7 @@ export function AchievementsPage() {
   const handleCollapseAll = () => {
     setExpandedGroups(new Set());
   };
+
 
   if (loading) {
     return (
@@ -192,32 +202,48 @@ export function AchievementsPage() {
           ))}
         </div>
 
-        <div className={styles.groupControls}>
-          <button
-            className={styles.groupControlButton}
-            onClick={handleExpandAll}
-          >
-            Развернуть все
-          </button>
-          <button
-            className={styles.groupControlButton}
-            onClick={handleCollapseAll}
-          >
-            Свернуть все
-          </button>
-        </div>
+        {shouldGroupAchievements && (
+          <div className={styles.groupControls}>
+            <button
+              className={styles.groupControlButton}
+              onClick={handleExpandAll}
+            >
+              Развернуть все
+            </button>
+            <button
+              className={styles.groupControlButton}
+              onClick={handleCollapseAll}
+            >
+              Свернуть все
+            </button>
+          </div>
+        )}
 
         <div className={styles.achievements}>
-          {Object.entries(groupedAchievements).map(([category, categoryAchievements]) => (
-            <AchievementGroup
-              key={category}
-              category={category}
-              achievements={categoryAchievements}
-              onAchievementClick={handleAchievementClick}
-              isExpanded={expandedGroups.has(category)}
-              onToggle={() => handleToggleGroup(category)}
-            />
-          ))}
+          {shouldGroupAchievements ? (
+            // Группированное отображение для основных фильтров
+            Object.entries(groupedAchievements).map(([category, categoryAchievements]) => (
+              <AchievementGroup
+                key={category}
+                category={category}
+                achievements={categoryAchievements}
+                onAchievementClick={handleAchievementClick}
+                isExpanded={expandedGroups.has(category)}
+                onToggle={() => handleToggleGroup(category)}
+              />
+            ))
+          ) : (
+            // Сетка для фильтров по категориям
+            <div className={styles.achievementsGrid}>
+              {filteredAchievements.map((achievement) => (
+                <AchievementCard
+                  key={achievement.id}
+                  achievement={achievement}
+                  onClick={handleAchievementClick}
+                />
+              ))}
+            </div>
+          )}
         </div>
       </div>
       
