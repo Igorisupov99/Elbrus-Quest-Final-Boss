@@ -20,21 +20,22 @@ export const ReconnectWaitingModal: React.FC<ReconnectWaitingModalProps> = ({
     setDisplayTime(timeLeft);
   }, [timeLeft]);
 
-  useEffect(() => {
-    if (!isOpen || displayTime <= 0) return;
+  // Убираем локальный таймер - теперь время обновляется с сервера
+  // useEffect(() => {
+  //   if (!isOpen || displayTime <= 0) return;
 
-    const timer = setInterval(() => {
-      setDisplayTime(prev => {
-        if (prev <= 1) {
-          onTimeUp?.();
-          return 0;
-        }
-        return prev - 1;
-      });
-    }, 1000);
+  //   const timer = setInterval(() => {
+  //     setDisplayTime(prev => {
+  //       if (prev <= 1) {
+  //         onTimeUp?.();
+  //         return 0;
+  //       }
+  //       return prev - 1;
+  //     });
+  //   }, 1000);
 
-    return () => clearInterval(timer);
-  }, [isOpen, displayTime, onTimeUp]);
+  //   return () => clearInterval(timer);
+  // }, [isOpen, displayTime, onTimeUp]);
 
   if (!isOpen) return null;
 

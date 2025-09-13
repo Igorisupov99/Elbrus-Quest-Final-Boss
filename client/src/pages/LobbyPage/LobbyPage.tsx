@@ -9,13 +9,14 @@ import UserActionsModal from "../../components/common/modals/UserActionsModal/Us
 import api from "../../api/axios";
 import { useLobbySocket } from "../../hooks/useLobbySocket";
 import { useAppDispatch, useAppSelector } from "../../store/hooks";
-import { updatePointStatus, mergeScores, openModal as openModalAction, closeModal as closeModalAction, openExamModal as openExamModalAction, closeExamModal as closeExamModalAction, setModalResult, closePhaseTransitionModal, closeExamFailureModal, closeReconnectWaitingModal } from "../../store/lobbyPage/lobbySlice";
+import { updatePointStatus, mergeScores, openModal as openModalAction, closeModal as closeModalAction, openExamModal as openExamModalAction, closeExamModal as closeExamModalAction, setModalResult, closePhaseTransitionModal, closeExamFailureModal, closeReconnectWaitingModal, closeCorrectAnswerNotification } from "../../store/lobbyPage/lobbySlice";
 import { updateUserScore } from "../../store/authSlice";
 import { AchievementNotification } from "../../components/Achievement/AchievementNotification/AchievementNotification";
 import type { Achievement } from "../../types/achievement";
 import PhaseTransitionModal from "../../components/common/modals/PhaseTransitionModal";
 import ExamFailureModal from "../../components/common/modals/ExamFailureModal";
 import { ReconnectWaitingModal } from "../../components/common/modals/ReconnectWaitingModal";
+import CorrectAnswerNotification from "../../components/common/modals/CorrectAnswerNotification/CorrectAnswerNotification";
 // import { CloseConfirmModal } from "../../components/common/modals/CloseConfirmModal"; // Больше не нужен
 
 export function LobbyPage() {
@@ -37,6 +38,11 @@ export function LobbyPage() {
   }, [userScore]);
   const examFailureModal = useAppSelector(s => s.lobbyPage.examFailureModal);
   const reconnectWaitingModal = useAppSelector(s => s.lobbyPage.reconnectWaitingModal);
+  const correctAnswerNotification = useAppSelector(s => s.lobbyPage.correctAnswerNotification);
+  const activeExamId = useAppSelector(s => s.lobbyPage.activeExamId);
+  
+  // Временное логирование для отладки
+  console.log(`🔍 [LOBBY] Текущий activeExamId:`, activeExamId);
   const {
     history,
     connected,
@@ -494,18 +500,25 @@ export function LobbyPage() {
         className={styles.gameArea}
         style={mapNaturalSize ? ({ aspectRatio: `${mapNaturalSize.w} / ${mapNaturalSize.h}` } as React.CSSProperties) : undefined}
       >
-        {points.map(point => (
-          <Point
-            key={point.id}
-            id={point.id}
-            title={point.title}
-            top={point.top}
-            left={point.left}
-            status={point.status}
-            isActive={activeQuestionPointId === point.id}
-            onClick={openModal}
-          />
-        ))}
+        {points.map(point => {
+          // Определяем, активен ли этот поинт
+          const isActivePoint = activeQuestionPointId === point.id;
+          // Определяем, активен ли экзамен на этом поинте
+          const isActiveExam = activeExamId === point.id;
+          
+          return (
+            <Point
+              key={point.id}
+              id={point.id}
+              title={point.title}
+              top={point.top}
+              left={point.left}
+              status={point.status}
+              isActive={isActivePoint || isActiveExam}
+              onClick={openModal}
+            />
+          );
+        })}
         
         {/* Модальные окна рендерятся внутри области карты */}
          <QuestionModal
@@ -593,6 +606,12 @@ export function LobbyPage() {
             console.log('⏰ Время ожидания переподключения истекло');
             dispatch(closeReconnectWaitingModal());
           }}
+        />
+
+        <CorrectAnswerNotification
+          isOpen={correctAnswerNotification.isOpen}
+          points={correctAnswerNotification.points}
+          onClose={() => dispatch(closeCorrectAnswerNotification())}
         />
 
         {/* CloseConfirmModal больше не нужен - неактивные игроки могут закрывать локально */}
