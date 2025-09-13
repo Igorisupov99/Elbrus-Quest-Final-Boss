@@ -1,4 +1,4 @@
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useState, useEffect, useRef } from 'react';
 import styles from './Header.module.css';
 import { useAppDispatch, useAppSelector } from '../../store/hooks';
@@ -8,8 +8,12 @@ export function Header() {
   const { user, loading } = useAppSelector((state) => state.auth);
   const dispatch = useAppDispatch();
   const navigate = useNavigate();
+  const location = useLocation();
   const [isBurgerMenuOpen, setIsBurgerMenuOpen] = useState(false);
   const burgerContainerRef = useRef<HTMLDivElement>(null);
+
+  // Check if user is on lobby page
+  const isOnLobbyPage = location.pathname.startsWith('/lobby/');
 
   const handleLogout = async () => {
     try {
@@ -59,42 +63,44 @@ export function Header() {
   return (
     <header className={styles.header}>
       <div className={styles.inner}>
-        {/* Burger Menu */}
-        <div className={styles.burgerContainer} ref={burgerContainerRef}>
-          <button
-            className={styles.burgerButton}
-            onClick={() => setIsBurgerMenuOpen(!isBurgerMenuOpen)}
-            aria-label="Открыть меню"
-          >
-            {BurgerIcon}
-          </button>
+        {/* Burger Menu - only show when user is logged in */}
+        {user && (
+          <div className={styles.burgerContainer} ref={burgerContainerRef}>
+            <button
+              className={styles.burgerButton}
+              onClick={() => setIsBurgerMenuOpen(!isBurgerMenuOpen)}
+              aria-label="Открыть меню"
+            >
+              {BurgerIcon}
+            </button>
 
-          {isBurgerMenuOpen && (
-            <div className={styles.burgerDropdown}>
-              <Link
-                to="/achievements"
-                className={styles.burgerLink}
-                onClick={() => setIsBurgerMenuOpen(false)}
-              >
-                🏆 Достижения
-              </Link>
-              <Link
-                to="/favorites"
-                className={styles.burgerLink}
-                onClick={() => setIsBurgerMenuOpen(false)}
-              >
-                📚 Избранное
-              </Link>
-              <Link
-                to="/avatar-shop"
-                className={styles.burgerLink}
-                onClick={() => setIsBurgerMenuOpen(false)}
-              >
-                🎭 Магазин
-              </Link>
-            </div>
-          )}
-        </div>
+            {isBurgerMenuOpen && (
+              <div className={styles.burgerDropdown}>
+                <Link
+                  to="/achievements"
+                  className={styles.burgerLink}
+                  onClick={() => setIsBurgerMenuOpen(false)}
+                >
+                  🏆 Достижения
+                </Link>
+                <Link
+                  to="/favorites"
+                  className={styles.burgerLink}
+                  onClick={() => setIsBurgerMenuOpen(false)}
+                >
+                  📚 Избранное
+                </Link>
+                <Link
+                  to="/avatar-shop"
+                  className={styles.burgerLink}
+                  onClick={() => setIsBurgerMenuOpen(false)}
+                >
+                  🎭 Магазин
+                </Link>
+              </div>
+            )}
+          </div>
+        )}
 
         {/* Лого/домой */}
         <Link to="/" className={styles.logo}>
@@ -110,13 +116,15 @@ export function Header() {
               <Link to="/profile" className={styles.profileLink}>
                 Профиль
               </Link>
-              <button
-                onClick={handleLogout}
-                className={styles.logoutBtn}
-                type="button"
-              >
-                Выйти
-              </button>
+              {!isOnLobbyPage && (
+                <button
+                  onClick={handleLogout}
+                  className={styles.logoutBtn}
+                  type="button"
+                >
+                  Выйти
+                </button>
+              )}
             </>
           ) : (
             <div className={styles.authLinks}>

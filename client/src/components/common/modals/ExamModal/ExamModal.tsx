@@ -128,6 +128,22 @@ export function ExamModal({
     }
   }, [isOpen, loading]);
 
+  // Слушаем события синхронизации таймера
+  useEffect(() => {
+    const handleTimerReset = (event: CustomEvent) => {
+      const { timeLeft } = event.detail;
+      console.log('⏰ [EXAM] Получено событие синхронизации таймера:', timeLeft);
+      setTimeLeft(timeLeft);
+      setTimerActive(true);
+    };
+
+    window.addEventListener('exam:timerReset', handleTimerReset as EventListener);
+    
+    return () => {
+      window.removeEventListener('exam:timerReset', handleTimerReset as EventListener);
+    };
+  }, []);
+
   // Синхронизация таймера через сокеты
   useEffect(() => {
     if (onTimerReset) {

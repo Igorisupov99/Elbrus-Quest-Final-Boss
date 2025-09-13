@@ -130,6 +130,41 @@ export function useLobbySocket(lobbyId: number, onAnswerInputSync?: (answer: str
     const onOpenModal = (payload: { questionId: number; topic: string; question: string }) => {
       dispatch(openModal(payload));
     };
+
+    const onQuestionRestore = (payload: { 
+      questionId: number;
+      topic: string;
+      question: string;
+      mentor_tip?: string;
+      timeLeft: number;
+      pointId?: string;
+    }) => {
+      console.log('🔄 [QUESTION] Восстанавливаем вопрос:', payload);
+      
+      // Восстанавливаем состояние вопроса
+      dispatch(openModal({
+        questionId: payload.questionId,
+        topic: payload.topic,
+        question: payload.question,
+        mentor_tip: payload.mentor_tip
+      }));
+      
+      // Эмитим кастомное событие для установки currentPointId в LobbyPage
+      window.dispatchEvent(new CustomEvent('question:setCurrentPointId', { 
+        detail: { pointId: payload.pointId || String(payload.questionId) } 
+      }));
+      
+      console.log(`📝 [QUESTION] Вопрос восстановлен: ID ${payload.questionId}, тема "${payload.topic}"`);
+      console.log(`⏰ [QUESTION] Таймер восстановлен: осталось ${payload.timeLeft} секунд`);
+      
+      // Эмитим кастомное событие для синхронизации таймера в QuestionModal
+      // Добавляем задержку, чтобы модальное окно успело открыться
+      setTimeout(() => {
+        window.dispatchEvent(new CustomEvent('question:timerReset', { 
+          detail: { timeLeft: payload.timeLeft } 
+        }));
+      }, 200); // 200мс задержка
+    };
     const onExamStart = (payload: { questions: any[]; index: number }) => {
       dispatch(setExamQuestions(payload.questions));
       dispatch(setExamIndex(payload.index));
@@ -284,8 +319,22 @@ export function useLobbySocket(lobbyId: number, onAnswerInputSync?: (answer: str
 
     const onExamTimerReset = (payload: { timeLeft: number }) => {
       // Синхронизируем таймер для всех игроков
-      // Это событие будет обработано в ExamModal через пропсы
       console.log('⏰ Синхронизация таймера экзамена:', payload.timeLeft);
+      
+      // Эмитим кастомное событие для синхронизации таймера в ExamModal
+      window.dispatchEvent(new CustomEvent('exam:timerReset', { 
+        detail: { timeLeft: payload.timeLeft } 
+      }));
+    };
+
+    const onTimerReset = (payload: { timeLeft: number }) => {
+      // Синхронизируем таймер обычного вопроса для всех игроков
+      console.log('⏰ Синхронизация таймера вопроса:', payload.timeLeft);
+      
+      // Эмитим кастомное событие для синхронизации таймера в QuestionModal
+      window.dispatchEvent(new CustomEvent('question:timerReset', { 
+        detail: { timeLeft: payload.timeLeft } 
+      }));
     };
 
     const onReconnectWaiting = (payload: { activePlayerName: string; timeLeft: number }) => {
@@ -304,6 +353,100 @@ export function useLobbySocket(lobbyId: number, onAnswerInputSync?: (answer: str
     const onReconnectCanceled = () => {
       console.log('✅ [RECONNECT] Ожидание отменено, игрок вернулся');
       dispatch(closeReconnectWaitingModal());
+    };
+
+    const onActiveQuestion = (payload: { 
+      questionId: number;
+      topic: string;
+      question: string;
+      mentor_tip?: string;
+      pointId: string;
+      timeLeft: number;
+    }) => {
+      console.log('👁️ [INACTIVE] Получен активный вопрос для подключения:', payload);
+      
+      // Восстанавливаем состояние вопроса для неактивного игрока
+      dispatch(openModal({
+        questionId: payload.questionId,
+        topic: payload.topic,
+        question: payload.question,
+        mentor_tip: payload.mentor_tip
+      }));
+      
+      // Устанавливаем currentPointId
+      window.dispatchEvent(new CustomEvent('question:setCurrentPointId', { 
+        detail: { pointId: payload.pointId } 
+      }));
+      
+      // Синхронизируем таймер
+      setTimeout(() => {
+        window.dispatchEvent(new CustomEvent('question:timerReset', { 
+          detail: { timeLeft: payload.timeLeft } 
+        }));
+      }, 200);
+    };
+
+    const onNoActiveQuestion = () => {
+      console.log('❌ [INACTIVE] Нет активного вопроса для подключения');
+      // Эмитим кастомное событие для показа уведомления
+      window.dispatchEvent(new CustomEvent('question:noActiveQuestion'));
+    };
+
+    const onWrongPoint = (payload: { requestedPointId: string; activePointId: string }) => {
+      console.log('❌ [INACTIVE] Неправильный поинт! Запрошен:', payload.requestedPointId, 'активный:', payload.activePointId);
+      // Эмитим кастомное событие для показа уведомления о неправильном поинте
+      window.dispatchEvent(new CustomEvent('question:wrongPoint', { 
+        detail: payload 
+      }));
+    };
+
+    const onActiveExam = (payload: { 
+      examId: string;
+      questions: any[];
+      currentIndex: number;
+      correctAnswers: number;
+      totalQuestions: number;
+      currentQuestion: any;
+      timeLeft: number;
+    }) => {
+      console.log('👁️ [INACTIVE] Получен активный экзамен для подключения:', payload);
+      
+      // Восстанавливаем состояние экзамена для неактивного игрока
+      dispatch(setExamQuestions(payload.questions));
+      dispatch(setExamIndex(payload.currentIndex));
+      dispatch(openExamModal());
+      
+      console.log(`📊 [EXAM] Экзамен восстановлен для неактивного игрока: вопрос ${payload.currentIndex + 1}/${payload.totalQuestions}`);
+      
+      // Синхронизируем таймер
+      setTimeout(() => {
+        window.dispatchEvent(new CustomEvent('exam:timerReset', { 
+          detail: { timeLeft: payload.timeLeft } 
+        }));
+      }, 200);
+    };
+
+    const onNoActiveExam = () => {
+      console.log('❌ [INACTIVE] Нет активного экзамена для подключения');
+      // Эмитим кастомное событие для показа уведомления
+      window.dispatchEvent(new CustomEvent('exam:noActiveExam'));
+    };
+
+    const onWrongExam = (payload: { requestedExamId: string; activeExamId: string }) => {
+      console.log('❌ [INACTIVE] Неправильный экзамен! Запрошен:', payload.requestedExamId, 'активный:', payload.activeExamId);
+      // Эмитим кастомное событие для показа уведомления о неправильном экзамене
+      window.dispatchEvent(new CustomEvent('exam:wrongExam', { 
+        detail: payload 
+      }));
+    };
+
+    const onActivePointChanged = (payload: { activePointId: string | null }) => {
+      console.log('🎯 [ACTIVE POINT] Изменение активного поинта для всех игроков:', payload.activePointId);
+      
+      // Эмитим кастомное событие для синхронизации активного поинта у всех игроков
+      window.dispatchEvent(new CustomEvent('lobby:activePointChanged', { 
+        detail: payload 
+      }));
     };
 
     const onFavoriteToggled = (payload: { 
@@ -353,6 +496,7 @@ export function useLobbySocket(lobbyId: number, onAnswerInputSync?: (answer: str
     socket.on("lobby:correctAnswer", onCorrectAnswer);
     socket.on("lobby:examCorrectAnswer", onExamCorrectAnswer);
     socket.on("lobby:openModal", onOpenModal);
+    socket.on("lobby:questionRestore", onQuestionRestore);
     socket.on("lobby:examStart", onExamStart);
     socket.on("lobby:examNext", onExamNext);
     socket.on("lobby:examRestore", onExamRestore);
@@ -365,6 +509,7 @@ export function useLobbySocket(lobbyId: number, onAnswerInputSync?: (answer: str
     socket.on("lobby:answerInput", onAnswerInput);
     socket.on("lobby:examAnswerInput", onExamAnswerInput);
     socket.on("lobby:examTimerReset", onExamTimerReset);
+    socket.on("lobby:timerReset", onTimerReset);
     socket.on("lobby:reconnectWaiting", onReconnectWaiting);
     socket.on("lobby:reconnectTimeout", onReconnectTimeout);
     socket.on("lobby:reconnectCanceled", onReconnectCanceled);
@@ -374,6 +519,13 @@ export function useLobbySocket(lobbyId: number, onAnswerInputSync?: (answer: str
     socket.on("lobby:newAchievements", onNewAchievements);
     socket.on("user:newAchievements", onUserNewAchievements);
     socket.on("lobby:closeExamModal", onCloseExamModal);
+    socket.on("lobby:activeQuestion", onActiveQuestion);
+    socket.on("lobby:noActiveQuestion", onNoActiveQuestion);
+    socket.on("lobby:wrongPoint", onWrongPoint);
+    socket.on("lobby:activeExam", onActiveExam);
+    socket.on("lobby:noActiveExam", onNoActiveExam);
+    socket.on("lobby:wrongExam", onWrongExam);
+    socket.on("lobby:activePointChanged", onActivePointChanged);
     socket.on("lobby:favoriteToggled", onFavoriteToggled);
 
     return () => {
@@ -398,6 +550,7 @@ export function useLobbySocket(lobbyId: number, onAnswerInputSync?: (answer: str
       socket.off("lobby:timeout", onTimeout);
       socket.off("lobby:passTurnNotification", onPassTurnNotification);
       socket.off("lobby:openModal", onOpenModal);
+      socket.off("lobby:questionRestore", onQuestionRestore);
       socket.off("lobby:examStart", onExamStart);
       socket.off("lobby:examNext", onExamNext);
       socket.off("lobby:examRestore", onExamRestore);
@@ -408,12 +561,20 @@ export function useLobbySocket(lobbyId: number, onAnswerInputSync?: (answer: str
       socket.off("lobby:answerInput", onAnswerInput);
       socket.off("lobby:examAnswerInput", onExamAnswerInput);
       socket.off("lobby:examTimerReset", onExamTimerReset);
+      socket.off("lobby:timerReset", onTimerReset);
       socket.off("lobby:reconnectWaiting", onReconnectWaiting);
       socket.off("lobby:reconnectTimeout", onReconnectTimeout);
       socket.off("lobby:reconnectCanceled", onReconnectCanceled);
       socket.off("lobby:closeModal", onCloseModal);
       socket.off("lobby:newAchievements", onNewAchievements);
       socket.off("user:newAchievements", onUserNewAchievements);
+      socket.off("lobby:activeQuestion", onActiveQuestion);
+      socket.off("lobby:noActiveQuestion", onNoActiveQuestion);
+      socket.off("lobby:wrongPoint", onWrongPoint);
+      socket.off("lobby:activeExam", onActiveExam);
+      socket.off("lobby:noActiveExam", onNoActiveExam);
+      socket.off("lobby:wrongExam", onWrongExam);
+      socket.off("lobby:activePointChanged", onActivePointChanged);
       socket.off("lobby:favoriteToggled", onFavoriteToggled);
       socket.disconnect();
     };
@@ -436,7 +597,7 @@ export function useLobbySocket(lobbyId: number, onAnswerInputSync?: (answer: str
     socketClient.socket.emit("lobby:examComplete", { lobbyId, correctAnswers, totalQuestions});
   };
   
-  const sendOpenModal = (payload: { questionId: number; topic: string; question: string }) => {
+  const sendOpenModal = (payload: { questionId: number; topic: string; question: string; mentor_tip?: string; pointId?: string }) => {
     socketClient.socket.emit("lobby:openModal", payload);
   };
   const sendOpenExam = (payload?: { questions?: any[]; examId?: string }) => {
@@ -490,6 +651,14 @@ export function useLobbySocket(lobbyId: number, onAnswerInputSync?: (answer: str
     socketClient.socket.emit("leaveLobby");
   };
 
+  const sendCheckActiveQuestion = (pointId?: string) => {
+    socketClient.socket.emit("lobby:checkActiveQuestion", { pointId });
+  };
+
+  const sendCheckActiveExam = (examId?: string) => {
+    socketClient.socket.emit("lobby:checkActiveExam", { examId });
+  };
+
   return {
     history,
     connected,
@@ -512,5 +681,7 @@ export function useLobbySocket(lobbyId: number, onAnswerInputSync?: (answer: str
     sendExamAnswerInput,
     sendFavoriteToggle,
     sendLeaveLobby,
+    sendCheckActiveQuestion,
+    sendCheckActiveExam,
   };
 };

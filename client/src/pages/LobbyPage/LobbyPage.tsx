@@ -16,7 +16,7 @@ import type { Achievement } from "../../types/achievement";
 import PhaseTransitionModal from "../../components/common/modals/PhaseTransitionModal";
 import ExamFailureModal from "../../components/common/modals/ExamFailureModal";
 import { ReconnectWaitingModal } from "../../components/common/modals/ReconnectWaitingModal";
-import { CloseConfirmModal } from "../../components/common/modals/CloseConfirmModal";
+// import { CloseConfirmModal } from "../../components/common/modals/CloseConfirmModal"; // Больше не нужен
 
 export function LobbyPage() {
   const { id } = useParams<{ id: string }>();
@@ -38,6 +38,7 @@ export function LobbyPage() {
     connecting,
     sendChatMessage,
     sendAnswer,
+    sendTimeout,
     sendOpenModal,
     sendOpenExam,
     sendExamAnswerProgress,
@@ -50,6 +51,8 @@ export function LobbyPage() {
     sendAnswerInput,
     sendExamAnswerInput,
     sendLeaveLobby,
+    sendCheckActiveQuestion,
+    sendCheckActiveExam,
   } = useLobbySocket(
     lobbyId,
     (answer: string) => setSyncedAnswer(answer),
@@ -68,7 +71,7 @@ export function LobbyPage() {
 
   const [achievementNotifications, setAchievementNotifications] = useState<Achievement[]>([]);
   const [inactivePlayerNotification, setInactivePlayerNotification] = useState<string | null>(null);
-  const [showCloseConfirm, setShowCloseConfirm] = useState(false);
+  const [activeQuestionPointId, setActiveQuestionPointId] = useState<string | null>(null);
   
   // Состояние для модального окна действий пользователя
   const [isUserActionsModalOpen, setIsUserActionsModalOpen] = useState(false);
@@ -89,12 +92,17 @@ export function LobbyPage() {
     const point = points.find(p => p.id === pointId);
     if (!point || point.status !== "available") return;
 
-    // Проверяем, является ли текущий игрок активным
+    // Если неактивный игрок пытается открыть вопрос или экзамен
     if (user?.id !== activePlayerId) {
-      const activePlayer = usersInLobby.find(u => u.id === activePlayerId);
-      const activePlayerName = activePlayer?.username || 'другой игрок';
-      setInactivePlayerNotification(`Сейчас вопрос выбирает ${activePlayerName}`);
-      setTimeout(() => setInactivePlayerNotification(null), 3000);
+      if (pointId === "exam" || pointId === "exam2") {
+        // Для экзамена запрашиваем активный экзамен
+        console.log('👁️ [INACTIVE] Неактивный игрок запрашивает активный экзамен для поинта:', pointId);
+        sendCheckActiveExam(pointId);
+      } else {
+        // Для обычного вопроса запрашиваем активный вопрос
+        console.log('👁️ [INACTIVE] Неактивный игрок запрашивает активный вопрос для поинта:', pointId);
+        sendCheckActiveQuestion(pointId);
+      }
       return;
     }
 
@@ -109,7 +117,8 @@ export function LobbyPage() {
           questionId: res.data.question_id, 
           topic: res.data.topic_title || "Без названия", 
           question: res.data.question_text,
-          mentor_tip: res.data.mentor_tip || null
+          mentor_tip: res.data.mentor_tip || null,
+          pointId: pointId
         };
         
         setCurrentPointId(pointId);
@@ -193,31 +202,107 @@ export function LobbyPage() {
     };
   }, [user]);
 
+  // Обработчик установки currentPointId при восстановлении вопроса
+  useEffect(() => {
+    const handleSetCurrentPointId = (event: CustomEvent) => {
+      const { pointId } = event.detail;
+      console.log('🔄 [QUESTION] Устанавливаем currentPointId при восстановлении:', pointId);
+      setCurrentPointId(pointId);
+    };
+
+    const handleNoActiveQuestion = () => {
+      console.log('❌ [INACTIVE] Нет активного вопроса - показываем уведомление');
+      const activePlayer = usersInLobby.find(u => u.id === activePlayerId);
+      const activePlayerName = activePlayer?.username || 'другой игрок';
+      setInactivePlayerNotification(`Сейчас вопрос выбирает ${activePlayerName}`);
+      setTimeout(() => setInactivePlayerNotification(null), 3000);
+    };
+
+    const handleWrongPoint = (event: CustomEvent) => {
+      const { activePointId } = event.detail;
+      console.log('❌ [INACTIVE] Неправильный поинт - показываем уведомление');
+      
+      // Находим название активного поинта
+      const activePoint = points.find(p => p.id === activePointId);
+      const activePointTitle = activePoint?.title || `поинт ${activePointId}`;
+      
+      setInactivePlayerNotification(`Активный вопрос находится в "${activePointTitle}"`);
+      setTimeout(() => setInactivePlayerNotification(null), 3000);
+    };
+
+    const handleActivePointChanged = (event: CustomEvent) => {
+      const { activePointId } = event.detail;
+      setActiveQuestionPointId(activePointId);
+    };
+
+    const handleNoActiveExam = () => {
+      console.log('❌ [INACTIVE] Нет активного экзамена - показываем уведомление');
+      const activePlayer = usersInLobby.find(u => u.id === activePlayerId);
+      const activePlayerName = activePlayer?.username || 'другой игрок';
+      setInactivePlayerNotification(`Сейчас экзамен выбирает ${activePlayerName}`);
+      setTimeout(() => setInactivePlayerNotification(null), 3000);
+    };
+
+    const handleWrongExam = (event: CustomEvent) => {
+      const { activeExamId } = event.detail;
+      console.log('❌ [INACTIVE] Неправильный экзамен - показываем уведомление');
+      
+      // Находим название активного экзамена
+      const examName = activeExamId === 'exam2' ? 'Экзамен 2' : 'Экзамен';
+      
+      setInactivePlayerNotification(`Активный экзамен: "${examName}"`);
+      setTimeout(() => setInactivePlayerNotification(null), 3000);
+    };
+
+    window.addEventListener('question:setCurrentPointId', handleSetCurrentPointId as EventListener);
+    window.addEventListener('question:noActiveQuestion', handleNoActiveQuestion as EventListener);
+    window.addEventListener('question:wrongPoint', handleWrongPoint as EventListener);
+    window.addEventListener('exam:noActiveExam', handleNoActiveExam as EventListener);
+    window.addEventListener('exam:wrongExam', handleWrongExam as EventListener);
+    window.addEventListener('lobby:activePointChanged', handleActivePointChanged as EventListener);
+    
+    return () => {
+      window.removeEventListener('question:setCurrentPointId', handleSetCurrentPointId as EventListener);
+      window.removeEventListener('question:noActiveQuestion', handleNoActiveQuestion as EventListener);
+      window.removeEventListener('question:wrongPoint', handleWrongPoint as EventListener);
+      window.removeEventListener('exam:noActiveExam', handleNoActiveExam as EventListener);
+      window.removeEventListener('exam:wrongExam', handleWrongExam as EventListener);
+      window.removeEventListener('lobby:activePointChanged', handleActivePointChanged as EventListener);
+    };
+  }, [usersInLobby, activePlayerId, points]);
+
+  // Локальное отслеживание больше не нужно - используем глобальные события через сокеты
+
   const handleCloseAchievementNotification = () => {
     setAchievementNotifications([]);
   };
 
   const handleQuestionModalClose = () => {
-    // Если текущий игрок активный - закрываем сразу
+    // Если текущий игрок активный - закрываем и засчитываем как неправильный ответ
     if (user?.id === activePlayerId) {
-      dispatch(closeModalAction());
-      setCurrentPointId(null);
+      console.log('🔒 [ACTIVE] Активный игрок закрывает вопрос - засчитываем как неправильный ответ');
+      
+      if (!currentPointId) return;
+      
+      // Засчитываем неправильный ответ при закрытии активным игроком
+      const newIncorrectCount = (incorrectAnswers || 0) + 1;
+      dispatch(mergeScores({
+        incorrectAnswers: newIncorrectCount
+      }));
+      
+      // Отправляем событие закрытия активным игроком (засчитывается как неправильный ответ)
+      sendTimeout(currentPointId);
+      
       return;
     }
 
-    // Если неактивный игрок - показываем подтверждение
-    setShowCloseConfirm(true);
-  };
-
-  const handleConfirmClose = () => {
-    setShowCloseConfirm(false);
+    // Если неактивный игрок - закрываем локально (можно переоткрыть)
+    console.log('🔒 [INACTIVE] Неактивный игрок закрывает вопрос локально');
     dispatch(closeModalAction());
     setCurrentPointId(null);
   };
 
-  const handleCancelClose = () => {
-    setShowCloseConfirm(false);
-  };
+  // Функции handleConfirmClose и handleCancelClose больше не нужны
 
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -371,6 +456,8 @@ export function LobbyPage() {
   const handleTimeoutClose = () => {
     if (!currentPointId) return;
     
+    console.log('⏰ [TIMEOUT] Время истекло для вопроса:', currentPointId);
+    
     // Засчитываем неправильный ответ при истечении времени
     const newIncorrectCount = (incorrectAnswers || 0) + 1;
     dispatch(mergeScores({
@@ -380,11 +467,11 @@ export function LobbyPage() {
     // Отправляем обновление счетчика всем игрокам без показа уведомления
     sendIncorrectCountUpdate(newIncorrectCount);
     
-    // Передаем ход следующему игроку
-    sendPassTurn();
+    // Отправляем событие таймаута на сервер (сервер сам передаст ход)
+    sendTimeout(currentPointId);
     
     // Показываем уведомление о передаче хода
-    dispatch(setModalResult('Ход будет передан следующему игроку'));
+    dispatch(setModalResult('⏰ Время истекло! Ход передается следующему игроку'));
     setTimeout(() => {
       dispatch(setModalResult(null));
       dispatch(closeModalAction());
@@ -408,6 +495,7 @@ export function LobbyPage() {
             top={point.top}
             left={point.left}
             status={point.status}
+            isActive={activeQuestionPointId === point.id}
             onClick={openModal}
           />
         ))}
@@ -499,11 +587,7 @@ export function LobbyPage() {
           }}
         />
 
-        <CloseConfirmModal
-          isOpen={showCloseConfirm}
-          onConfirm={handleConfirmClose}
-          onCancel={handleCancelClose}
-        />
+        {/* CloseConfirmModal больше не нужен - неактивные игроки могут закрывать локально */}
       </div>
 
       <div className={styles.sidebar}>

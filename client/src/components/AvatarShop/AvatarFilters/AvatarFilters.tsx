@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useCallback } from 'react';
 import type { AvatarShopFilters, AvatarCategory, AvatarRarity } from '../../../types/avatar';
 import styles from './AvatarFilters.module.css';
 
@@ -8,7 +8,7 @@ interface AvatarFiltersProps {
   userScore: number;
 }
 
-export const AvatarFilters: React.FC<AvatarFiltersProps> = ({
+const AvatarFiltersComponent: React.FC<AvatarFiltersProps> = ({
   filters,
   onFiltersChange,
   userScore,
@@ -28,29 +28,29 @@ export const AvatarFilters: React.FC<AvatarFiltersProps> = ({
     { value: 'legendary', label: 'Легендарный', color: '#f59e0b' },
   ];
 
-  const handleCategoryChange = (category: AvatarCategory | undefined) => {
+  const handleCategoryChange = useCallback((category: AvatarCategory | undefined) => {
     onFiltersChange({ ...filters, category });
-  };
+  }, [onFiltersChange, filters]);
 
-  const handleRarityChange = (rarity: AvatarRarity | undefined) => {
+  const handleRarityChange = useCallback((rarity: AvatarRarity | undefined) => {
     onFiltersChange({ ...filters, rarity });
-  };
+  }, [onFiltersChange, filters]);
 
-  const handleShowOwnedChange = (showOwned: boolean) => {
+  const handleShowOwnedChange = useCallback((showOwned: boolean) => {
     onFiltersChange({ ...filters, showOwned });
-  };
+  }, [onFiltersChange, filters]);
 
-  const handleShowLockedChange = (showLocked: boolean) => {
+  const handleShowLockedChange = useCallback((showLocked: boolean) => {
     onFiltersChange({ ...filters, showLocked });
-  };
+  }, [onFiltersChange, filters]);
 
-  const handleSearchChange = (searchQuery: string) => {
+  const handleSearchChange = useCallback((searchQuery: string) => {
     onFiltersChange({ ...filters, searchQuery: searchQuery || undefined });
-  };
+  }, [onFiltersChange, filters]);
 
-  const clearFilters = () => {
+  const clearFilters = useCallback(() => {
     onFiltersChange({});
-  };
+  }, [onFiltersChange]);
 
   return (
     <div className={styles.filtersContainer}>
@@ -165,3 +165,6 @@ export const AvatarFilters: React.FC<AvatarFiltersProps> = ({
     </div>
   );
 };
+
+// Экспортируем компонент без мемоизации для стабильности
+export const AvatarFilters = AvatarFiltersComponent;

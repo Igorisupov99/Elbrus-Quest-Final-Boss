@@ -55,6 +55,7 @@ export function QuestionModal({
   const [showConfirmClose, setShowConfirmClose] = useState(false);
   const [answerSubmitted, setAnswerSubmitted] = useState(false);
   const closeTimeoutRef = useRef<number | null>(null);
+  const timerResetTimeoutRef = useRef<number | null>(null);
 
   useEffect(() => {
     setAnswer('');
@@ -65,10 +66,14 @@ export function QuestionModal({
     setShowConfirmClose(false);
     setAnswerSubmitted(false);
     
-    // Очищаем таймер при смене вопроса
+    // Очищаем таймеры при смене вопроса
     if (closeTimeoutRef.current) {
       clearTimeout(closeTimeoutRef.current);
       closeTimeoutRef.current = null;
+    }
+    if (timerResetTimeoutRef.current) {
+      clearTimeout(timerResetTimeoutRef.current);
+      timerResetTimeoutRef.current = null;
     }
   }, [questionId]);
 
@@ -110,6 +115,30 @@ export function QuestionModal({
       setTimerActive(false);
     }
   }, [isOpen, loading]);
+
+  // Слушаем события синхронизации таймера
+  useEffect(() => {
+    const handleTimerReset = (event: CustomEvent) => {
+      const { timeLeft } = event.detail;
+      console.log('⏰ [QUESTION] Получено событие синхронизации таймера:', timeLeft);
+      
+      // Применяем синхронизацию только если модальное окно открыто
+      // Добавляем небольшую задержку, чтобы дать время основной логике инициализации
+      if (isOpen) {
+        setTimeout(() => {
+          console.log('⏰ [QUESTION] Применяем синхронизацию таймера:', timeLeft);
+          setTimeLeft(timeLeft);
+          setTimerActive(true);
+        }, 100); // 100мс задержка
+      }
+    };
+
+    window.addEventListener('question:timerReset', handleTimerReset as EventListener);
+    
+    return () => {
+      window.removeEventListener('question:timerReset', handleTimerReset as EventListener);
+    };
+  }, [isOpen]);
 
   // Синхронизация ответа активного игрока
   useEffect(() => {

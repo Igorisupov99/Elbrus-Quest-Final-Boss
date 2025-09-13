@@ -25,6 +25,9 @@ router.post('/block', friendshipController.blockUser);
 // Получить список друзей
 router.get('/friends', friendshipController.getFriends);
 
+// Получить список друзей конкретного пользователя
+router.get('/user/:userId/friends', friendshipController.getUserFriends);
+
 // Получить входящие запросы на дружбу
 router.get('/incoming-requests', friendshipController.getIncomingRequests);
 

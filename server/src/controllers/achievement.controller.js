@@ -30,17 +30,65 @@ class AchievementController {
       const totalBonusPoints = userAchievements.reduce((sum, ua) => sum + ua.achievement.points, 0);
 
       res.json({
-        achievements: userAchievements,
-        stats: {
-          totalAchievements,
-          earnedAchievements,
-          totalBonusPoints,
-          completionPercentage: totalAchievements > 0 ? Math.round((earnedAchievements / totalAchievements) * 100) : 0
+        success: true,
+        data: {
+          achievements: userAchievements,
+          stats: {
+            totalAchievements,
+            earnedAchievements,
+            totalBonusPoints,
+            completionPercentage: totalAchievements > 0 ? Math.round((earnedAchievements / totalAchievements) * 100) : 0
+          }
         }
       });
     } catch (error) {
       console.error("Ошибка при получении достижений пользователя:", error);
-      res.status(500).json({ error: "Внутренняя ошибка сервера" });
+      res.status(500).json({ success: false, error: "Внутренняя ошибка сервера" });
+    }
+  }
+
+  // Получить все достижения конкретного пользователя по ID
+  async getUserAchievementsById(req, res) {
+    try {
+      const { userId } = req.params;
+
+      const userAchievements = await UserAchievement.findAll({
+        where: { user_id: userId },
+        include: [
+          {
+            model: Achievement,
+            as: 'achievement',
+            attributes: ['id', 'key', 'title', 'description', 'icon', 'category', 'points', 'rarity']
+          },
+          {
+            model: GameSession,
+            as: 'game_session',
+            attributes: ['id', 'room_name'],
+            required: false
+          }
+        ],
+        order: [['earned_at', 'DESC']]
+      });
+
+      const totalAchievements = await Achievement.count({ where: { is_active: true } });
+      const earnedAchievements = userAchievements.length;
+      const totalBonusPoints = userAchievements.reduce((sum, ua) => sum + ua.achievement.points, 0);
+
+      res.json({
+        success: true,
+        data: {
+          achievements: userAchievements,
+          stats: {
+            totalAchievements,
+            earnedAchievements,
+            totalBonusPoints,
+            completionPercentage: totalAchievements > 0 ? Math.round((earnedAchievements / totalAchievements) * 100) : 0
+          }
+        }
+      });
+    } catch (error) {
+      console.error("Ошибка при получении достижений пользователя:", error);
+      res.status(500).json({ success: false, error: "Внутренняя ошибка сервера" });
     }
   }
 

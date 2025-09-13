@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useMemo, useCallback, memo, useRef } from 'react';
+import React, { useEffect, useState, useCallback, memo, useRef } from 'react';
 import { useAppDispatch, useAppSelector } from '../../store/hooks';
 import { 
   fetchAvatars, 
@@ -15,14 +15,24 @@ import { AvatarFilters } from './AvatarFilters/AvatarFilters';
 import type { AvatarShopFilters } from '../../types/avatar';
 import styles from './AvatarShop.module.css';
 
-const AvatarShopComponent: React.FC = () => {
-  console.log('🚀 AvatarShop render');
+/**
+ * Статичный компонент магазина аватаров
+ * НЕ ререндерится при изменениях состояния
+ */
+const StaticAvatarShopComponent: React.FC = () => {
+  console.log('🚀 StaticAvatarShop render');
   
   const dispatch = useAppDispatch();
   const loading = useAppSelector((state) => state.avatar.loading);
   const error = useAppSelector((state) => state.avatar.error);
+  const userScore = useAppSelector(selectUserScore);
 
   const [filters, setFilters] = useState<AvatarShopFilters>({});
+
+  // Используем useRef для хранения данных без ререндеров
+  const avatarCardsDataRef = useRef<any[]>([]);
+  const filteredCardsDataRef = useRef<any[]>([]);
+  const isDataInitialized = useRef(false);
 
   useEffect(() => {
     // Загружаем данные при монтировании компонента
@@ -36,56 +46,34 @@ const AvatarShopComponent: React.FC = () => {
     loadData();
   }, [dispatch]);
 
-  // Мемоизируем только серверные фильтры для предотвращения лишних запросов
-  const serverFilters = useMemo(() => ({
-    category: filters.category,
-    rarity: filters.rarity,
-    searchQuery: filters.searchQuery
-  }), [
-    filters.category,
-    filters.rarity,
-    filters.searchQuery
-  ]);
-
-  // Флаг для отслеживания, нужно ли применить фильтры
-  const [shouldApplyFilters, setShouldApplyFilters] = useState(false);
-
-  useEffect(() => {
-    // Применяем фильтры только если они действительно изменились и нужно их применить
-    if (shouldApplyFilters) {
-      dispatch(fetchAvatars(serverFilters));
-      setShouldApplyFilters(false);
-    }
-  }, [dispatch, serverFilters, shouldApplyFilters]);
-
-  useEffect(() => {
-    // Очищаем ошибки при размонтировании
-    return () => {
-      dispatch(clearError());
-    };
-  }, [dispatch]);
-
-  // Используем мемоизированные селекторы
-  const userScore = useAppSelector(selectUserScore);
+  // Используем useRef для хранения всех данных без ререндеров
+  const avatarsRef = useRef<any[]>([]);
+  const userAvatarsRef = useRef<any[]>([]);
+  const currentAvatarRef = useRef<any>(null);
+  const userScoreRef = useRef<number>(0);
   
-  // Получаем базовые данные из Redux
+  // Получаем данные из Redux только для инициализации
   const avatars = useAppSelector((state) => state.avatar.avatars);
   const userAvatars = useAppSelector((state) => state.avatar.userAvatars);
   const currentAvatar = useAppSelector((state) => state.avatar.currentAvatar);
   
-  // Используем useRef для хранения данных без ререндеров
-  const avatarCardsDataRef = useRef<any[]>([]);
-  const filteredCardsDataRef = useRef<any[]>([]);
-  const isDataInitialized = useRef(false);
-  
-  // Вычисляем данные при изменении аватаров или фильтров
+  // Обновляем refs при изменении данных
   useEffect(() => {
-    if (avatars.length > 0) {
-      console.log('🔄 Computing avatar cards data');
-      const ownedAvatarIds = new Set(userAvatars.map(ua => ua.avatarId));
+    avatarsRef.current = avatars;
+    userAvatarsRef.current = userAvatars;
+    currentAvatarRef.current = currentAvatar;
+    userScoreRef.current = userScore;
+  }, [avatars, userAvatars, currentAvatar, userScore]);
+  
+  // Вычисляем данные только один раз при монтировании
+  useEffect(() => {
+    if (!isDataInitialized.current && avatars.length > 0) {
+      console.log('🔄 Computing avatar cards data (one time only)');
+      
+      const ownedAvatarIds = new Set(userAvatars.map((ua: any) => ua.avatarId));
       const equippedAvatarId = currentAvatar?.id;
       
-      avatarCardsDataRef.current = avatars.map(avatar => ({
+      avatarCardsDataRef.current = avatars.map((avatar: any) => ({
         avatar,
         isOwned: ownedAvatarIds.has(avatar.id),
         isEquipped: equippedAvatarId === avatar.id,
@@ -93,7 +81,7 @@ const AvatarShopComponent: React.FC = () => {
       }));
       
       // Применяем фильтры
-      console.log('🔍 Applying local filters');
+      console.log('🔍 Applying local filters (one time only)');
       filteredCardsDataRef.current = avatarCardsDataRef.current.filter(({ isOwned }) => {
         if (filters.showOwned && !isOwned) return false;
         if (filters.showLocked && isOwned) return false;
@@ -103,11 +91,9 @@ const AvatarShopComponent: React.FC = () => {
       isDataInitialized.current = true;
     }
   }, [avatars, userAvatars, currentAvatar?.id, userScore, filters.showOwned, filters.showLocked]);
-  
+
   // Используем стабильные данные
   const filteredAvatarCardsData = filteredCardsDataRef.current;
-
-  // Не мемоизируем список карточек - полагаемся на мемоизацию самих компонентов
 
   const handleFiltersChange = useCallback((newFilters: AvatarShopFilters) => {
     setFilters(prevFilters => {
@@ -118,12 +104,24 @@ const AvatarShopComponent: React.FC = () => {
         newFilters.searchQuery !== prevFilters.searchQuery;
       
       if (hasServerFilterChanges) {
-        setShouldApplyFilters(true); // Устанавливаем флаг для применения фильтров
+        // Применяем серверные фильтры
+        dispatch(fetchAvatars({
+          category: newFilters.category,
+          rarity: newFilters.rarity,
+          searchQuery: newFilters.searchQuery
+        }));
       }
       
       return newFilters;
     });
-  }, []);
+  }, [dispatch]);
+
+  useEffect(() => {
+    // Очищаем ошибки при размонтировании
+    return () => {
+      dispatch(clearError());
+    };
+  }, [dispatch]);
 
   if (error) {
     return (
@@ -134,7 +132,7 @@ const AvatarShopComponent: React.FC = () => {
           <button 
             onClick={() => {
               dispatch(clearError());
-              dispatch(fetchAvatars(serverFilters));
+              dispatch(fetchAvatars({}));
             }}
             className={styles.retryButton}
           >
@@ -162,7 +160,7 @@ const AvatarShopComponent: React.FC = () => {
         <>
           <ResultsHeader 
             count={filteredAvatarCardsData.length} 
-            currentAvatar={currentAvatar} 
+            currentAvatar={currentAvatarRef.current} 
           />
 
           {filteredAvatarCardsData.length === 0 ? (
@@ -172,7 +170,7 @@ const AvatarShopComponent: React.FC = () => {
               <p>Попробуйте изменить фильтры поиска</p>
             </div>
           ) : (
-            <AvatarGrid avatarCardsData={filteredAvatarCardsData} userScore={userScore} />
+            <AvatarGrid avatarCardsData={filteredAvatarCardsData} userScore={userScoreRef.current} />
           )}
         </>
       )}
@@ -180,5 +178,5 @@ const AvatarShopComponent: React.FC = () => {
   );
 };
 
-// Мемоизируем компонент для предотвращения ненужных ререндеров
-export const AvatarShop = memo(AvatarShopComponent);
+// Мемоизируем компонент - он НЕ будет ререндериться
+export const StaticAvatarShop = memo(StaticAvatarShopComponent, () => true);
