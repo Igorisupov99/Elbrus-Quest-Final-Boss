@@ -14,7 +14,10 @@ export function Register() {
   const dispatch = useAppDispatch();
   const navigate = useNavigate();
 
-  const [toast, setToast] = useState<{ type: 'success' | 'error'; message: string } | null>(null);
+  const [toast, setToast] = useState<{
+    type: 'success' | 'error';
+    message: string;
+  } | null>(null);
 
   const {
     register,
@@ -38,18 +41,21 @@ export function Register() {
       const result = await dispatch(registerUser(data)).unwrap();
 
       if (result) {
-        setToast({ type: 'success', message: 'Герой создан! Добро пожаловать в Elbrus Quest.' });
+        setToast({
+          type: 'success',
+          message: 'Герой создан! Добро пожаловать в Elbrus Quest.',
+        });
         setTimeout(() => {
           navigate('/');
         }, 3000);
       }
     } catch (err: unknown) {
-  const message =
-    typeof err === 'string'
-      ? err
-      : (err as any)?.message || 'Ошибка регистрации';
-  setToast({ type: 'error', message });
-} finally {
+      const message =
+        typeof err === 'string'
+          ? err
+          : (err as any)?.message || 'Ошибка регистрации';
+      setToast({ type: 'error', message });
+    } finally {
       setLoading(false);
     }
   };
@@ -108,8 +114,12 @@ export function Register() {
       </div>
 
       {toast && (
-        <Toast type={toast.type} message={toast.message} onClose={() => setToast(null)} />
+        <Toast
+          type={toast.type}
+          message={toast.message}
+          onClose={() => setToast(null)}
+        />
       )}
     </div>
   );
-};
+}
