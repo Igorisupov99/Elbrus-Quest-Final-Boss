@@ -48,6 +48,20 @@ export function useLobbySocket(lobbyId: number, onAnswerInputSync?: (answer: str
         user: { id: 0, username: "system" },
         createdAt: new Date().toISOString(),
       }]);
+
+      // Если игрок покинул лобби - закрываем модальные окна у остальных игроков
+      if (evt.type === "leave") {
+        console.log('🚪 [SYSTEM] Игрок покинул лобби, закрываем модальные окна:', evt.username);
+        
+        // Закрываем модальные окна для всех игроков
+        dispatch(closeModal());
+        dispatch(closeExamModal());
+        
+        // Сбрасываем активные поинты
+        window.dispatchEvent(new CustomEvent('lobby:activePointChanged', { 
+          detail: { activePointId: null } 
+        }));
+      }
     };
     const onError = (payload: any) => console.error("ошибка чата", payload);
 

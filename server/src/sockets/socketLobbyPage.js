@@ -588,6 +588,24 @@ function initLobbySockets(nsp) {
         });
 
         if (wasActive) {
+          console.log(`🚪 [LEAVE] Активный игрок ${socket.user.username} намеренно покидает лобби`);
+          
+          // Очищаем состояние вопроса и экзамена при намеренном выходе
+          if (lobbyQuestionState.has(lobbyId)) {
+            lobbyQuestionState.delete(lobbyId);
+            console.log(`🗑️ [LEAVE] Очищено состояние вопроса при выходе игрока для лобби ${lobbyId}`);
+          }
+          
+          if (lobbyExamState.has(lobbyId)) {
+            lobbyExamState.delete(lobbyId);
+            console.log(`🗑️ [LEAVE] Очищено состояние экзамена при выходе игрока для лобби ${lobbyId}`);
+          }
+
+          // Уведомляем всех игроков о сбросе активного поинта
+          nsp.to(roomKey).emit('lobby:activePointChanged', {
+            activePointId: null
+          });
+
           const nextPlayer = await db.UserSession.findOne({
             where: {
               game_session_id: lobbyId,
@@ -605,6 +623,8 @@ function initLobbySockets(nsp) {
               { is_user_active: false },
               { where: { id: wasActive.id } }
             );
+            
+            console.log(`🎮 [LEAVE] Ход передан следующему игроку: ${nextPlayer.player_name}`);
             await emitUsersList();
           }
         }

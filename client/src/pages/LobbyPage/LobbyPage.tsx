@@ -364,6 +364,19 @@ export function LobbyPage() {
 
 
   const handleExitLobby = () => {
+    // Если мы активный игрок - закрываем все модальные окна
+    if (user?.id === activePlayerId) {
+      console.log('🚪 [EXIT] Активный игрок выходит - закрываем модальные окна');
+      
+      // Закрываем модалки вопросов и экзаменов
+      dispatch(closeModalAction());
+      dispatch(closeExamModalAction());
+      
+      // Сбрасываем состояние
+      setCurrentPointId(null);
+      setLastAnsweringPlayer('Игрок');
+    }
+    
     sendLeaveLobby(); // Отправляем намеренный выход из лобби
     navigate("/");
   };

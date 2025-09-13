@@ -302,64 +302,50 @@ export function QuestionModal({
         {!isCorrectMessage && (
           <>
             <h2 className={styles.title}>{topic}</h2>
-            <p className={styles.question}>{question}</p>
 
-            {/* Кнопка подсказки и отображение подсказки */}
-            {mentor_tip && (
-              <div className={styles.hintSection}>
-                {!showHint ? (
+            {/* Секция помощи */}
+            <div className={styles.helpSection}>
+              <div className={styles.helpButtons}>
+                {mentor_tip && (
                   <Button 
-                    onClick={() => setShowHint(true)}
-                    className={styles.hintButton}
+                    onClick={() => setShowHint(!showHint)}
+                    className={`${styles.helpButton} ${styles.hintButton}`}
                   >
                     💡 Подсказка
                   </Button>
-                ) : (
-                  <div className={styles.hintContent}>
-                    <div className={styles.hintHeader}>
-                      <span className={styles.hintIcon}>💡</span>
-                      <span className={styles.hintTitle}>Подсказка от ментора:</span>
-                    </div>
-                    <p className={styles.hintText}>{mentor_tip}</p>
-                    <Button 
-                      onClick={() => setShowHint(false)}
-                      className={styles.hideHintButton}
-                    >
-                      Скрыть подсказку
-                    </Button>
-                  </div>
                 )}
-              </div>
-            )}
-
-            {/* AI помощь */}
-            <div className={styles.aiSection}>
-              <div className={styles.aiButtonContainer}>
                 <Button 
                   onClick={handleAskAI}
                   disabled={aiLoading}
-                  className={styles.aiButton}
+                  className={`${styles.helpButton} ${styles.aiButton}`}
                 >
                   {aiLoading ? '🤖 AI думает...' : `🤖 Спросить у AI (${AI_QUESTION_COST} очков)`}
                 </Button>
-                <div className={styles.aiCostInfo}>
-                  У вас: {userScore} очков
-                </div>
               </div>
               
-              {aiResponse && (
-                <div className={styles.aiResponse}>
-                  <div className={styles.aiResponseHeader}>
-                    <span className={styles.aiIcon}>🤖</span>
-                    <span className={styles.aiTitle}>AI-Ментор:</span>
+              <div className={styles.userInfo}>
+                У вас: {userScore} очков
+              </div>
+
+              {/* Отображение подсказки */}
+              {showHint && mentor_tip && (
+                <div className={styles.helpContent}>
+                  <div className={styles.helpContentHeader}>
+                    <span className={styles.helpIcon}>💡</span>
+                    <span className={styles.helpTitle}>Подсказка от ментора</span>
                   </div>
-                  <p className={styles.aiText}>{aiResponse}</p>
-                  <Button 
-                    onClick={() => setAiResponse(null)}
-                    className={styles.hideAiButton}
-                  >
-                    Скрыть ответ
-                  </Button>
+                  <div className={styles.helpText}>{mentor_tip}</div>
+                </div>
+              )}
+
+              {/* Отображение ответа AI */}
+              {aiResponse && (
+                <div className={styles.helpContent}>
+                  <div className={styles.helpContentHeader}>
+                    <span className={styles.helpIcon}>🤖</span>
+                    <span className={styles.helpTitle}>AI-Ментор</span>
+                  </div>
+                  <div className={styles.helpText}>{aiResponse}</div>
                 </div>
               )}
             </div>
@@ -383,6 +369,11 @@ export function QuestionModal({
                 </div>
               </div>
             )}
+
+            <div className={styles.questionSection}>
+              <div className={styles.questionLabel}>Вопрос:</div>
+              <p className={styles.question}>{question}</p>
+            </div>
 
             <input
               type="text"
