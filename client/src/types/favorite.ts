@@ -14,7 +14,7 @@ export interface FavoriteQuestion {
     };
   };
   createdAt: string;
-  showAnswer?: boolean; // Локальное состояние для показа ответа
+  showAnswer?: boolean; // Локальное состояние для показа подсказки
 }
 
 export interface FavoritesState {

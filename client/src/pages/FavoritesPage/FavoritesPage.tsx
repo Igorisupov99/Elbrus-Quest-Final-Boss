@@ -61,8 +61,8 @@ const FavoritesPage: React.FC = () => {
     }
   };
 
-  // Обработчик показа ответа
-  const handleShowAnswer = (questionId: number) => {
+  // Обработчик показа подсказки
+  const handleShowHint = (questionId: number) => {
     setFavorites(prev => 
       prev.map(fav => 
         fav.questionId === questionId 
@@ -149,27 +149,22 @@ const FavoritesPage: React.FC = () => {
                   </div>
 
                   <div className={styles.questionActions}>
-                    <button
-                      className={styles.showAnswerButton}
-                      onClick={() => handleShowAnswer(favorite.questionId)}
-                    >
-                      {favorite.showAnswer ? 'Скрыть ответ' : 'Показать ответ'}
-                    </button>
+                    {favorite.question.mentorTip && (
+                      <button
+                        className={styles.showAnswerButton}
+                        onClick={() => handleShowHint(favorite.questionId)}
+                      >
+                        {favorite.showAnswer ? 'Скрыть подсказку' : 'Показать подсказку'}
+                      </button>
+                    )}
                   </div>
 
-                  {favorite.showAnswer && (
+                  {favorite.showAnswer && favorite.question.mentorTip && (
                     <div className={styles.answerSection}>
-                      <div className={styles.correctAnswer}>
-                        <h4>✅ Правильный ответ:</h4>
-                        <p>{favorite.question.correctAnswer}</p>
+                      <div className={styles.mentorTip}>
+                        <h4>💡 Подсказка ментора:</h4>
+                        <p>{favorite.question.mentorTip}</p>
                       </div>
-                      
-                      {favorite.question.mentorTip && (
-                        <div className={styles.mentorTip}>
-                          <h4>💡 Подсказка ментора:</h4>
-                          <p>{favorite.question.mentorTip}</p>
-                        </div>
-                      )}
                     </div>
                   )}
                 </div>
