@@ -86,6 +86,7 @@ function initLobbySockets(nsp) {
           }
         }
 
+        console.log(`👥 [USERS] Отправляем обновление пользователей для лобби ${lobbyId}:`, { users: users.map(u => ({ id: u.id, username: u.username })), activePlayerId });
         nsp.to(roomKey).emit('lobby:users', { users, activePlayerId });
       } catch (err) {
         console.error('Ошибка при получении активного игрока:', err);
@@ -241,7 +242,26 @@ function initLobbySockets(nsp) {
           where: { game_session_id: lobbyId, is_user_active: true },
         });
 
-        if (!currentActivePlayer) return;
+        if (!currentActivePlayer) {
+          console.log(`🎮 [PASS_TURN] Нет активного игрока, назначаем первого доступного для лобби ${lobbyId}`);
+          // Если нет активного игрока, назначаем первого доступного
+          const allPlayers = await db.UserSession.findAll({
+            where: { game_session_id: lobbyId },
+            order: [['createdAt', 'ASC']],
+            include: [{ model: db.User, as: 'user' }],
+          });
+          
+          if (allPlayers.length > 0) {
+            const firstPlayer = allPlayers[0];
+            await db.UserSession.update(
+              { is_user_active: true },
+              { where: { id: firstPlayer.id } }
+            );
+            console.log(`🎮 [PASS_TURN] Назначен активный игрок: ${firstPlayer.user.username}`);
+            await emitUsersList();
+          }
+          return;
+        }
 
         const allPlayers = await db.UserSession.findAll({
           where: { game_session_id: lobbyId },
@@ -249,7 +269,12 @@ function initLobbySockets(nsp) {
           include: [{ model: db.User, as: 'user' }],
         });
 
-        if (allPlayers.length <= 1) return;
+        if (allPlayers.length <= 1) {
+          console.log(`🎮 [PASS_TURN] В лобби только один игрок, не передаем ход для лобби ${lobbyId}`);
+          // Отправляем обновление списка пользователей, чтобы клиент знал, что игрок все еще активен
+          await emitUsersList();
+          return;
+        }
 
         const currentIndex = allPlayers.findIndex(
           (player) => player.id === currentActivePlayer.id

@@ -306,14 +306,14 @@ export function ExamModal({
       setShowConfirmClose(true);
     } else {
       // Неактивный игрок просто закрывает у себя
-      setHasBeenRestored(false); // Сбрасываем флаг при закрытии
+      // НЕ сбрасываем флаг hasBeenRestored, чтобы при повторном открытии экзамен восстановился
       onClose();
     }
   };
 
   const handleConfirmClose = () => {
     setShowConfirmClose(false);
-    setHasBeenRestored(false); // Сбрасываем флаг при закрытии
+    setHasBeenRestored(false); // Сбрасываем флаг при закрытии активным игроком
     // Вызываем колбэк для провала экзамена
     onExamFail?.();
   };

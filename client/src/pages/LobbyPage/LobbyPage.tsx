@@ -36,10 +36,31 @@ export function LobbyPage() {
   useEffect(() => {
     console.log(`💰 [LobbyPage] Текущие очки пользователя: ${userScore}`);
   }, [userScore]);
+
+  // Проверка и назначение активного игрока
+  useEffect(() => {
+    console.log(`🎮 [LOBBY] Проверка активного игрока:`, { 
+      activePlayerId, 
+      usersInLobby: usersInLobby.length, 
+      currentUserId: user?.id,
+      currentUserInLobby: usersInLobby.find(u => u.id === user?.id) 
+    });
+    
+    if (!activePlayerId && usersInLobby.length > 0 && user?.id) {
+      // Если нет активного игрока, но есть пользователи в лобби, назначаем активным текущего пользователя
+      const currentUserInLobby = usersInLobby.find(u => u.id === user.id);
+      if (currentUserInLobby) {
+        console.log(`🎮 [LOBBY] Нет активного игрока, назначаем активным текущего пользователя: ${user.username}`);
+        // Отправляем запрос на сервер для назначения активного игрока
+        sendPassTurn();
+      }
+    }
+  }, [activePlayerId, usersInLobby, user?.id]);
   const examFailureModal = useAppSelector(s => s.lobbyPage.examFailureModal);
   const reconnectWaitingModal = useAppSelector(s => s.lobbyPage.reconnectWaitingModal);
   const correctAnswerNotification = useAppSelector(s => s.lobbyPage.correctAnswerNotification);
   const activeExamId = useAppSelector(s => s.lobbyPage.activeExamId);
+  const examModalOpen = useAppSelector(s => s.lobbyPage.examModalOpen);
   
   // Временное логирование для отладки
   console.log(`🔍 [LOBBY] Текущий activeExamId:`, activeExamId);
@@ -137,6 +158,22 @@ export function LobbyPage() {
         dispatch(openModalAction(payload));
         sendOpenModal(payload);
       } else {
+        // Проверяем, есть ли уже активный экзамен перед началом нового
+        console.log('🎯 [EXAM] Попытка открыть экзамен:', { 
+          pointId, 
+          activeExamId, 
+          examModalOpen, 
+          isActivePlayer: user?.id === activePlayerId 
+        });
+        
+        // Если экзамен уже активен, запрашиваем его восстановление
+        if (activeExamId && activeExamId === pointId) {
+          console.log('🔄 [EXAM] Экзамен уже активен, запрашиваем восстановление:', pointId);
+          sendCheckActiveExam(pointId);
+          return;
+        }
+        
+        console.log('🆕 [EXAM] Начинаем новый экзамен:', pointId);
         const phaseId = pointId === "exam" ? 1 : 2;
         const res = await api.get("/api/exam/examQuestion", {
           params: { phase_id: phaseId, count: usersInLobby.length + incorrectAnswers },
@@ -244,6 +281,7 @@ export function LobbyPage() {
 
     const handleActivePointChanged = (event: CustomEvent) => {
       const { activePointId } = event.detail;
+      console.log('🎯 [ACTIVE POINT] Изменение активного поинта:', activePointId);
       setActiveQuestionPointId(activePointId);
     };
 
