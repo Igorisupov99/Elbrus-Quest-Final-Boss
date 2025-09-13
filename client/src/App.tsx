@@ -9,6 +9,7 @@ import { AchievementsPage } from './pages/AchievementsPage/AchievementsPage';
 import { FavoritesPage } from './pages/FavoritesPage';
 import { AvatarShopPage } from './pages/AvatarShopPage/AvatarShopPage';
 import { UserPage } from './pages/UserPage';
+import AIQuestionsPage from './pages/AIQuestionsPage/AIQuestionsPage';
 import { PrivateRoute } from './components/PrivateRoute/PrivateRoute';
 import { useEffect } from 'react';
 import { initAuth } from './store/authThunks';
@@ -57,6 +58,14 @@ export function App() {
           element={
             <PrivateRoute>
               <FavoritesPage />
+            </PrivateRoute>
+          }
+        />
+        <Route
+          path="/ai-questions"
+          element={
+            <PrivateRoute>
+              <AIQuestionsPage />
             </PrivateRoute>
           }
         />

@@ -91,6 +91,13 @@ export function Header() {
                   📚 Избранное
                 </Link>
                 <Link
+                  to="/ai-questions"
+                  className={styles.burgerLink}
+                  onClick={() => setIsBurgerMenuOpen(false)}
+                >
+                  🤖 Вопросы от АИ
+                </Link>
+                <Link
                   to="/avatar-shop"
                   className={styles.burgerLink}
                   onClick={() => setIsBurgerMenuOpen(false)}
