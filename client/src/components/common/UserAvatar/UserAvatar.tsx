@@ -7,6 +7,7 @@ interface UserAvatarProps {
   fallbackImageUrl?: string;
   className?: string;
   size?: 'small' | 'medium' | 'large';
+  shape?: 'circle' | 'square';
   showLoading?: boolean;
   alt?: string;
   onClick?: () => void;
@@ -22,6 +23,7 @@ export const UserAvatar: React.FC<UserAvatarProps> = ({
   fallbackImageUrl = "/default-avatar.svg",
   className = "",
   size = "medium",
+  shape = "circle",
   showLoading = true,
   alt = "Аватар пользователя",
   onClick,
@@ -40,6 +42,10 @@ export const UserAvatar: React.FC<UserAvatarProps> = ({
     }
   };
 
+  const getShapeClass = () => {
+    return shape === 'square' ? styles.square : styles.circle;
+  };
+
   const getImageUrl = () => {
     if (avatar?.imageUrl) {
       return avatar.imageUrl;
@@ -50,7 +56,7 @@ export const UserAvatar: React.FC<UserAvatarProps> = ({
   if (loading && showLoading) {
     return (
       <div 
-        className={`${styles.avatar} ${getSizeClass()} ${styles.loading} ${className}`}
+        className={`${styles.avatar} ${getSizeClass()} ${getShapeClass()} ${styles.loading} ${className}`}
         onClick={onClick}
         style={style}
       >
@@ -67,7 +73,7 @@ export const UserAvatar: React.FC<UserAvatarProps> = ({
     <img
       src={getImageUrl()}
       alt={alt}
-      className={`${styles.avatar} ${getSizeClass()} ${className}`}
+      className={`${styles.avatar} ${getSizeClass()} ${getShapeClass()} ${className}`}
       onClick={onClick}
       style={style}
       onError={(e) => {

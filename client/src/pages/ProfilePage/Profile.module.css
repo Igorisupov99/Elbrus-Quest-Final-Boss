@@ -971,16 +971,22 @@
   }
 
   .removeFriendButton {
-    padding: 8px 16px;
+    padding: 8px;
     background: #dc3545;
     color: white;
     border: 1px solid #c82333;
     border-radius: 6px;
-    font-size: 0.9rem;
+    font-size: 1.2rem;
     font-weight: 600;
     cursor: pointer;
     transition: all 0.2s ease;
     flex-shrink: 0;
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    align-self: center;
   }
 
   .removeFriendButton:hover {
@@ -1076,16 +1082,15 @@
 
   .friendCardContent {
     display: flex;
-    align-items: center;
+    align-items: flex-start;
     gap: 12px;
     flex: 1;
     min-width: 0;
   }
 
   .friendAvatar {
-    width: 60px;
-    height: 60px;
-    border-radius: 50%;
+    width: 75px;
+    height: 75px;
     object-fit: cover;
     background: #ddd;
     flex-shrink: 0;
@@ -1103,6 +1108,8 @@
   .friendInfo {
     flex: 1;
     min-width: 0;
+    display: flex;
+    flex-direction: column;
   }
 
   .friendName {
@@ -1125,10 +1132,13 @@
   }
 
   .friendScore {
-    margin: 0;
-    font-size: 0.85rem;
-    color: #6b3e15;
-    font-weight: 500;
+    margin: 4px 0 0 0;
+    font-size: 0.8rem;
+    color: #d8a35d;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 4px;
   }
 
   /* Кнопки действий */

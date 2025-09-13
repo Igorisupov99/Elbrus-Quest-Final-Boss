@@ -806,16 +806,20 @@ export function UserPage() {
                             background: 'linear-gradient(90deg, #d4a017, #a97400)'
                           }}
                         />
-                        <div className={styles.friendCardContent}>
+                        <div style={{ display: 'flex', alignItems: 'flex-start', gap: '12px', flex: 1 }}>
                           <UserAvatar
                             userId={friend.id}
                             fallbackImageUrl={friend.image_url || "/default-avatar.svg"}
                             size="medium"
+                            shape="square"
                             alt={`Аватар ${friend.username}`}
                             className={styles.friendAvatar}
                           />
-                          <div className={styles.friendInfo}>
+                          <div style={{ display: 'flex', flexDirection: 'column', flex: 1 }}>
                             <h4 className={styles.friendName}>{friend.username}</h4>
+                            <p className={styles.friendScore}>
+                              🏆 {friend.score ?? 0} очков
+                            </p>
                           </div>
                         </div>
                       </div>

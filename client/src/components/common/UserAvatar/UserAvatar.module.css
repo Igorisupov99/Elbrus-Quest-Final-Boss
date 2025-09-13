@@ -1,11 +1,18 @@
 .avatar {
-  border-radius: 50%;
   object-fit: cover;
   background: #ddd;
   transition: all 0.2s ease;
   cursor: pointer;
   border: 2px solid #d8a35d;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+}
+
+.circle {
+  border-radius: 50%;
+}
+
+.square {
+  border-radius: 8px;
 }
 
 .avatar:hover {
@@ -22,8 +29,8 @@
 }
 
 .medium {
-  width: 60px;
-  height: 60px;
+  width: 75px;
+  height: 75px;
   border-width: 3px;
 }
 

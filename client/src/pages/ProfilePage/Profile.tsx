@@ -999,6 +999,7 @@ export function Profile() {
                     userId={searchResult.id}
                     fallbackImageUrl={searchResult.image_url || "/default-avatar.svg"}
                     size="small"
+                    shape="square"
                     alt={`Аватар ${searchResult.username}`}
                     style={{
                       border: '1px solid #87ceeb',
@@ -1192,16 +1193,20 @@ export function Profile() {
                         background: 'linear-gradient(90deg, #d8a35d, #b0752d)'
                       }}
                     />
-                    <div className={styles.friendCardContent}>
+                    <div style={{ display: 'flex', alignItems: 'flex-start', gap: '12px', flex: 1 }}>
                       <UserAvatar
                         userId={friend.id}
                         fallbackImageUrl={friend.image_url || "/default-avatar.svg"}
                         size="medium"
+                        shape="square"
                         alt={`Аватар ${friend.username}`}
                         className={styles.friendAvatar}
                       />
-                      <div className={styles.friendInfo}>
+                      <div style={{ display: 'flex', flexDirection: 'column', flex: 1 }}>
                         <h4 className={styles.friendName}>{friend.username}</h4>
+                        <p className={styles.friendScore}>
+                          🏆 {friend.score ?? 0} очков
+                        </p>
                       </div>
                     </div>
                     <button
@@ -1247,7 +1252,7 @@ export function Profile() {
                         e.currentTarget.style.boxShadow = '0 5px 12px rgba(220, 53, 69, 0.4)';
                       }}
                     >
-                      🗑️ Удалить
+                      🗑️
                     </button>
                   </div>
                 ))
@@ -1624,6 +1629,7 @@ export function Profile() {
                         userId={request.user?.id || 0}
                         fallbackImageUrl={request.user?.image_url || "/default-avatar.svg"}
                         size="medium"
+                        shape="square"
                         alt={`Аватар ${request.user?.username}`}
                         style={{
                           border: '3px solid #8b4513',
@@ -1936,6 +1942,7 @@ export function Profile() {
                         userId={request.friend?.id || 0}
                         fallbackImageUrl={request.friend?.image_url || "/default-avatar.svg"}
                         size="medium"
+                        shape="square"
                         alt={`Аватар ${request.friend?.username}`}
                         style={{
                           border: '3px solid #d2691e',
