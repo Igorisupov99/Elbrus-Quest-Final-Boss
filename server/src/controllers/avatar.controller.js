@@ -269,11 +269,39 @@ const getCurrentAvatar = async (req, res) => {
   }
 };
 
+// Получить аватар пользователя по ID
+const getUserAvatar = async (req, res) => {
+  try {
+    const { userId } = req.params;
+
+    const currentAvatar = await db.UserAvatar.findOne({
+      where: { userId, isEquipped: true },
+      include: [{
+        model: db.Avatar,
+        as: 'avatar'
+      }]
+    });
+
+    if (!currentAvatar) {
+      return res.json(null);
+    }
+
+    res.json(currentAvatar.avatar);
+  } catch (error) {
+    console.error('Ошибка получения аватара пользователя:', error);
+    res.status(500).json({ 
+      success: false, 
+      message: 'Ошибка получения аватара пользователя' 
+    });
+  }
+};
+
 module.exports = {
   getAvatars,
   getUserAvatars,
   purchaseAvatar,
   equipAvatar,
   unequipAvatar,
-  getCurrentAvatar
+  getCurrentAvatar,
+  getUserAvatar
 };

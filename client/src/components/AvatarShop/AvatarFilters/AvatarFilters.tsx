@@ -4,7 +4,7 @@ import styles from './AvatarFilters.module.css';
 
 interface AvatarFiltersProps {
   filters: AvatarShopFilters;
-  onFiltersChange: (filters: AvatarShopFilters) => void;
+  onFiltersChange: (filters: (prev: AvatarShopFilters) => AvatarShopFilters) => void;
   userScore: number;
 }
 
@@ -49,7 +49,7 @@ const AvatarFiltersComponent: React.FC<AvatarFiltersProps> = ({
   }, [onFiltersChange, filters]);
 
   const clearFilters = useCallback(() => {
-    onFiltersChange({});
+    onFiltersChange(() => ({}));
   }, [onFiltersChange]);
 
   return (

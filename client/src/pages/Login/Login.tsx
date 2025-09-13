@@ -61,8 +61,8 @@ export function Login() {
   return (
     <div className={styles.loginPage}>
       <div className={styles.loginCard}>
-        <h1 className={styles.title}>Elbrus Quest</h1>
-        <p className={styles.subtitle}>Вход в фазу обучения</p>
+        <h1 className={styles.title}>QuestCode</h1>
+        <p className={styles.subtitle}>Начать испытание</p>
 
         <form onSubmit={handleSubmit(onSubmit)} className={styles.form}>
           <Input
@@ -96,9 +96,6 @@ export function Login() {
         <div className={styles.links}>
           <p>
             Нет аккаунта? <Link to="/register">Присоединиться к команде</Link>
-          </p>
-          <p>
-            <Link to="/forgot-password">Забыли пароль?</Link>
           </p>
         </div>
       </div>
