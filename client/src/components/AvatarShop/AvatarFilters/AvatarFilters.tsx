@@ -152,7 +152,7 @@ const AvatarFiltersComponent: React.FC<AvatarFiltersProps> = ({
                 onChange={(e) => handleShowLockedChange(e.target.checked)}
                 className={styles.checkbox}
               />
-              <span className={styles.checkboxText}>Заблокированные</span>
+              <span className={styles.checkboxText}>Можно приобрести</span>
             </label>
           </div>
         </div>
