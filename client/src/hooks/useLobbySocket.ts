@@ -171,10 +171,22 @@ export function useLobbySocket(lobbyId: number, onAnswerInputSync?: (answer: str
       dispatch(setExamQuestions(payload.questions));
       dispatch(setExamIndex(payload.index));
       dispatch(openExamModal());
+      
+      // Очищаем синхронизированный ответ при начале экзамена
+      console.log('🎯 [EXAM] Начало экзамена, очищаем синхронизированный ответ');
+      if (onExamAnswerInputSync) {
+        onExamAnswerInputSync(''); // Очищаем syncedExamAnswer
+      }
     };
     
     const onExamNext = (payload: { index: number; question?: any }) => {
       dispatch(setExamIndex(payload.index));
+      
+      // Очищаем синхронизированный ответ при переходе к следующему вопросу
+      console.log('➡️ [EXAM] Переход к следующему вопросу, очищаем синхронизированный ответ');
+      if (onExamAnswerInputSync) {
+        onExamAnswerInputSync(''); // Очищаем syncedExamAnswer
+      }
     };
 
     const onExamRestore = (payload: { 
@@ -209,6 +221,12 @@ export function useLobbySocket(lobbyId: number, onAnswerInputSync?: (answer: str
         console.log('🔄 [EXAM] Сбрасываем флаг восстановления после переподключения');
         dispatch(setExamRestoring(false));
       }, 200);
+      
+      // Очищаем синхронизированный ответ при восстановлении экзамена
+      console.log('🔄 [EXAM] Восстановление экзамена, очищаем синхронизированный ответ');
+      if (onExamAnswerInputSync) {
+        onExamAnswerInputSync(''); // Очищаем syncedExamAnswer
+      }
       
       console.log(`📊 [EXAM] Экзамен восстановлен после переподключения: вопрос ${payload.currentIndex + 1}/${payload.totalQuestions}, правильных ответов: ${payload.correctAnswers}`);
       console.log(`⏰ [EXAM] Таймер восстановлен: осталось ${payload.timeLeft} секунд`);
