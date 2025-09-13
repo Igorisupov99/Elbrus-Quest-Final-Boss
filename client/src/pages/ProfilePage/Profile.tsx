@@ -14,6 +14,7 @@ import {
   type User as FriendUser, 
   type Friendship 
 } from "../../api/friendship/friendshipApi";
+import { getFriendsCountText } from "../../utils/declination";
 import { achievementApi } from "../../api/achievements/achievementApi";
 import { AchievementCard } from "../../components/Achievement/AchievementCard/AchievementCard";
 import { AchievementModal } from "../../components/Achievement/AchievementModal/AchievementModal";
@@ -644,7 +645,7 @@ export function Profile() {
         </div>
         <div className={styles.basicInfo}>
           <h2 className={styles.username}>{user.username}</h2>
-          <p className={styles.friendsCount}>Друзей: {friends.length}</p>
+          <p className={styles.friendsCount}>{getFriendsCountText(friends.length)}</p>
         </div>
       </div>
 
@@ -850,7 +851,7 @@ export function Profile() {
               )}
               
               <div style={{ textAlign: 'center', flex: 1 }}>
-                👥 У вас {friends.length} {friends.length === 1 ? 'друг' : friends.length < 5 ? 'друга' : 'друзей'}
+                👥 У вас {getFriendsCountText(friends.length)}
               </div>
               
               {friends.length > 5 && (
@@ -1273,7 +1274,7 @@ export function Profile() {
               >
                 {friends.length > 5 ? 
                   `${currentFriendsIndex + 1}-${Math.min(currentFriendsIndex + 5, friends.length)} из ${friends.length}` : 
-                  `${friends.length} ${friends.length === 1 ? 'друг' : friends.length < 5 ? 'друга' : 'друзей'}`
+                  getFriendsCountText(friends.length)
                 }
               </div>
             )}
