@@ -12,7 +12,7 @@ export const ReconnectWaitingModal: React.FC<ReconnectWaitingModalProps> = ({
   isOpen,
   activePlayerName,
   timeLeft,
-  onTimeUp,
+  onTimeUp: _onTimeUp,
 }) => {
   const [displayTime, setDisplayTime] = useState(timeLeft);
 

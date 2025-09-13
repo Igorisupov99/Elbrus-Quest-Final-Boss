@@ -64,7 +64,7 @@ export function LobbyPage() {
     sendLeaveLobby,
     sendCheckActiveQuestion,
     sendCheckActiveExam,
-    sendAIQuestion,
+    sendAIQuestion: _sendAIQuestion,
   } = useLobbySocket(
     lobbyId,
     (answer: string) => setSyncedAnswer(answer),
