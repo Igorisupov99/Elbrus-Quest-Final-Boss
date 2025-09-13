@@ -70,18 +70,21 @@ function initLobbySockets(nsp) {
 
         let activePlayerId = activeUserSession ? activeUserSession.user.id : null;
 
-        // Если нет активного игрока, но есть подключенные пользователи, назначаем первого
+        // Если нет активного игрока, но есть подключенные пользователи, назначаем первого по времени входа
         if (!activePlayerId && users.length > 0) {
-          const firstUser = users[0];
-          const userSession = await db.UserSession.findOne({
-            where: { game_session_id: lobbyId, user_id: firstUser.id },
+          // Получаем всех игроков, отсортированных по времени создания сессии (первый вошедший)
+          const allSessions = await db.UserSession.findAll({
+            where: { game_session_id: lobbyId },
+            order: [['createdAt', 'ASC']],
+            include: [{ model: db.User, as: 'user' }],
           });
           
-          if (userSession) {
-            await userSession.update({ is_user_active: true });
-            activePlayerId = firstUser.id;
+          if (allSessions.length > 0) {
+            const firstSession = allSessions[0];
+            await firstSession.update({ is_user_active: true });
+            activePlayerId = firstSession.user.id;
             console.log(
-              `🎮 Автоматически назначен активный игрок в лобби ${lobbyId}: ${firstUser.username}`
+              `🎮 Автоматически назначен активный игрок в лобби ${lobbyId}: ${firstSession.user.username} (первый вошедший)`
             );
           }
         }
@@ -269,18 +272,36 @@ function initLobbySockets(nsp) {
           include: [{ model: db.User, as: 'user' }],
         });
 
-        if (allPlayers.length <= 1) {
-          console.log(`🎮 [PASS_TURN] В лобби только один игрок, не передаем ход для лобби ${lobbyId}`);
+        // Фильтруем только подключенных игроков
+        const connectedPlayerIds = lobbyUsers.has(lobbyId) 
+          ? Array.from(lobbyUsers.get(lobbyId).values()).map(user => user.id)
+          : [];
+        const connectedPlayers = allPlayers.filter(player => 
+          connectedPlayerIds.includes(player.user.id)
+        );
+
+        console.log(`🎮 [PASS_TURN] Всего игроков в БД: ${allPlayers.length}, подключенных: ${connectedPlayers.length}`);
+
+        if (connectedPlayers.length <= 1) {
+          console.log(`🎮 [PASS_TURN] В лобби только один подключенный игрок, оставляем его активным для лобби ${lobbyId}`);
+          // Убеждаемся, что единственный игрок активен
+          if (connectedPlayers.length === 1) {
+            await db.UserSession.update(
+              { is_user_active: true },
+              { where: { id: connectedPlayers[0].id } }
+            );
+            console.log(`🎮 [PASS_TURN] Единственный игрок ${connectedPlayers[0].user.username} остается активным`);
+          }
           // Отправляем обновление списка пользователей, чтобы клиент знал, что игрок все еще активен
           await emitUsersList();
           return;
         }
 
-        const currentIndex = allPlayers.findIndex(
+        const currentIndex = connectedPlayers.findIndex(
           (player) => player.id === currentActivePlayer.id
         );
-        const nextIndex = (currentIndex + 1) % allPlayers.length;
-        const nextPlayer = allPlayers[nextIndex];
+        const nextIndex = (currentIndex + 1) % connectedPlayers.length;
+        const nextPlayer = connectedPlayers[nextIndex];
 
         await db.UserSession.update(
           { is_user_active: false },
@@ -661,19 +682,26 @@ function initLobbySockets(nsp) {
 
         nsp.to(roomKey).emit('lobby:updatePointStatus', { pointId, status });
         
-        // Очищаем состояние вопроса после ответа
-        if (lobbyQuestionState.has(lobbyId)) {
-          lobbyQuestionState.delete(lobbyId);
-          console.log(`🗑️ [QUESTION] Очищено состояние вопроса после ответа для лобби ${lobbyId}`);
+        // При правильном ответе передаем ход следующему игроку
+        if (correct) {
+          console.log(`✅ [SOCKET] Правильный ответ - передаем ход следующему игроку`);
+          // Очищаем состояние вопроса после правильного ответа
+          if (lobbyQuestionState.has(lobbyId)) {
+            lobbyQuestionState.delete(lobbyId);
+            console.log(`🗑️ [QUESTION] Очищено состояние вопроса после правильного ответа для лобби ${lobbyId}`);
+          }
+          
+          // Уведомляем всех игроков о сбросе активного поинта
+          nsp.to(roomKey).emit('lobby:activePointChanged', {
+            activePointId: null
+          });
+          
+          await passTurnToNextPlayer();
+        } else {
+          console.log(`❌ [SOCKET] Неправильный ответ - игрок может попробовать еще раз`);
+          // При неправильном ответе НЕ очищаем состояние вопроса и НЕ передаем ход
+          // Игрок остается активным и может попробовать еще раз
         }
-        
-        // Уведомляем всех игроков о сбросе активного поинта
-        nsp.to(roomKey).emit('lobby:activePointChanged', {
-          activePointId: null
-        });
-        
-        console.log(`🔄 [SOCKET] Передаем ход следующему игроку`);
-        await passTurnToNextPlayer();
       } catch (err) {
         console.error('Ошибка в обработке ответа:', err);
       }
