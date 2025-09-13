@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { useAppDispatch, useAppSelector } from "../store/hooks";
 import type { RootState } from "../store/store";
 import { type ChatHistoryItem, type IncomingChatMessage, socketClient, type SystemEvent } from "../socket/socketLobbyPage";
-import { initialState, setScores, mergeScores, openModal, setModalResult, closeModal, openExamModal, closeExamModal, setExamQuestions, setExamIndex, clearExamQuestions, openPhaseTransitionModal, openExamFailureModal, openReconnectWaitingModal, closeReconnectWaitingModal, updateReconnectTimer, setExamRestoring, openCorrectAnswerNotification, setActiveExamId } from "../store/lobbyPage/lobbySlice";
+import { initialState, setScores, mergeScores, openModal, setModalResult, closeModal, openExamModal, closeExamModal, setExamQuestions, setExamIndex, clearExamQuestions, openPhaseTransitionModal, openExamFailureModal, openReconnectWaitingModal, closeReconnectWaitingModal, updateReconnectTimer, setExamRestoring, openCorrectAnswerNotification, setActiveExamId, resetExamRestoring } from "../store/lobbyPage/lobbySlice";
 import { updateUserScore } from "../store/authSlice";
 import {
   setUsers,
@@ -53,7 +53,10 @@ export function useLobbySocket(lobbyId: number, onAnswerInputSync?: (answer: str
 
     const onUsers = ({ users, activePlayerId }: any) => dispatch(setUsers({ users, activePlayerId }));
     const onInitPoints = (points: any) => dispatch(setPoints(points));
-    const onPointStatus = ({ pointId, status}: any) => dispatch(updatePointStatus({ pointId, status }));
+    const onPointStatus = ({ pointId, status}: any) => {
+      console.log('🎯 [POINT STATUS] Обновление статуса поинта:', { pointId, status });
+      dispatch(updatePointStatus({ pointId, status }));
+    };
 
     const onInitScores = (payload: any) => {
       const nextIncorrect = payload?.incorrectAnswers ?? payload?.incorrect_answers ?? 0;
@@ -185,7 +188,7 @@ export function useLobbySocket(lobbyId: number, onAnswerInputSync?: (answer: str
     };
     const onExamStart = (payload: { questions: any[]; index: number; examId?: string }) => {
       // Сбрасываем флаг восстановления при начале нового экзамена
-      dispatch(setExamRestoring(false));
+      dispatch(resetExamRestoring());
       dispatch(setExamQuestions(payload.questions));
       dispatch(setExamIndex(payload.index));
       dispatch(openExamModal());
@@ -265,6 +268,8 @@ export function useLobbySocket(lobbyId: number, onAnswerInputSync?: (answer: str
       dispatch(setExamIndex(0));
       // Сбрасываем активный экзамен
       dispatch(setActiveExamId(null));
+      // Сбрасываем флаг восстановления
+      dispatch(resetExamRestoring());
     };
 
     const onCloseModal = () => {
@@ -352,6 +357,8 @@ export function useLobbySocket(lobbyId: number, onAnswerInputSync?: (answer: str
       dispatch(clearExamQuestions());
       dispatch(setExamIndex(0));
       dispatch(setActiveExamId(null));
+      // Сбрасываем флаг восстановления
+      dispatch(resetExamRestoring());
     };
 
     const onExamIncorrectAnswer = (payload: { message: string }) => {

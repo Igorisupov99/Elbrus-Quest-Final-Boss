@@ -40,6 +40,7 @@ export function LobbyPage() {
   const reconnectWaitingModal = useAppSelector(s => s.lobbyPage.reconnectWaitingModal);
   const correctAnswerNotification = useAppSelector(s => s.lobbyPage.correctAnswerNotification);
   const activeExamId = useAppSelector(s => s.lobbyPage.activeExamId);
+  const examModalOpen = useAppSelector(s => s.lobbyPage.examModalOpen);
   
   // Временное логирование для отладки
   console.log(`🔍 [LOBBY] Текущий activeExamId:`, activeExamId);
@@ -137,6 +138,22 @@ export function LobbyPage() {
         dispatch(openModalAction(payload));
         sendOpenModal(payload);
       } else {
+        // Проверяем, есть ли уже активный экзамен перед началом нового
+        console.log('🎯 [EXAM] Попытка открыть экзамен:', { 
+          pointId, 
+          activeExamId, 
+          examModalOpen, 
+          isActivePlayer: user?.id === activePlayerId 
+        });
+        
+        // Если экзамен уже активен, запрашиваем его восстановление
+        if (activeExamId && activeExamId === pointId) {
+          console.log('🔄 [EXAM] Экзамен уже активен, запрашиваем восстановление:', pointId);
+          sendCheckActiveExam(pointId);
+          return;
+        }
+        
+        console.log('🆕 [EXAM] Начинаем новый экзамен:', pointId);
         const phaseId = pointId === "exam" ? 1 : 2;
         const res = await api.get("/api/exam/examQuestion", {
           params: { phase_id: phaseId, count: usersInLobby.length + incorrectAnswers },
@@ -244,6 +261,7 @@ export function LobbyPage() {
 
     const handleActivePointChanged = (event: CustomEvent) => {
       const { activePointId } = event.detail;
+      console.log('🎯 [ACTIVE POINT] Изменение активного поинта:', activePointId);
       setActiveQuestionPointId(activePointId);
     };
 

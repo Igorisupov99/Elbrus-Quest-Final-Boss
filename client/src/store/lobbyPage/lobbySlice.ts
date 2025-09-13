@@ -333,11 +333,14 @@ const lobbyPageReducer = createSlice({
     setActiveExamId(state, action: PayloadAction<string | null>) {
       console.log(`🔍 [REDUX] Изменяем activeExamId: ${state.activeExamId} -> ${action.payload}`);
       state.activeExamId = action.payload;
+    },
+    resetExamRestoring(state) {
+      state.examRestoring = false;
     }
   },
 });
 
-export const { setUsers, setPoints, updatePointStatus, openModal, closeModal, openExamModal, closeExamModal, setExamQuestions, clearExamQuestions, setExamIndex, setScores, mergeScores, incrementIncorrectAnswers, setIncorrectAnswers, setModalResult, openPhaseTransitionModal, closePhaseTransitionModal, openExamFailureModal, closeExamFailureModal, openReconnectWaitingModal, closeReconnectWaitingModal, updateReconnectTimer, setExamRestoring, openCorrectAnswerNotification, closeCorrectAnswerNotification, setActiveExamId } =
+export const { setUsers, setPoints, updatePointStatus, openModal, closeModal, openExamModal, closeExamModal, setExamQuestions, clearExamQuestions, setExamIndex, setScores, mergeScores, incrementIncorrectAnswers, setIncorrectAnswers, setModalResult, openPhaseTransitionModal, closePhaseTransitionModal, openExamFailureModal, closeExamFailureModal, openReconnectWaitingModal, closeReconnectWaitingModal, updateReconnectTimer, setExamRestoring, openCorrectAnswerNotification, closeCorrectAnswerNotification, setActiveExamId, resetExamRestoring } =
   lobbyPageReducer.actions;
 
 export default lobbyPageReducer.reducer;
