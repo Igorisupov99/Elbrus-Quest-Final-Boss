@@ -39,6 +39,8 @@ interface LobbyState {
   examModalOpen: boolean;
   examQuestions: ExamQuestion[];
   examIndex: number;
+  examRestoring: boolean;
+  activeExamId: string | null;
   scores: {
     userScore: number;
     sessionScore: number;
@@ -61,6 +63,10 @@ interface LobbyState {
     isOpen: boolean;
     activePlayerName: string;
     timeLeft: number;
+  };
+  correctAnswerNotification: {
+    isOpen: boolean;
+    points: number;
   };
 }
 
@@ -169,6 +175,8 @@ export const initialState: LobbyState = {
   examModalOpen: false,
   examQuestions: [],
   examIndex: 0,
+  examRestoring: false,
+  activeExamId: null,
   modalResult: null,
   scores: { userScore: 0, sessionScore: 0, incorrectAnswers: 0},
   phaseTransitionModal: {
@@ -187,6 +195,10 @@ export const initialState: LobbyState = {
     isOpen: false,
     activePlayerName: '',
     timeLeft: 30,
+  },
+  correctAnswerNotification: {
+    isOpen: false,
+    points: 10,
   },
 };
 
@@ -302,11 +314,30 @@ const lobbyPageReducer = createSlice({
     },
     updateReconnectTimer(state, action: PayloadAction<number>) {
       state.reconnectWaitingModal.timeLeft = action.payload;
+    },
+    setExamRestoring(state, action: PayloadAction<boolean>) {
+      state.examRestoring = action.payload;
+    },
+    openCorrectAnswerNotification(
+      state,
+      action: PayloadAction<{ points: number }>
+    ) {
+      state.correctAnswerNotification = {
+        isOpen: true,
+        points: action.payload.points,
+      };
+    },
+    closeCorrectAnswerNotification(state) {
+      state.correctAnswerNotification.isOpen = false;
+    },
+    setActiveExamId(state, action: PayloadAction<string | null>) {
+      console.log(`🔍 [REDUX] Изменяем activeExamId: ${state.activeExamId} -> ${action.payload}`);
+      state.activeExamId = action.payload;
     }
   },
 });
 
-export const { setUsers, setPoints, updatePointStatus, openModal, closeModal, openExamModal, closeExamModal, setExamQuestions, clearExamQuestions, setExamIndex, setScores, mergeScores, incrementIncorrectAnswers, setIncorrectAnswers, setModalResult, openPhaseTransitionModal, closePhaseTransitionModal, openExamFailureModal, closeExamFailureModal, openReconnectWaitingModal, closeReconnectWaitingModal, updateReconnectTimer } =
+export const { setUsers, setPoints, updatePointStatus, openModal, closeModal, openExamModal, closeExamModal, setExamQuestions, clearExamQuestions, setExamIndex, setScores, mergeScores, incrementIncorrectAnswers, setIncorrectAnswers, setModalResult, openPhaseTransitionModal, closePhaseTransitionModal, openExamFailureModal, closeExamFailureModal, openReconnectWaitingModal, closeReconnectWaitingModal, updateReconnectTimer, setExamRestoring, openCorrectAnswerNotification, closeCorrectAnswerNotification, setActiveExamId } =
   lobbyPageReducer.actions;
 
 export default lobbyPageReducer.reducer;

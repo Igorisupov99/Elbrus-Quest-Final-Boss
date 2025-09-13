@@ -45,6 +45,7 @@ export function ExamModal({
   // Для отправки прогресса экзамена (следующий вопрос) используем хук сокета через пропсы не получаем, поэтому просто импорт нельзя использовать напрямую.
   const globalQuestions = useAppSelector(s => s.lobbyPage.examQuestions);
   const currentQuestionIndex = useAppSelector(s => s.lobbyPage.examIndex);
+  const examRestoring = useAppSelector(s => s.lobbyPage.examRestoring);
   const [examQuestions, setExamQuestions] = useState<ExamQuestion[]>(questions ?? globalQuestions ?? []);
   const [answer, setAnswer] = useState("");
   const [loading, setLoading] = useState(false);
@@ -53,6 +54,8 @@ export function ExamModal({
   const [timeLeft, setTimeLeft] = useState(30);
   const [timerActive, setTimerActive] = useState(false);
   const [showConfirmClose, setShowConfirmClose] = useState(false);
+  const [answerSubmitted, setAnswerSubmitted] = useState(false);
+  const [hasBeenRestored, setHasBeenRestored] = useState(false); // Флаг для отслеживания восстановления
 
   const totalQuestions = examQuestions.length;
   const currentQuestion = examQuestions[currentQuestionIndex];
@@ -70,18 +73,45 @@ export function ExamModal({
   // Индекс берём из Redux, локально не дублируем
 
   useEffect(() => {
+    console.log('🔄 [EXAM] useEffect вызван:', { 
+      currentQuestionIndex, 
+      isOpen, 
+      examRestoring,
+      hasBeenRestored,
+      timeLeft: timeLeft,
+      timerActive: timerActive 
+    });
+    
+    // Если экзамен восстанавливается, не сбрасываем состояние
+    if (examRestoring) {
+      console.log('🔄 [EXAM] Экзамен восстанавливается, не сбрасываем состояние');
+      setHasBeenRestored(true); // Помечаем что экзамен был восстановлен
+      // При восстановлении НЕ запускаем таймер здесь - он будет синхронизирован через событие
+      return;
+    }
+    
+    // Если экзамен был восстановлен и теперь examRestoring стал false - не сбрасываем состояние
+    if (hasBeenRestored && !examRestoring) {
+      console.log('🔄 [EXAM] Экзамен был восстановлен, пропускаем сброс состояния');
+      return;
+    }
+    
+    console.log('🔄 [EXAM] Сбрасываем состояние для нового вопроса');
     setAnswer('');
     setCorrectAnswer(null);
     setTimeLeft(30);
     setTimerActive(false);
+    setAnswerSubmitted(false); // Сбрасываем флаг отправки ответа
+    setHasBeenRestored(false); // Сбрасываем флаг восстановления для нового вопроса
     
     // НЕ сбрасываем result - уведомления показываются через сокет
     
     // Автоматически запускаем таймер для всех игроков при переходе к новому вопросу
     if (isOpen) {
+      console.log('⏰ [EXAM] Запускаем таймер для нового вопроса');
       setTimerActive(true);
     }
-  }, [currentQuestionIndex, isOpen]);
+  }, [currentQuestionIndex, isOpen, examRestoring, hasBeenRestored]);
 
   // Таймер для всех игроков (синхронизированный)
   useEffect(() => {
@@ -97,12 +127,14 @@ export function ExamModal({
           if (Number(currentUserId) === Number(activePlayerId)) {
             // Автоматически отправляем ответ при истечении времени
             console.log("⏰ Время истекло в экзамене, автоматически отправляем ответ:", answer.trim() || "пустой");
-            if (answer.trim()) {
+            if (answer.trim() && !answerSubmitted) {
               handleSubmit();
             } else {
-              // Если ответ пустой в экзамене — считаем как неправильный ответ
+              // Если ответ пустой в экзамене или уже отправлен — считаем как неправильный ответ
               // Используем сокетную логику для корректного перехода к следующему вопросу
-              console.log("⏰ Пустой ответ при истечении времени в экзамене - считаем как неправильный");
+              console.log("⏰ Пустой ответ или уже отправленный ответ при истечении времени в экзамене - считаем как неправильный");
+              // Очищаем инпут при истечении времени
+              setAnswer('');
               // Убираем локальное уведомление - оно будет показано через сокет всем игрокам
               onAdvance?.(false, true); // Передаем true для указания таймаута
             }
@@ -121,20 +153,47 @@ export function ExamModal({
 
   // Запускаем таймер когда модальное окно открывается для всех игроков
   useEffect(() => {
-    if (isOpen && !loading) {
+    console.log('⏰ [EXAM] Проверка запуска таймера:', { isOpen, loading, examRestoring });
+    
+    if (isOpen && !loading && !examRestoring) {
+      // Запускаем таймер только если экзамен НЕ восстанавливается
+      console.log('⏰ [EXAM] Запускаем таймер при открытии модалки (не восстановление)');
       setTimerActive(true);
-    } else {
+    } else if (!isOpen) {
+      console.log('⏰ [EXAM] Останавливаем таймер - модалка закрыта');
       setTimerActive(false);
+    } else if (examRestoring) {
+      console.log('⏰ [EXAM] НЕ запускаем таймер - экзамен восстанавливается');
     }
-  }, [isOpen, loading]);
+    // При восстановлении таймер будет синхронизирован через событие
+  }, [isOpen, loading, examRestoring]);
 
   // Слушаем события синхронизации таймера
   useEffect(() => {
     const handleTimerReset = (event: CustomEvent) => {
       const { timeLeft } = event.detail;
-      console.log('⏰ [EXAM] Получено событие синхронизации таймера:', timeLeft);
-      setTimeLeft(timeLeft);
-      setTimerActive(true);
+      console.log('⏰ [EXAM] Получено событие синхронизации таймера:', timeLeft, 'isOpen:', isOpen, 'examRestoring:', examRestoring);
+      
+      // Применяем синхронизацию только если модальное окно открыто
+      if (isOpen) {
+        console.log('⏰ [EXAM] Применяем синхронизацию таймера:', timeLeft);
+        setTimeLeft(timeLeft);
+        setTimerActive(timeLeft > 0); // Активируем таймер только если время больше 0
+        
+        // Сбрасываем ответ при синхронизации (кроме активного игрока)
+        if (Number(currentUserId) !== Number(activePlayerId)) {
+          console.log('🔄 [EXAM] Сбрасываем ответ неактивного игрока при синхронизации таймера');
+          setAnswer('');
+          setAnswerSubmitted(false);
+        } else {
+          console.log('🔄 [EXAM] НЕ сбрасываем ответ активного игрока при синхронизации таймера');
+        }
+        
+        // Если это было восстановление, отмечаем успешную синхронизацию
+        if (examRestoring) {
+          console.log('🔄 [EXAM] Таймер синхронизирован после восстановления экзамена');
+        }
+      }
     };
 
     window.addEventListener('exam:timerReset', handleTimerReset as EventListener);
@@ -142,7 +201,7 @@ export function ExamModal({
     return () => {
       window.removeEventListener('exam:timerReset', handleTimerReset as EventListener);
     };
-  }, []);
+  }, [isOpen, currentUserId, activePlayerId, examRestoring]);
 
   // Синхронизация таймера через сокеты
   useEffect(() => {
@@ -163,8 +222,12 @@ export function ExamModal({
   // Синхронизация ввода от активного игрока
   useEffect(() => {
     if (syncedAnswer !== undefined && Number(currentUserId) !== Number(activePlayerId)) {
+      console.log('🔄 [EXAM] Синхронизируем ввод от активного игрока:', syncedAnswer);
       // Обновляем ввод только для неактивных игроков
       setAnswer(syncedAnswer);
+      setAnswerSubmitted(false); // Сбрасываем флаг при синхронизации
+    } else if (syncedAnswer !== undefined && Number(currentUserId) === Number(activePlayerId)) {
+      console.log('🔄 [EXAM] Пропускаем синхронизацию для активного игрока:', syncedAnswer);
     }
   }, [syncedAnswer, currentUserId, activePlayerId]);
 
@@ -172,6 +235,11 @@ export function ExamModal({
 
   const handleAnswerChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const newAnswer = e.target.value;
+    console.log('📝 [EXAM] Изменение инпута:', { 
+      newAnswer, 
+      isActive: Number(currentUserId) === Number(activePlayerId),
+      answerSubmitted 
+    });
     setAnswer(newAnswer);
     
     // Отправляем изменения инпута через сокет, если это активный игрок
@@ -182,9 +250,10 @@ export function ExamModal({
   };
 
   const handleSubmit = async () => {
-    if (!currentQuestion) return;
+    if (!currentQuestion || answerSubmitted) return;
 
     setTimerActive(false); // Останавливаем таймер при отправке ответа
+    setAnswerSubmitted(true); // Блокируем повторную отправку
 
     try {
       setLoading(true);
@@ -202,11 +271,19 @@ export function ExamModal({
       );
 
       if (res.data.correct) {
+        console.log('✅ [EXAM] Правильный ответ, очищаем инпут. Текущий answer:', answer);
+        // Очищаем инпут после правильного ответа
+        setAnswer('');
+        console.log('✅ [EXAM] Инпут очищен после правильного ответа');
         // Убираем локальное уведомление - оно будет показано через сокет всем игрокам
         // Переходим к следующему вопросу или завершаем экзамен
         // Сообщаем серверу, что ответ правильный, чтобы он продвинул индекс и/или завершил экзамен
         onAdvance?.(true, false, answer);
       } else {
+        console.log('❌ [EXAM] Неправильный ответ, очищаем инпут. Текущий answer:', answer);
+        // Очищаем инпут после неправильного ответа
+        setAnswer('');
+        console.log('❌ [EXAM] Инпут очищен после неправильного ответа');
         // Убираем локальное уведомление - оно будет показано через сокет всем игрокам
         setCorrectAnswer(res.data.correctAnswer);
         // При неправильном ответе не продвигаем индекс, просто передаём ход следующему игроку
@@ -215,7 +292,9 @@ export function ExamModal({
       
     } catch (err) {
       console.error("Ошибка при отправке ответа:", err);
-      setResult("⚠ Ошибка при проверке ответа");
+      setResult("⚠ Ошибка при проверке ответа. Попробуйте еще раз.");
+      setAnswerSubmitted(false); // Разрешаем повторную отправку при ошибке
+      setTimerActive(true); // Восстанавливаем таймер при ошибке
     } finally {
       setLoading(false);
     }
@@ -227,12 +306,14 @@ export function ExamModal({
       setShowConfirmClose(true);
     } else {
       // Неактивный игрок просто закрывает у себя
+      setHasBeenRestored(false); // Сбрасываем флаг при закрытии
       onClose();
     }
   };
 
   const handleConfirmClose = () => {
     setShowConfirmClose(false);
+    setHasBeenRestored(false); // Сбрасываем флаг при закрытии
     // Вызываем колбэк для провала экзамена
     onExamFail?.();
   };
@@ -301,7 +382,7 @@ export function ExamModal({
               }
               value={answer}
               onChange={handleAnswerChange}
-              disabled={loading || Number(currentUserId) !== Number(activePlayerId)}
+              disabled={loading || answerSubmitted || Number(currentUserId) !== Number(activePlayerId)}
               onKeyDown={(e) => {
                 if (e.key === 'Enter' && !e.shiftKey && Number(currentUserId) === Number(activePlayerId)) {
                   e.preventDefault();
@@ -313,8 +394,8 @@ export function ExamModal({
             <div className={styles.actions}>
               <Button onClick={handleClose}>Закрыть</Button>
               {Number(currentUserId) === Number(activePlayerId) && (
-                <Button onClick={handleSubmit} disabled={loading}>
-                  Отправить
+                <Button onClick={handleSubmit} disabled={loading || answerSubmitted}>
+                  {answerSubmitted ? 'Отправлено' : 'Отправить'}
                 </Button>
               )}
             </div>

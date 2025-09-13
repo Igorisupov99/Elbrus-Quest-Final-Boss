@@ -248,3 +248,103 @@
   border: 2px solid #e9ecef;
   color: #495057;
 }
+
+/* AI Section */
+.aiSection {
+  margin: 16px 0;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.aiButtonContainer {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.aiButton {
+  background: linear-gradient(135deg, #4ecdc4 0%, #44a08d 100%);
+  color: white;
+  border: none;
+  padding: 10px 16px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 500;
+  transition: all 0.3s ease;
+  align-self: flex-start;
+}
+
+.aiButton:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(78, 205, 196, 0.4);
+}
+
+.aiButton:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.aiButtonDisabled {
+  background: linear-gradient(135deg, #6c757d 0%, #5a6268 100%);
+}
+
+.aiButtonDisabled:hover {
+  transform: none;
+  box-shadow: none;
+}
+
+.aiCostInfo {
+  font-size: 12px;
+  color: #6c757d;
+  font-style: italic;
+}
+
+.aiResponse {
+  background: linear-gradient(135deg, #ff6b6b 0%, #ee5a24 100%);
+  color: white;
+  padding: 16px;
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(255, 107, 107, 0.3);
+  border: 2px solid rgba(255, 255, 255, 0.2);
+  animation: fadeIn 0.3s ease;
+}
+
+.aiResponseHeader {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 8px;
+  font-weight: bold;
+}
+
+.aiIcon {
+  font-size: 16px;
+}
+
+.aiTitle {
+  font-size: 14px;
+}
+
+.aiText {
+  margin: 0 0 12px 0;
+  line-height: 1.5;
+  font-size: 14px;
+}
+
+.hideAiButton {
+  background: rgba(255, 255, 255, 0.2);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  color: white;
+  font-size: 12px;
+  padding: 6px 12px;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.hideAiButton:hover {
+  background: rgba(255, 255, 255, 0.3);
+}

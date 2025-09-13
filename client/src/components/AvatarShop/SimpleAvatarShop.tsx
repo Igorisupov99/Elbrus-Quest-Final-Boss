@@ -98,8 +98,8 @@ const SimpleAvatarShopComponent: React.FC = () => {
     });
   }, [avatarCardsData, filters]);
 
-  const handleFiltersChange = useCallback((newFilters: AvatarShopFilters) => {
-    setFilters(newFilters);
+  const handleFiltersChange = useCallback((filtersUpdater: (prev: AvatarShopFilters) => AvatarShopFilters) => {
+    setFilters(filtersUpdater);
   }, []);
 
   if (error) {

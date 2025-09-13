@@ -1,4 +1,5 @@
 const db = require('../../db/models');
+const messageManager = require('../services/MessageManager');
 
 function initMainPageSockets(nsp) {
   nsp.on('connection', async (socket) => {
@@ -93,6 +94,7 @@ function initMainPageSockets(nsp) {
         socket.emit('error', { message: 'Не удалось загрузить историю чата' });
       }
     });
+
 
     socket.on('disconnect', (reason) => {
       console.log(

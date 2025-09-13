@@ -4,7 +4,7 @@ import styles from './AvatarFilters.module.css';
 
 interface AvatarFiltersProps {
   filters: AvatarShopFilters;
-  onFiltersChange: (filters: AvatarShopFilters) => void;
+  onFiltersChange: (filters: (prev: AvatarShopFilters) => AvatarShopFilters) => void;
   userScore: number;
 }
 
@@ -29,27 +29,27 @@ const AvatarFiltersComponent: React.FC<AvatarFiltersProps> = ({
   ];
 
   const handleCategoryChange = useCallback((category: AvatarCategory | undefined) => {
-    onFiltersChange({ ...filters, category });
-  }, [onFiltersChange, filters]);
+    onFiltersChange((prev) => ({ ...prev, category }));
+  }, [onFiltersChange]);
 
   const handleRarityChange = useCallback((rarity: AvatarRarity | undefined) => {
-    onFiltersChange({ ...filters, rarity });
-  }, [onFiltersChange, filters]);
+    onFiltersChange((prev) => ({ ...prev, rarity }));
+  }, [onFiltersChange]);
 
   const handleShowOwnedChange = useCallback((showOwned: boolean) => {
-    onFiltersChange({ ...filters, showOwned });
-  }, [onFiltersChange, filters]);
+    onFiltersChange((prev) => ({ ...prev, showOwned }));
+  }, [onFiltersChange]);
 
   const handleShowLockedChange = useCallback((showLocked: boolean) => {
-    onFiltersChange({ ...filters, showLocked });
-  }, [onFiltersChange, filters]);
+    onFiltersChange((prev) => ({ ...prev, showLocked }));
+  }, [onFiltersChange]);
 
   const handleSearchChange = useCallback((searchQuery: string) => {
-    onFiltersChange({ ...filters, searchQuery: searchQuery || undefined });
-  }, [onFiltersChange, filters]);
+    onFiltersChange((prev) => ({ ...prev, searchQuery: searchQuery || undefined }));
+  }, [onFiltersChange]);
 
   const clearFilters = useCallback(() => {
-    onFiltersChange({});
+    onFiltersChange(() => ({}));
   }, [onFiltersChange]);
 
   return (
@@ -152,7 +152,7 @@ const AvatarFiltersComponent: React.FC<AvatarFiltersProps> = ({
                 onChange={(e) => handleShowLockedChange(e.target.checked)}
                 className={styles.checkbox}
               />
-              <span className={styles.checkboxText}>Заблокированные</span>
+              <span className={styles.checkboxText}>Можно приобрести</span>
             </label>
           </div>
         </div>

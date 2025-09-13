@@ -50,5 +50,11 @@ export const avatarApi = {
   async getCurrentAvatar(): Promise<Avatar | null> {
     const response = await api.get('/api/avatars/current');
     return response.data;
+  },
+
+  // Получить аватар пользователя по ID
+  async getUserAvatar(userId: number): Promise<Avatar | null> {
+    const response = await api.get(`/api/avatars/user/${userId}`);
+    return response.data;
   }
 };

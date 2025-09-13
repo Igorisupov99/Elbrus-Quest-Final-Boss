@@ -14,10 +14,12 @@ import {
   type User as FriendUser, 
   type Friendship 
 } from "../../api/friendship/friendshipApi";
+import { getFriendsCountText } from "../../utils/declination";
 import { achievementApi } from "../../api/achievements/achievementApi";
 import { AchievementCard } from "../../components/Achievement/AchievementCard/AchievementCard";
 import { AchievementModal } from "../../components/Achievement/AchievementModal/AchievementModal";
 import { FavoriteQuestionModal } from "../../components/FavoriteQuestionModal/FavoriteQuestionModal";
+import { UserAvatar } from "../../components/common/UserAvatar";
 import type { Achievement } from "../../types/achievement";
 import { favoriteApi } from "../../api/favorites/favoriteApi";
 import type { FavoriteQuestion } from "../../types/favorite";
@@ -85,6 +87,7 @@ export function Profile() {
   // Redux для аватаров
   const dispatch = useAppDispatch();
   const currentAvatar = useAppSelector(state => state.avatar.currentAvatar);
+
 
 
   // Для управления формой настроек
@@ -631,7 +634,7 @@ export function Profile() {
           </Link>
           
           <img
-            src={currentAvatar?.imageUrl || user.image_url || "/default-avatar.png"}
+            src={currentAvatar?.imageUrl || user.image_url || "/default-avatar.svg"}
             alt="Аватар"
             className={styles.avatar}
           />
@@ -642,7 +645,7 @@ export function Profile() {
         </div>
         <div className={styles.basicInfo}>
           <h2 className={styles.username}>{user.username}</h2>
-          <p className={styles.friendsCount}>Друзей: {friends.length}</p>
+          <p className={styles.friendsCount}>{getFriendsCountText(friends.length)}</p>
         </div>
       </div>
 
@@ -848,7 +851,7 @@ export function Profile() {
               )}
               
               <div style={{ textAlign: 'center', flex: 1 }}>
-                👥 У вас {friends.length} {friends.length === 1 ? 'друг' : friends.length < 5 ? 'друга' : 'друзей'}
+                👥 У вас {getFriendsCountText(friends.length)}
               </div>
               
               {friends.length > 5 && (
@@ -994,14 +997,13 @@ export function Profile() {
                     e.currentTarget.style.boxShadow = 'none';
                   }}
                 >
-                  <img
-                    src={searchResult.image_url || "/default-avatar.png"}
+                  <UserAvatar
+                    userId={searchResult.id}
+                    fallbackImageUrl={searchResult.image_url || "/default-avatar.svg"}
+                    size="small"
+                    shape="square"
                     alt={`Аватар ${searchResult.username}`}
                     style={{
-                      width: '32px',
-                      height: '32px',
-                      borderRadius: '50%',
-                      objectFit: 'cover',
                       border: '1px solid #87ceeb',
                       flexShrink: 0
                     }}
@@ -1193,35 +1195,20 @@ export function Profile() {
                         background: 'linear-gradient(90deg, #d8a35d, #b0752d)'
                       }}
                     />
-                    <div className={styles.friendCardContent}>
-                      <img
-                        src={friend.image_url || "/default-avatar.png"}
+                    <div style={{ display: 'flex', alignItems: 'flex-start', gap: '12px', flex: 1 }}>
+                      <UserAvatar
+                        userId={friend.id}
+                        fallbackImageUrl={friend.image_url || "/default-avatar.svg"}
+                        size="medium"
+                        shape="square"
                         alt={`Аватар ${friend.username}`}
                         className={styles.friendAvatar}
-                        style={{
-                          width: '60px',
-                          height: '60px',
-                          borderRadius: '50%',
-                          objectFit: 'cover',
-                          background: '#ddd',
-                          flexShrink: 0,
-                          border: '3px solid #d8a35d',
-                          boxShadow: '0 2px 8px rgba(0, 0, 0, 0.15)',
-                          transition: 'all 0.2s ease'
-                        }}
-                        onMouseEnter={(e: MouseEvent<HTMLImageElement>) => {
-                          e.currentTarget.style.borderColor = '#b0752d';
-                          e.currentTarget.style.transform = 'scale(1.05)';
-                          e.currentTarget.style.boxShadow = '0 3px 12px rgba(0, 0, 0, 0.2)';
-                        }}
-                        onMouseLeave={(e: MouseEvent<HTMLImageElement>) => {
-                          e.currentTarget.style.borderColor = '#d8a35d';
-                          e.currentTarget.style.transform = 'scale(1)';
-                          e.currentTarget.style.boxShadow = '0 2px 8px rgba(0, 0, 0, 0.15)';
-                        }}
                       />
-                      <div className={styles.friendInfo}>
+                      <div style={{ display: 'flex', flexDirection: 'column', flex: 1 }}>
                         <h4 className={styles.friendName}>{friend.username}</h4>
+                        <p className={styles.friendScore}>
+                          🏆 {friend.score ?? 0} очков
+                        </p>
                       </div>
                     </div>
                     <button
@@ -1267,7 +1254,7 @@ export function Profile() {
                         e.currentTarget.style.boxShadow = '0 5px 12px rgba(220, 53, 69, 0.4)';
                       }}
                     >
-                      🗑️ Удалить
+                      🗑️
                     </button>
                   </div>
                 ))
@@ -1287,7 +1274,7 @@ export function Profile() {
               >
                 {friends.length > 5 ? 
                   `${currentFriendsIndex + 1}-${Math.min(currentFriendsIndex + 5, friends.length)} из ${friends.length}` : 
-                  `${friends.length} ${friends.length === 1 ? 'друг' : friends.length < 5 ? 'друга' : 'друзей'}`
+                  getFriendsCountText(friends.length)
                 }
               </div>
             )}
@@ -1326,9 +1313,9 @@ export function Profile() {
             <div className={styles.emptyMessage}>У вас нет избранных вопросов</div>
           ) : (
             <div className={styles.questionsList}>
-              {getVisibleFavorites().map((favorite) => (
+              {getVisibleFavorites().map((favorite, index) => (
                 <div 
-                  key={favorite.id} 
+                  key={`favorite-${favorite.id}-${favorite.question.id}-${index}`} 
                   className={styles.questionCard}
                   onClick={() => handleQuestionClick(favorite)}
                 >
@@ -1593,9 +1580,9 @@ export function Profile() {
                     Нет входящих заявок
                   </div>
                 ) : (
-                  incomingRequests.map((request) => (
+                  incomingRequests.map((request, index) => (
                     <div 
-                      key={request.id} 
+                      key={`incoming-${request.id}-${index}`} 
                       onClick={() => {
                         if (request.user?.id) {
                           closeIncomingModal();
@@ -1640,14 +1627,13 @@ export function Profile() {
                         }}
                       />
                       
-                      <img
-                        src={request.user?.image_url || "/default-avatar.png"}
+                      <UserAvatar
+                        userId={request.user?.id || 0}
+                        fallbackImageUrl={request.user?.image_url || "/default-avatar.svg"}
+                        size="medium"
+                        shape="square"
                         alt={`Аватар ${request.user?.username}`}
                         style={{
-                          width: '60px',
-                          height: '60px',
-                          borderRadius: '50%',
-                          objectFit: 'cover',
                           border: '3px solid #8b4513',
                           boxShadow: '0 4px 8px rgba(139, 69, 19, 0.2)',
                           flexShrink: 0
@@ -1907,9 +1893,9 @@ export function Profile() {
                     Нет отправленных заявок
                   </div>
                 ) : (
-                  outgoingRequests.map((request) => (
+                  outgoingRequests.map((request, index) => (
                     <div 
-                      key={request.id} 
+                      key={`outgoing-${request.id}-${index}`} 
                       onClick={() => {
                         if (request.friend?.id) {
                           closeOutgoingModal();
@@ -1954,14 +1940,13 @@ export function Profile() {
                         }}
                       />
                       
-                      <img
-                        src={request.friend?.image_url || "/default-avatar.png"}
+                      <UserAvatar
+                        userId={request.friend?.id || 0}
+                        fallbackImageUrl={request.friend?.image_url || "/default-avatar.svg"}
+                        size="medium"
+                        shape="square"
                         alt={`Аватар ${request.friend?.username}`}
                         style={{
-                          width: '60px',
-                          height: '60px',
-                          borderRadius: '50%',
-                          objectFit: 'cover',
                           border: '3px solid #d2691e',
                           boxShadow: '0 4px 8px rgba(210, 105, 30, 0.2)',
                           flexShrink: 0

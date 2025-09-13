@@ -28,7 +28,11 @@ export const Point = memo(function Point({
 }: PointProps) {
   const isExam = id === "exam" || id === "exam2";
   
-  // Логирование убрано - все работает
+  // Временное логирование для отладки активного экзамена
+  if (isExam) {
+    const className = `${styles.poi} ${styles[status]} ${isActive ? styles.active : ''}`;
+    console.log(`🔍 [POINT] Экзамен ${id}:`, { isActive, status, className });
+  }
 
   const getStarIcon = () => {
     switch (status) {

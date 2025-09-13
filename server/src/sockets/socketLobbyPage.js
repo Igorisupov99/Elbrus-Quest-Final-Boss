@@ -1,5 +1,6 @@
 const db = require('../../db/models');
 const { incorrectAnswersMap } = require("../controllers/question.controller");
+const messageManager = require('../services/MessageManager');
 
 const lobbyUsers = new Map();
 const lobbyPoints = new Map();
@@ -67,7 +68,23 @@ function initLobbySockets(nsp) {
           include: [{ model: db.User, as: 'user' }],
         });
 
-        const activePlayerId = activeUserSession ? activeUserSession.user.id : null;
+        let activePlayerId = activeUserSession ? activeUserSession.user.id : null;
+
+        // Если нет активного игрока, но есть подключенные пользователи, назначаем первого
+        if (!activePlayerId && users.length > 0) {
+          const firstUser = users[0];
+          const userSession = await db.UserSession.findOne({
+            where: { game_session_id: lobbyId, user_id: firstUser.id },
+          });
+          
+          if (userSession) {
+            await userSession.update({ is_user_active: true });
+            activePlayerId = firstUser.id;
+            console.log(
+              `🎮 Автоматически назначен активный игрок в лобби ${lobbyId}: ${firstUser.username}`
+            );
+          }
+        }
 
         nsp.to(roomKey).emit('lobby:users', { users, activePlayerId });
       } catch (err) {
@@ -84,16 +101,35 @@ function initLobbySockets(nsp) {
       if (lobbyReconnectTimers.has(lobbyId)) {
         const existingTimer = lobbyReconnectTimers.get(lobbyId);
         clearTimeout(existingTimer.timerId);
+        clearInterval(existingTimer.intervalId);
       }
 
       console.log(`⏳ [RECONNECT] Запускаем таймер ожидания для ${activePlayerName} (ID: ${activePlayerId})`);
       
+      let timeLeft = 30;
+      
       // Уведомляем всех игроков о начале ожидания
       nsp.to(roomKey).emit('lobby:reconnectWaiting', {
         activePlayerName,
-        timeLeft: 30
+        timeLeft
       });
 
+      // Запускаем интервал для отправки обновлений каждую секунду
+      const intervalId = setInterval(() => {
+        timeLeft--;
+        
+        if (timeLeft > 0) {
+          // Отправляем обновление времени всем игрокам
+          nsp.to(roomKey).emit('lobby:reconnectTimerUpdate', {
+            timeLeft
+          });
+        } else {
+          // Время истекло
+          clearInterval(intervalId);
+        }
+      }, 1000);
+
+      // Основной таймер на 30 секунд
       const timerId = setTimeout(async () => {
         console.log(`⏰ [RECONNECT] Время ожидания истекло, передаем ход следующему игроку`);
         
@@ -110,6 +146,7 @@ function initLobbySockets(nsp) {
       // Сохраняем таймер в Map
       lobbyReconnectTimers.set(lobbyId, {
         timerId,
+        intervalId,
         activePlayerId,
         activePlayerName
       });
@@ -120,6 +157,7 @@ function initLobbySockets(nsp) {
       if (lobbyReconnectTimers.has(lobbyId)) {
         const timer = lobbyReconnectTimers.get(lobbyId);
         clearTimeout(timer.timerId);
+        clearInterval(timer.intervalId);
         lobbyReconnectTimers.delete(lobbyId);
         
         console.log(`✅ [RECONNECT] Таймер ожидания отменен для лобби ${lobbyId}`);
@@ -136,7 +174,7 @@ function initLobbySockets(nsp) {
           
           // Вычисляем оставшееся время таймера
           const currentTime = Date.now();
-          const elapsedTime = currentTime - examState.timerStartTime;
+          const elapsedTime = currentTime - examState.questionStartTime;
           const timeLeft = Math.max(0, Math.ceil((examState.timerDuration - elapsedTime) / 1000));
           
           console.log(`⏰ [EXAM] Восстанавливаем таймер: осталось ${timeLeft} секунд`);
@@ -152,8 +190,12 @@ function initLobbySockets(nsp) {
             timeLeft: timeLeft
           });
           
-          // Отправляем актуальное время таймера
-          nsp.to(roomKey).emit('lobby:examTimerReset', { timeLeft: timeLeft });
+          // Отправляем актуальное время таймера всем игрокам с небольшой задержкой
+          // чтобы модальные окна успели открыться
+          setTimeout(() => {
+            console.log(`⏰ [EXAM] Синхронизируем таймер для всех игроков после восстановления: ${timeLeft} секунд`);
+            nsp.to(roomKey).emit('lobby:examTimerReset', { timeLeft: timeLeft });
+          }, 150);
         }
         
         // Проверяем, был ли активен обычный вопрос и восстанавливаем его
@@ -194,6 +236,7 @@ function initLobbySockets(nsp) {
     // Функция для передачи хода следующему игроку
     async function passTurnToNextPlayer() {
       try {
+        console.log(`🎮 [PASS_TURN] Начинаем передачу хода для лобби ${lobbyId}`);
         const currentActivePlayer = await db.UserSession.findOne({
           where: { game_session_id: lobbyId, is_user_active: true },
         });
@@ -228,10 +271,10 @@ function initLobbySockets(nsp) {
         );
 
         // Очищаем состояние экзамена и вопроса при смене игрока
-        // Это предотвращает ситуацию, когда новый активный игрок получает старое состояние
+        // НЕ очищаем состояние экзамена при смене игрока во время активного экзамена
+        // Экзамен должен продолжаться с тем же состоянием для всех игроков
         if (lobbyExamState.has(lobbyId)) {
-          lobbyExamState.delete(lobbyId);
-          console.log(`🗑️ [EXAM] Очищено состояние экзамена при смене игрока для лобби ${lobbyId}`);
+          console.log(`🔄 [EXAM] Экзамен активен, НЕ очищаем состояние при смене игрока для лобби ${lobbyId}`);
         }
         
         if (lobbyQuestionState.has(lobbyId)) {
@@ -280,17 +323,44 @@ function initLobbySockets(nsp) {
         where: { game_session_id: lobbyId, is_user_active: true },
       });
 
+      // Проверяем, есть ли активный игрок в базе данных
       if (!existingActivePlayer) {
         await userSession.update({ is_user_active: true });
         console.log(
           `🎮 Первый активный игрок в лобби ${lobbyId}: ${socket.user.username}`
         );
+      } else {
+        // Дополнительная проверка: если активный игрок есть в БД, но не подключен к лобби
+        const activePlayerInLobby = Array.from(lobbyUsers.get(lobbyId).values())
+          .find(user => user.id === existingActivePlayer.user_id);
+        
+        if (!activePlayerInLobby) {
+          // Активный игрок не подключен, делаем текущего игрока активным
+          await db.UserSession.update(
+            { is_user_active: false },
+            { where: { id: existingActivePlayer.id } }
+          );
+          await userSession.update({ is_user_active: true });
+          console.log(
+            `🎮 Активный игрок не подключен, новый активный игрок в лобби ${lobbyId}: ${socket.user.username}`
+          );
+        }
       }
     } catch (err) {
       console.error('Ошибка инициализации UserSession:', err);
     }
 
     await emitUsersList();
+
+    // Проверяем, есть ли активный экзамен, и уведомляем подключившегося игрока
+    const examState = lobbyExamState.get(lobbyId);
+    if (examState) {
+      console.log(`🔍 [EXAM] При подключении игрока ${socket.user.username} обнаружен активный экзамен: ${examState.examId}`);
+      // Отправляем информацию об активном экзамене только этому игроку для визуального отображения
+      socket.emit('lobby:examActive', {
+        examId: examState.examId
+      });
+    }
 
     // загрузка истории чата
     (async () => {
@@ -367,6 +437,97 @@ function initLobbySockets(nsp) {
       } catch (err) {
         console.error('Ошибка при сохранении сообщения:', err);
         socket.emit('error', { message: 'Не удалось сохранить сообщение' });
+      }
+    });
+
+    // AI-помощник в чате лобби
+    socket.on('ai:question', async (data) => {
+      try {
+        const { message, context, questionId, lobbyId: dataLobbyId, cost = 100 } = data;
+        const userId = socket.user.id;
+        
+        console.log(`🤖 AI question from ${socket.user.username} in lobby ${lobbyId}: ${message}`);
+        
+        // Проверяем очки пользователя - сначала из основной таблицы User
+        const user = await db.User.findByPk(userId);
+        console.log(`🔍 [AI] Поиск пользователя ${userId}:`, user);
+        
+        if (!user) {
+          socket.emit('ai:response', {
+            message: '❌ Ошибка: пользователь не найден',
+            questionId: questionId
+          });
+          return;
+        }
+        
+        const currentScore = Number(user.score) || 0;
+        console.log(`💰 [AI] Текущие очки пользователя ${socket.user.username} из User: ${currentScore}, требуется: ${cost}`);
+        
+        if (currentScore < cost) {
+          socket.emit('ai:response', {
+            message: `❌ У вас недостаточно очков для запроса к AI. Требуется: ${cost}, у вас: ${currentScore}`,
+            questionId: questionId
+          });
+          return;
+        }
+        
+        // Списываем очки из основной таблицы User
+        await user.update({
+          score: currentScore - cost
+        });
+        
+        console.log(`💰 Списали ${cost} очков с пользователя ${socket.user.username}. Осталось: ${currentScore - cost}`);
+        
+        const response = await messageManager.sendMessage(
+          userId, 
+          message, 
+          'mentor', 
+          context
+        );
+        
+        // Отправляем ответ всем игрокам в комнате для отображения в модальном окне
+        nsp.to(roomKey).emit('ai:response', {
+          message: response.message,
+          questionId: questionId,
+          usage: response.usage,
+          newScore: currentScore - cost,
+          userId: userId,
+          username: socket.user.username
+        });
+        
+        // Отправляем сообщение в чат от ai-mentor
+        const chatMessage = {
+          id: Date.now(),
+          text: `Ответ на вопрос такой-то: ${response.message}`,
+          user: { id: 'ai-mentor', username: 'ai-mentor' },
+          createdAt: new Date().toISOString(),
+          isAI: true,
+          usage: response.usage
+        };
+
+        // Сохраняем сообщение в базу данных
+        await db.ChatGameSession.create({
+          game_session_id: lobbyId,
+          user_id: 'ai-mentor',
+          message: chatMessage.text,
+          created_at: new Date()
+        });
+
+        // Отправляем сообщение всем в лобби
+        nsp.to(roomKey).emit('lobby:chatMessage', chatMessage);
+        
+        // Уведомляем всех об обновлении очков
+        nsp.to(roomKey).emit('lobby:scoreUpdate', {
+          userId: userId,
+          newScore: currentScore - cost,
+          cost: cost
+        });
+        
+        console.log('🤖 AI response sent to lobby chat:', response.message);
+        
+      } catch (error) {
+        console.error('❌ AI Socket Error in lobby:', error);
+        socket.emit('error', { message: 'AI-ментор временно недоступен' });
       }
     });
 
@@ -587,16 +748,17 @@ function initLobbySockets(nsp) {
       try {
         const questions = payload?.questions || [];
         const examId = payload?.examId === 'exam2' ? 'exam2' : 'exam';
+        console.log(`🎯 [EXAM] Создаем экзамен ${examId} с ${questions.length} вопросами для лобби ${lobbyId}`);
         lobbyExamState.set(lobbyId, { 
           questions, 
           index: 0, 
           correctAnswers: 0, 
           totalQuestions: questions.length, 
           examId,
-          timerStartTime: Date.now(),
+          questionStartTime: Date.now(), // Используем questionStartTime для консистентности
           timerDuration: 30000 // 30 секунд в миллисекундах
         });
-        nsp.to(roomKey).emit('lobby:examStart', { questions, index: 0 });
+        nsp.to(roomKey).emit('lobby:examStart', { questions, index: 0, examId });
       } catch (err) {
         console.error('Ошибка в lobby:openExam:', err);
       }
@@ -645,7 +807,12 @@ function initLobbySockets(nsp) {
     socket.on('lobby:examAnswer', async (payload) => {
       try {
         const state = lobbyExamState.get(lobbyId);
-        if (!state) return;
+        if (!state) {
+          console.log(`❌ [EXAM] Попытка отправить ответ в несуществующий экзамен для лобби ${lobbyId}`);
+          socket.emit('lobby:examError', { message: 'Экзамен не активен' });
+          return;
+        }
+        console.log(`📝 [EXAM] Получен ответ: правильный=${payload?.correct}, текущий вопрос=${state.index + 1}/${state.totalQuestions}, правильных ответов=${state.correctAnswers}`);
         const isCorrect = Boolean(payload && payload.correct);
         const isExamClosedByUser = payload.answer === 'exam_closed_by_user';
         
@@ -712,6 +879,7 @@ function initLobbySockets(nsp) {
           // Увеличиваем счетчик правильных ответов
           state.correctAnswers += 1;
           lobbyExamState.set(lobbyId, state);
+          console.log(`✅ [EXAM] Правильный ответ! Счетчик: ${state.correctAnswers}/${state.totalQuestions}, текущий индекс: ${state.index}`);
           
           // Показываем уведомление всем игрокам
           nsp.to(roomKey).emit('lobby:examCorrectAnswer', {
@@ -720,24 +888,34 @@ function initLobbySockets(nsp) {
           
           // Ждем 2 секунды, затем переходим к следующему вопросу
           setTimeout(async () => {
-            const nextIndex = state.index + 1;
-            if (nextIndex < state.questions.length) {
-              state.index = nextIndex;
+            // Проверяем, что экзамен все еще активен
+            const currentState = lobbyExamState.get(lobbyId);
+            if (!currentState) {
+              console.log(`❌ [EXAM] Экзамен был удален во время ожидания перехода к следующему вопросу!`);
+              return;
+            }
+            
+            const nextIndex = currentState.index + 1;
+            console.log(`🎯 [EXAM] Проверяем переход к следующему вопросу: ${nextIndex}/${currentState.questions.length} (текущий индекс: ${currentState.index})`);
+            if (nextIndex < currentState.questions.length) {
+              console.log(`➡️ [EXAM] Переходим к вопросу ${nextIndex + 1}/${currentState.questions.length}`);
+              currentState.index = nextIndex;
               // Обновляем время начала таймера для нового вопроса
-              state.timerStartTime = Date.now();
-              state.timerDuration = 30000;
-              lobbyExamState.set(lobbyId, state);
-              const nextQuestion = state.questions[nextIndex];
+              currentState.questionStartTime = Date.now();
+              currentState.timerDuration = 30000;
+              lobbyExamState.set(lobbyId, currentState);
+              const nextQuestion = currentState.questions[nextIndex];
               nsp.to(roomKey).emit('lobby:examNext', { index: nextIndex, question: nextQuestion });
               
               // Синхронизируем таймер для всех игроков
               nsp.to(roomKey).emit('lobby:examTimerReset', { timeLeft: 30 });
             } else {
               // Экзамен завершён - проверяем успешность
-              const successRate = state.correctAnswers / state.totalQuestions;
+              console.log(`🏁 [EXAM] Экзамен завершен! nextIndex: ${nextIndex}, questions.length: ${currentState.questions.length}`);
+              const successRate = currentState.correctAnswers / currentState.totalQuestions;
               const isExamPassed = successRate >= 0.6; // 60% минимум
               
-              console.log(`📊 [EXAM] Результат экзамена: ${state.correctAnswers}/${state.totalQuestions} (${(successRate * 100).toFixed(1)}%)`);
+              console.log(`📊 [EXAM] Результат экзамена: ${currentState.correctAnswers}/${currentState.totalQuestions} (${(successRate * 100).toFixed(1)}%)`);
               
               if (isExamPassed) {
                 // Экзамен сдан успешно
@@ -892,10 +1070,12 @@ function initLobbySockets(nsp) {
           
           // При неправильном ответе в экзамене переходим к следующему вопросу
           const nextIndex = state.index + 1;
+          console.log(`🎯 [EXAM] [НЕПРАВИЛЬНЫЙ] Проверяем переход к следующему вопросу: ${nextIndex}/${state.questions.length} (текущий индекс: ${state.index})`);
           if (nextIndex < state.questions.length) {
+            console.log(`➡️ [EXAM] [НЕПРАВИЛЬНЫЙ] Переходим к вопросу ${nextIndex + 1}/${state.questions.length}`);
             state.index = nextIndex;
             // Обновляем время начала таймера для нового вопроса
-            state.timerStartTime = Date.now();
+            state.questionStartTime = Date.now();
             state.timerDuration = 30000;
             lobbyExamState.set(lobbyId, state);
             const nextQuestion = state.questions[nextIndex];
@@ -905,6 +1085,7 @@ function initLobbySockets(nsp) {
             nsp.to(roomKey).emit('lobby:examTimerReset', { timeLeft: 30 });
           } else {
             // Экзамен завершён - проверяем успешность
+            console.log(`🏁 [EXAM] [НЕПРАВИЛЬНЫЙ] Экзамен завершен! nextIndex: ${nextIndex}, questions.length: ${state.questions.length}`);
             const successRate = state.correctAnswers / state.totalQuestions;
             const isExamPassed = successRate >= 0.6; // 60% минимум
             
@@ -1052,6 +1233,8 @@ function initLobbySockets(nsp) {
         }
       } catch (err) {
         console.error('Ошибка в lobby:examAnswer:', err);
+        // Уведомляем клиента об ошибке
+        socket.emit('lobby:examError', { message: 'Ошибка при обработке ответа экзамена' });
       }
     });
 
@@ -1114,7 +1297,7 @@ function initLobbySockets(nsp) {
           if (requestedExamId === examState.examId) {
             // Вычисляем оставшееся время таймера
             const currentTime = Date.now();
-            const elapsedTime = currentTime - examState.timerStartTime;
+            const elapsedTime = currentTime - examState.questionStartTime;
             const timeLeft = Math.max(0, Math.ceil((examState.timerDuration - elapsedTime) / 1000));
             
             console.log(`✅ [EXAM] Экзамены совпадают! Отправляем активный экзамен`);

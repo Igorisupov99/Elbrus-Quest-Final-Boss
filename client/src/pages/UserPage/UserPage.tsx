@@ -13,9 +13,11 @@ import {
   type User as FriendUser,
   type Friendship, 
 } from "../../api/friendship/friendshipApi";
+import { getFriendsCountText } from "../../utils/declination";
 import { AchievementCard } from "../../components/Achievement/AchievementCard/AchievementCard";
 import { AchievementModal } from "../../components/Achievement/AchievementModal/AchievementModal";
 import { FavoriteQuestionModal } from "../../components/FavoriteQuestionModal/FavoriteQuestionModal";
+import { UserAvatar } from "../../components/common/UserAvatar";
 import type { Achievement } from "../../types/achievement";
 import type { FavoriteQuestion } from "../../types/favorite";
 import { useAppSelector } from "../../store/hooks";
@@ -68,6 +70,7 @@ export function UserPage() {
   const [currentFavoriteIndex, setCurrentFavoriteIndex] = useState<number>(0);
   const [selectedQuestion, setSelectedQuestion] = useState<FavoriteQuestion | null>(null);
   const [isQuestionModalOpen, setIsQuestionModalOpen] = useState<boolean>(false);
+
 
   // Загрузка данных профиля пользователя
   useEffect(() => {
@@ -230,7 +233,7 @@ export function UserPage() {
       setFavoritesLoading(true);
       try {
         // Получаем публичные избранные вопросы пользователя
-        const response = await api.get<ApiResponse<{ favorites: FavoriteQuestion[] }>>(`/api/favorite/user/${user.id}`, {
+        const response = await api.get<ApiResponse<{ favorites: FavoriteQuestion[] }>>(`/api/favorites/user/${user.id}`, {
           withCredentials: true,
         });
 
@@ -471,8 +474,10 @@ export function UserPage() {
           {/* Блок 1.1 - Основная информация */}
           <div className={styles.profileInfoBlock}>
             <div className={styles.avatarSection}>
-              <img
-                src={user.image_url || "/default-avatar.png"}
+              <UserAvatar
+                userId={user.id}
+                fallbackImageUrl={user.image_url || "/default-avatar.svg"}
+                size="large"
                 alt="Аватар"
                 className={styles.avatar}
               />
@@ -588,7 +593,7 @@ export function UserPage() {
             </div>
             <div className={styles.basicInfo}>
               <h2 className={styles.username}>{user.username}</h2>
-              <p className={styles.friendsCount}>Друзей: {friends.length}</p>
+              <p className={styles.friendsCount}>{getFriendsCountText(friends.length)}</p>
             </div>
           </div>
 
@@ -720,7 +725,7 @@ export function UserPage() {
                   )}
                   
                   <div style={{ textAlign: 'center', flex: 1 }}>
-                    👥 {friends.length} {friends.length === 1 ? 'друг' : friends.length < 5 ? 'друга' : 'друзей'}
+                    👥 {getFriendsCountText(friends.length)}
                   </div>
                   
                   {friends.length > 5 && (
@@ -803,35 +808,20 @@ export function UserPage() {
                             background: 'linear-gradient(90deg, #d4a017, #a97400)'
                           }}
                         />
-                        <div className={styles.friendCardContent}>
-                          <img
-                            src={friend.image_url || "/default-avatar.png"}
+                        <div style={{ display: 'flex', alignItems: 'flex-start', gap: '12px', flex: 1 }}>
+                          <UserAvatar
+                            userId={friend.id}
+                            fallbackImageUrl={friend.image_url || "/default-avatar.svg"}
+                            size="medium"
+                            shape="square"
                             alt={`Аватар ${friend.username}`}
                             className={styles.friendAvatar}
-                            style={{
-                              width: '60px',
-                              height: '60px',
-                              borderRadius: '50%',
-                              objectFit: 'cover',
-                              background: '#ddd',
-                              flexShrink: 0,
-                              border: '3px solid #d8a35d',
-                              boxShadow: '0 2px 8px rgba(0, 0, 0, 0.15)',
-                              transition: 'all 0.2s ease'
-                            }}
-                            onMouseEnter={(e) => {
-                              e.currentTarget.style.borderColor = '#b0752d';
-                              e.currentTarget.style.transform = 'scale(1.05)';
-                              e.currentTarget.style.boxShadow = '0 3px 12px rgba(0, 0, 0, 0.2)';
-                            }}
-                            onMouseLeave={(e) => {
-                              e.currentTarget.style.borderColor = '#d8a35d';
-                              e.currentTarget.style.transform = 'scale(1)';
-                              e.currentTarget.style.boxShadow = '0 2px 8px rgba(0, 0, 0, 0.15)';
-                            }}
                           />
-                          <div className={styles.friendInfo}>
+                          <div style={{ display: 'flex', flexDirection: 'column', flex: 1 }}>
                             <h4 className={styles.friendName}>{friend.username}</h4>
+                            <p className={styles.friendScore}>
+                              🏆 {friend.score ?? 0} очков
+                            </p>
                           </div>
                         </div>
                       </div>
@@ -852,7 +842,7 @@ export function UserPage() {
                   >
                     {friends.length > 5 ? 
                       `${currentFriendsIndex + 1}-${Math.min(currentFriendsIndex + 5, friends.length)} из ${friends.length}` : 
-                      `${friends.length} ${friends.length === 1 ? 'друг' : friends.length < 5 ? 'друга' : 'друзей'}`
+                      getFriendsCountText(friends.length)
                     }
                   </div>
                 )}

@@ -21,4 +21,7 @@ router.post('/unequip', authMiddleware, avatarController.unequipAvatar);
 // Получить текущий аватар пользователя
 router.get('/current', authMiddleware, avatarController.getCurrentAvatar);
 
+// Получить аватар пользователя по ID
+router.get('/user/:userId', authMiddleware, avatarController.getUserAvatar);
+
 module.exports = router;

@@ -95,8 +95,9 @@ const StaticAvatarShopComponent: React.FC = () => {
   // Используем стабильные данные
   const filteredAvatarCardsData = filteredCardsDataRef.current;
 
-  const handleFiltersChange = useCallback((newFilters: AvatarShopFilters) => {
+  const handleFiltersChange = useCallback((filtersUpdater: (prev: AvatarShopFilters) => AvatarShopFilters) => {
     setFilters(prevFilters => {
+      const newFilters = filtersUpdater(prevFilters);
       // Проверяем, изменились ли серверные фильтры
       const hasServerFilterChanges = 
         newFilters.category !== prevFilters.category ||
