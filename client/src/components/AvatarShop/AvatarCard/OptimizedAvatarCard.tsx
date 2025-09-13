@@ -1,4 +1,4 @@
-import React, { useState, useCallback, memo, useRef, useEffect } from 'react';
+import React, { useState, useCallback } from 'react';
 import { useAppDispatch } from '../../../store/hooks';
 import { purchaseAvatar, equipAvatar, unequipAvatar } from '../../../store/avatarSlice';
 import type { Avatar } from '../../../types/avatar';
@@ -26,16 +26,9 @@ const OptimizedAvatarCardComponent: React.FC<OptimizedAvatarCardProps> = ({
   const [isPurchasing, setIsPurchasing] = useState(false);
   const [isEquipping, setIsEquipping] = useState(false);
   
-  // Используем ref для стабильных ссылок на функции
-  const handlersRef = useRef({
-    handlePurchase: null as (() => Promise<void>) | null,
-    handleEquip: null as (() => Promise<void>) | null,
-    handleUnequip: null as (() => Promise<void>) | null,
-  });
 
   // Создаем стабильные обработчики без зависимостей от состояния
   const handlePurchase = useCallback(async () => {
-    const { isOwned, canAfford, isPurchasing } = { isOwned, canAfford, isPurchasing };
     if (!isOwned && canAfford && !isPurchasing) {
       setIsPurchasing(true);
       try {
@@ -46,10 +39,9 @@ const OptimizedAvatarCardComponent: React.FC<OptimizedAvatarCardProps> = ({
         setIsPurchasing(false);
       }
     }
-  }, [dispatch, avatar.id]);
+  }, [dispatch, avatar.id, isOwned, canAfford, isPurchasing]);
 
   const handleEquip = useCallback(async () => {
-    const { isOwned, isEquipped, isEquipping } = { isOwned, isEquipped, isEquipping };
     if (isOwned && !isEquipped && !isEquipping) {
       setIsEquipping(true);
       try {
@@ -60,10 +52,9 @@ const OptimizedAvatarCardComponent: React.FC<OptimizedAvatarCardProps> = ({
         setIsEquipping(false);
       }
     }
-  }, [dispatch, avatar.id]);
+  }, [dispatch, avatar.id, isOwned, isEquipped, isEquipping]);
 
   const handleUnequip = useCallback(async () => {
-    const { isEquipped } = { isEquipped };
     if (isEquipped) {
       try {
         await dispatch(unequipAvatar()).unwrap();
@@ -71,7 +62,7 @@ const OptimizedAvatarCardComponent: React.FC<OptimizedAvatarCardProps> = ({
         console.error('Ошибка снятия аватара:', error);
       }
     }
-  }, [dispatch]);
+  }, [dispatch, isEquipped]);
 
   // Стабильные функции для рендера
   const getRarityClass = useCallback((rarity: string) => {

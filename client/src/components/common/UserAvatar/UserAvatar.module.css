@@ -1,0 +1,70 @@
+.avatar {
+  border-radius: 50%;
+  object-fit: cover;
+  background: #ddd;
+  transition: all 0.2s ease;
+  cursor: pointer;
+  border: 2px solid #d8a35d;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+}
+
+.avatar:hover {
+  border-color: #b0752d;
+  transform: scale(1.05);
+  box-shadow: 0 3px 12px rgba(0, 0, 0, 0.2);
+}
+
+/* Размеры */
+.small {
+  width: 32px;
+  height: 32px;
+  border-width: 1px;
+}
+
+.medium {
+  width: 60px;
+  height: 60px;
+  border-width: 3px;
+}
+
+.large {
+  width: 120px;
+  height: 120px;
+  border-width: 4px;
+}
+
+/* Состояние загрузки */
+.loading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, #f0f0f0, #e0e0e0);
+  border-color: #ccc;
+}
+
+.loadingSpinner {
+  width: 20px;
+  height: 20px;
+  border: 2px solid #d8a35d;
+  border-top: 2px solid transparent;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+/* Адаптивность */
+@media (max-width: 768px) {
+  .medium {
+    width: 50px;
+    height: 50px;
+  }
+  
+  .large {
+    width: 100px;
+    height: 100px;
+  }
+}

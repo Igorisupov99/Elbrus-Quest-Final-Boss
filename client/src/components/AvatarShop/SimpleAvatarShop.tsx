@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useCallback, useMemo, memo } from 'react';
+import React, { useEffect, useState, useCallback, useMemo } from 'react';
 import { useAppDispatch, useAppSelector } from '../../store/hooks';
 import { 
   fetchAvatars, 
@@ -6,11 +6,6 @@ import {
   fetchCurrentAvatar,
   clearError 
 } from '../../store/avatarSlice';
-import { updateUserScore } from '../../store/authSlice';
-import { 
-  selectUserScore,
-  selectAllAvatarCardsData
-} from '../../store/avatarSelectors';
 import { SimpleAvatarCard } from './AvatarCard/SimpleAvatarCard';
 import { AvatarFilters } from './AvatarFilters/AvatarFilters';
 import type { AvatarShopFilters } from '../../types/avatar';
@@ -103,8 +98,8 @@ const SimpleAvatarShopComponent: React.FC = () => {
     });
   }, [avatarCardsData, filters]);
 
-  const handleFiltersChange = useCallback((newFilters: AvatarShopFilters) => {
-    setFilters(newFilters);
+  const handleFiltersChange = useCallback((filtersUpdater: (prev: AvatarShopFilters) => AvatarShopFilters) => {
+    setFilters(filtersUpdater);
   }, []);
 
   if (error) {

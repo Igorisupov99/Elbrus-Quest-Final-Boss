@@ -18,6 +18,7 @@ import { achievementApi } from "../../api/achievements/achievementApi";
 import { AchievementCard } from "../../components/Achievement/AchievementCard/AchievementCard";
 import { AchievementModal } from "../../components/Achievement/AchievementModal/AchievementModal";
 import { FavoriteQuestionModal } from "../../components/FavoriteQuestionModal/FavoriteQuestionModal";
+import { UserAvatar } from "../../components/common/UserAvatar";
 import type { Achievement } from "../../types/achievement";
 import { favoriteApi } from "../../api/favorites/favoriteApi";
 import type { FavoriteQuestion } from "../../types/favorite";
@@ -631,7 +632,7 @@ export function Profile() {
           </Link>
           
           <img
-            src={currentAvatar?.imageUrl || user.image_url || "/default-avatar.png"}
+            src={currentAvatar?.imageUrl || user.image_url || "/default-avatar.svg"}
             alt="Аватар"
             className={styles.avatar}
           />
@@ -994,14 +995,12 @@ export function Profile() {
                     e.currentTarget.style.boxShadow = 'none';
                   }}
                 >
-                  <img
-                    src={searchResult.image_url || "/default-avatar.png"}
+                  <UserAvatar
+                    userId={searchResult.id}
+                    fallbackImageUrl={searchResult.image_url || "/default-avatar.svg"}
+                    size="small"
                     alt={`Аватар ${searchResult.username}`}
                     style={{
-                      width: '32px',
-                      height: '32px',
-                      borderRadius: '50%',
-                      objectFit: 'cover',
                       border: '1px solid #87ceeb',
                       flexShrink: 0
                     }}
@@ -1194,31 +1193,12 @@ export function Profile() {
                       }}
                     />
                     <div className={styles.friendCardContent}>
-                      <img
-                        src={friend.image_url || "/default-avatar.png"}
+                      <UserAvatar
+                        userId={friend.id}
+                        fallbackImageUrl={friend.image_url || "/default-avatar.svg"}
+                        size="medium"
                         alt={`Аватар ${friend.username}`}
                         className={styles.friendAvatar}
-                        style={{
-                          width: '60px',
-                          height: '60px',
-                          borderRadius: '50%',
-                          objectFit: 'cover',
-                          background: '#ddd',
-                          flexShrink: 0,
-                          border: '3px solid #d8a35d',
-                          boxShadow: '0 2px 8px rgba(0, 0, 0, 0.15)',
-                          transition: 'all 0.2s ease'
-                        }}
-                        onMouseEnter={(e: MouseEvent<HTMLImageElement>) => {
-                          e.currentTarget.style.borderColor = '#b0752d';
-                          e.currentTarget.style.transform = 'scale(1.05)';
-                          e.currentTarget.style.boxShadow = '0 3px 12px rgba(0, 0, 0, 0.2)';
-                        }}
-                        onMouseLeave={(e: MouseEvent<HTMLImageElement>) => {
-                          e.currentTarget.style.borderColor = '#d8a35d';
-                          e.currentTarget.style.transform = 'scale(1)';
-                          e.currentTarget.style.boxShadow = '0 2px 8px rgba(0, 0, 0, 0.15)';
-                        }}
                       />
                       <div className={styles.friendInfo}>
                         <h4 className={styles.friendName}>{friend.username}</h4>
@@ -1640,14 +1620,12 @@ export function Profile() {
                         }}
                       />
                       
-                      <img
-                        src={request.user?.image_url || "/default-avatar.png"}
+                      <UserAvatar
+                        userId={request.user?.id || 0}
+                        fallbackImageUrl={request.user?.image_url || "/default-avatar.svg"}
+                        size="medium"
                         alt={`Аватар ${request.user?.username}`}
                         style={{
-                          width: '60px',
-                          height: '60px',
-                          borderRadius: '50%',
-                          objectFit: 'cover',
                           border: '3px solid #8b4513',
                           boxShadow: '0 4px 8px rgba(139, 69, 19, 0.2)',
                           flexShrink: 0
@@ -1954,14 +1932,12 @@ export function Profile() {
                         }}
                       />
                       
-                      <img
-                        src={request.friend?.image_url || "/default-avatar.png"}
+                      <UserAvatar
+                        userId={request.friend?.id || 0}
+                        fallbackImageUrl={request.friend?.image_url || "/default-avatar.svg"}
+                        size="medium"
                         alt={`Аватар ${request.friend?.username}`}
                         style={{
-                          width: '60px',
-                          height: '60px',
-                          borderRadius: '50%',
-                          objectFit: 'cover',
                           border: '3px solid #d2691e',
                           boxShadow: '0 4px 8px rgba(210, 105, 30, 0.2)',
                           flexShrink: 0

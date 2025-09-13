@@ -1,7 +1,6 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import type { PayloadAction } from '@reduxjs/toolkit';
 import { avatarApi } from '../api/avatar/avatarApi';
-import { updateUserScore } from './authSlice';
 import type { 
   AvatarShopState, 
   AvatarShopFilters,

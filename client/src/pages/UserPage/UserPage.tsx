@@ -16,6 +16,7 @@ import {
 import { AchievementCard } from "../../components/Achievement/AchievementCard/AchievementCard";
 import { AchievementModal } from "../../components/Achievement/AchievementModal/AchievementModal";
 import { FavoriteQuestionModal } from "../../components/FavoriteQuestionModal/FavoriteQuestionModal";
+import { UserAvatar } from "../../components/common/UserAvatar";
 import type { Achievement } from "../../types/achievement";
 import type { FavoriteQuestion } from "../../types/favorite";
 import { useAppSelector } from "../../store/hooks";
@@ -471,8 +472,10 @@ export function UserPage() {
           {/* Блок 1.1 - Основная информация */}
           <div className={styles.profileInfoBlock}>
             <div className={styles.avatarSection}>
-              <img
-                src={user.image_url || "/default-avatar.png"}
+              <UserAvatar
+                userId={user.id}
+                fallbackImageUrl={user.image_url || "/default-avatar.svg"}
+                size="large"
                 alt="Аватар"
                 className={styles.avatar}
               />
@@ -804,31 +807,12 @@ export function UserPage() {
                           }}
                         />
                         <div className={styles.friendCardContent}>
-                          <img
-                            src={friend.image_url || "/default-avatar.png"}
+                          <UserAvatar
+                            userId={friend.id}
+                            fallbackImageUrl={friend.image_url || "/default-avatar.svg"}
+                            size="medium"
                             alt={`Аватар ${friend.username}`}
                             className={styles.friendAvatar}
-                            style={{
-                              width: '60px',
-                              height: '60px',
-                              borderRadius: '50%',
-                              objectFit: 'cover',
-                              background: '#ddd',
-                              flexShrink: 0,
-                              border: '3px solid #d8a35d',
-                              boxShadow: '0 2px 8px rgba(0, 0, 0, 0.15)',
-                              transition: 'all 0.2s ease'
-                            }}
-                            onMouseEnter={(e) => {
-                              e.currentTarget.style.borderColor = '#b0752d';
-                              e.currentTarget.style.transform = 'scale(1.05)';
-                              e.currentTarget.style.boxShadow = '0 3px 12px rgba(0, 0, 0, 0.2)';
-                            }}
-                            onMouseLeave={(e) => {
-                              e.currentTarget.style.borderColor = '#d8a35d';
-                              e.currentTarget.style.transform = 'scale(1)';
-                              e.currentTarget.style.boxShadow = '0 2px 8px rgba(0, 0, 0, 0.15)';
-                            }}
                           />
                           <div className={styles.friendInfo}>
                             <h4 className={styles.friendName}>{friend.username}</h4>
