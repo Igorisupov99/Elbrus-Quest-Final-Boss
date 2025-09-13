@@ -100,16 +100,35 @@ function initLobbySockets(nsp) {
       if (lobbyReconnectTimers.has(lobbyId)) {
         const existingTimer = lobbyReconnectTimers.get(lobbyId);
         clearTimeout(existingTimer.timerId);
+        clearInterval(existingTimer.intervalId);
       }
 
       console.log(`⏳ [RECONNECT] Запускаем таймер ожидания для ${activePlayerName} (ID: ${activePlayerId})`);
       
+      let timeLeft = 30;
+      
       // Уведомляем всех игроков о начале ожидания
       nsp.to(roomKey).emit('lobby:reconnectWaiting', {
         activePlayerName,
-        timeLeft: 30
+        timeLeft
       });
 
+      // Запускаем интервал для отправки обновлений каждую секунду
+      const intervalId = setInterval(() => {
+        timeLeft--;
+        
+        if (timeLeft > 0) {
+          // Отправляем обновление времени всем игрокам
+          nsp.to(roomKey).emit('lobby:reconnectTimerUpdate', {
+            timeLeft
+          });
+        } else {
+          // Время истекло
+          clearInterval(intervalId);
+        }
+      }, 1000);
+
+      // Основной таймер на 30 секунд
       const timerId = setTimeout(async () => {
         console.log(`⏰ [RECONNECT] Время ожидания истекло, передаем ход следующему игроку`);
         
@@ -126,6 +145,7 @@ function initLobbySockets(nsp) {
       // Сохраняем таймер в Map
       lobbyReconnectTimers.set(lobbyId, {
         timerId,
+        intervalId,
         activePlayerId,
         activePlayerName
       });
@@ -136,6 +156,7 @@ function initLobbySockets(nsp) {
       if (lobbyReconnectTimers.has(lobbyId)) {
         const timer = lobbyReconnectTimers.get(lobbyId);
         clearTimeout(timer.timerId);
+        clearInterval(timer.intervalId);
         lobbyReconnectTimers.delete(lobbyId);
         
         console.log(`✅ [RECONNECT] Таймер ожидания отменен для лобби ${lobbyId}`);

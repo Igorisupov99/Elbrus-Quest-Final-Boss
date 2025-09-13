@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { useAppDispatch, useAppSelector } from "../store/hooks";
 import type { RootState } from "../store/store";
 import { type ChatHistoryItem, type IncomingChatMessage, socketClient, type SystemEvent } from "../socket/socketLobbyPage";
-import { initialState, setScores, mergeScores, openModal, setModalResult, closeModal, openExamModal, closeExamModal, setExamQuestions, setExamIndex, clearExamQuestions, openPhaseTransitionModal, openExamFailureModal, openReconnectWaitingModal, closeReconnectWaitingModal } from "../store/lobbyPage/lobbySlice";
+import { initialState, setScores, mergeScores, openModal, setModalResult, closeModal, openExamModal, closeExamModal, setExamQuestions, setExamIndex, clearExamQuestions, openPhaseTransitionModal, openExamFailureModal, openReconnectWaitingModal, closeReconnectWaitingModal, updateReconnectTimer } from "../store/lobbyPage/lobbySlice";
 import { updateUserScore } from "../store/authSlice";
 import {
   setUsers,
@@ -345,6 +345,11 @@ export function useLobbySocket(lobbyId: number, onAnswerInputSync?: (answer: str
       }));
     };
 
+    const onReconnectTimerUpdate = (payload: { timeLeft: number }) => {
+      console.log('⏳ [RECONNECT] Обновление таймера:', payload.timeLeft);
+      dispatch(updateReconnectTimer(payload.timeLeft));
+    };
+
     const onReconnectTimeout = () => {
       console.log('⏰ [RECONNECT] Время ожидания истекло');
       dispatch(closeReconnectWaitingModal());
@@ -511,6 +516,7 @@ export function useLobbySocket(lobbyId: number, onAnswerInputSync?: (answer: str
     socket.on("lobby:examTimerReset", onExamTimerReset);
     socket.on("lobby:timerReset", onTimerReset);
     socket.on("lobby:reconnectWaiting", onReconnectWaiting);
+    socket.on("lobby:reconnectTimerUpdate", onReconnectTimerUpdate);
     socket.on("lobby:reconnectTimeout", onReconnectTimeout);
     socket.on("lobby:reconnectCanceled", onReconnectCanceled);
     socket.on("lobby:timeout", onTimeout);
@@ -563,6 +569,7 @@ export function useLobbySocket(lobbyId: number, onAnswerInputSync?: (answer: str
       socket.off("lobby:examTimerReset", onExamTimerReset);
       socket.off("lobby:timerReset", onTimerReset);
       socket.off("lobby:reconnectWaiting", onReconnectWaiting);
+      socket.off("lobby:reconnectTimerUpdate", onReconnectTimerUpdate);
       socket.off("lobby:reconnectTimeout", onReconnectTimeout);
       socket.off("lobby:reconnectCanceled", onReconnectCanceled);
       socket.off("lobby:closeModal", onCloseModal);
