@@ -67,12 +67,6 @@ export function MainPage(): JSX.Element {
   const [privacyFilter, setPrivacyFilter] = useState<
     'all' | 'public' | 'private'
   >('all');
-  const [playerCountFilter, setPlayerCountFilter] = useState<{
-    min: number;
-    max: number;
-  }>({ min: 0, max: 100 });
-  const [minInputValue, setMinInputValue] = useState('');
-  const [maxInputValue, setMaxInputValue] = useState('');
 
   // Achievement notification states
   const [achievementNotifications, setAchievementNotifications] = useState<
@@ -274,15 +268,6 @@ export function MainPage(): JSX.Element {
       return false;
     }
 
-    // Filter by player count (assuming we'll add this field later)
-    const playerCount = 0; // Placeholder for now
-    if (
-      playerCount < playerCountFilter.min ||
-      playerCount > playerCountFilter.max
-    ) {
-      return false;
-    }
-
     return true;
   });
 
@@ -444,57 +429,11 @@ export function MainPage(): JSX.Element {
                   </div>
                 </div>
 
-                <div className={styles.filterInlineSection}>
-                  <label className={styles.filterInlineLabel}>👥 Игроки:</label>
-                  <div className={styles.filterInlineRange}>
-                    <input
-                      type="text"
-                      value={minInputValue}
-                      onChange={(e) => {
-                        const value = e.target.value;
-                        if (value === '' || /^\d+$/.test(value)) {
-                          setMinInputValue(value);
-                          setPlayerCountFilter((prev) => ({
-                            ...prev,
-                            min: value === '' ? 0 : parseInt(value),
-                          }));
-                        }
-                      }}
-                      onKeyDown={handleKeyDown}
-                      onClick={(e) => e.stopPropagation()}
-                      className={styles.filterInlineInput}
-                      placeholder="Мин"
-                    />
-                    <span className={styles.filterRangeSeparator}>-</span>
-                    <input
-                      type="text"
-                      value={maxInputValue}
-                      onChange={(e) => {
-                        const value = e.target.value;
-                        if (value === '' || /^\d+$/.test(value)) {
-                          setMaxInputValue(value);
-                          setPlayerCountFilter((prev) => ({
-                            ...prev,
-                            max: value === '' ? 100 : parseInt(value),
-                          }));
-                        }
-                      }}
-                      onKeyDown={handleKeyDown}
-                      onClick={(e) => e.stopPropagation()}
-                      className={styles.filterInlineInput}
-                      placeholder="Макс"
-                    />
-                  </div>
-                </div>
-
                 <div className={styles.filterInlineActions}>
                   <button
                     onClick={() => {
                       setNameFilter('');
                       setPrivacyFilter('all');
-                      setPlayerCountFilter({ min: 0, max: 100 });
-                      setMinInputValue('');
-                      setMaxInputValue('');
                     }}
                     className={styles.filterInlineClearButton}
                   >
