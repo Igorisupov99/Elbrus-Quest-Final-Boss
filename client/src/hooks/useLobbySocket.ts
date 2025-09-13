@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { useAppDispatch, useAppSelector } from "../store/hooks";
 import type { RootState } from "../store/store";
 import { type ChatHistoryItem, type IncomingChatMessage, socketClient, type SystemEvent } from "../socket/socketLobbyPage";
-import { initialState, setScores, mergeScores, openModal, setModalResult, closeModal, openExamModal, closeExamModal, setExamQuestions, setExamIndex, clearExamQuestions, openPhaseTransitionModal, openExamFailureModal, openReconnectWaitingModal, closeReconnectWaitingModal, updateReconnectTimer, setExamRestoring } from "../store/lobbyPage/lobbySlice";
+import { initialState, setScores, mergeScores, openModal, setModalResult, closeModal, openExamModal, closeExamModal, setExamQuestions, setExamIndex, clearExamQuestions, openPhaseTransitionModal, openExamFailureModal, openReconnectWaitingModal, closeReconnectWaitingModal, updateReconnectTimer, setExamRestoring, openCorrectAnswerNotification, closeCorrectAnswerNotification } from "../store/lobbyPage/lobbySlice";
 import { updateUserScore } from "../store/authSlice";
 import {
   setUsers,
@@ -91,12 +91,13 @@ export function useLobbySocket(lobbyId: number, onAnswerInputSync?: (answer: str
     };
 
     const onCorrectAnswer = () => {
-      // Показываем уведомление о правильном ответе всем игрокам
-      dispatch(setModalResult('✅ Правильный ответ! (+10 очков)'));
+      // Показываем новое уведомление о правильном ответе всем игрокам
+      dispatch(openCorrectAnswerNotification({ points: 10 }));
+      
+      // Закрываем модалку с вопросом через небольшую задержку
       setTimeout(() => {
-        dispatch(setModalResult(null));
         dispatch(closeModal());
-      }, 3000);
+      }, 500);
     };
 
     const onExamCorrectAnswer = (payload: { message: string }) => {

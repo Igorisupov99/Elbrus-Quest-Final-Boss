@@ -1,0 +1,138 @@
+:root {
+  --rpg-bg: #1c130b;
+  --rpg-surface: #24170e;
+  --rpg-surface-2: #2c1b10;
+  --rpg-border: #4f311b;
+  --rpg-text: #f7f4ef;
+  --rpg-muted: #c9b9a4;
+  --rpg-gold: #fefdf8;
+  --rpg-gold-2: #b8922d;
+  --rpg-success: #4caf50;
+  --rpg-success-light: #81c784;
+}
+
+.modalOverlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.8);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 2000;
+  animation: fadeIn 0.3s ease-out;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.modalContent {
+  background: linear-gradient(135deg, var(--rpg-surface), var(--rpg-surface-2));
+  border: 2px solid var(--rpg-success);
+  border-radius: 16px;
+  padding: 32px;
+  max-width: 400px;
+  width: 90%;
+  position: relative;
+  box-shadow: 
+    0 8px 32px rgba(0, 0, 0, 0.4),
+    0 0 0 1px rgba(76, 175, 80, 0.2),
+    inset 0 1px 0 rgba(255, 255, 255, 0.1);
+  animation: modalSlideIn 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+  text-align: center;
+}
+
+@keyframes modalSlideIn {
+  from {
+    opacity: 0;
+    transform: translateY(-30px) scale(0.9);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.iconContainer {
+  margin-bottom: 24px;
+}
+
+.icon {
+  font-size: 64px;
+  display: block;
+  animation: pulse 1.5s ease-in-out infinite;
+  filter: drop-shadow(0 4px 8px rgba(76, 175, 80, 0.4));
+}
+
+@keyframes pulse {
+  0%, 100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+  50% {
+    transform: scale(1.1);
+    opacity: 0.8;
+  }
+}
+
+.title {
+  margin: 0 0 20px 0;
+  font-size: 28px;
+  font-weight: 900;
+  letter-spacing: 0.5px;
+  color: var(--rpg-success-light);
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+  background: linear-gradient(45deg, var(--rpg-success-light), var(--rpg-success));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.messageContainer {
+  margin-bottom: 24px;
+}
+
+.message {
+  margin: 0 0 16px 0;
+  color: var(--rpg-text);
+  font-size: 18px;
+  font-weight: 600;
+  line-height: 1.4;
+}
+
+.pointsMessage {
+  margin: 0;
+  color: var(--rpg-muted);
+  font-size: 16px;
+  line-height: 1.4;
+}
+
+.points {
+  color: var(--rpg-success);
+  font-weight: 700;
+  font-size: 18px;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+}
+
+.countdown {
+  color: var(--rpg-muted);
+  font-size: 14px;
+  font-style: italic;
+  border-top: 1px solid var(--rpg-border);
+  padding-top: 16px;
+  margin-top: 16px;
+}
+
+.timer {
+  color: var(--rpg-success);
+  font-weight: 700;
+  font-size: 16px;
+}
