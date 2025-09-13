@@ -351,6 +351,16 @@ function initLobbySockets(nsp) {
 
     await emitUsersList();
 
+    // Проверяем, есть ли активный экзамен, и уведомляем подключившегося игрока
+    const examState = lobbyExamState.get(lobbyId);
+    if (examState) {
+      console.log(`🔍 [EXAM] При подключении игрока ${socket.user.username} обнаружен активный экзамен: ${examState.examId}`);
+      // Отправляем информацию об активном экзамене только этому игроку для визуального отображения
+      socket.emit('lobby:examActive', {
+        examId: examState.examId
+      });
+    }
+
     // загрузка истории чата
     (async () => {
       try {
@@ -656,7 +666,7 @@ function initLobbySockets(nsp) {
           questionStartTime: Date.now(), // Используем questionStartTime для консистентности
           timerDuration: 30000 // 30 секунд в миллисекундах
         });
-        nsp.to(roomKey).emit('lobby:examStart', { questions, index: 0 });
+        nsp.to(roomKey).emit('lobby:examStart', { questions, index: 0, examId });
       } catch (err) {
         console.error('Ошибка в lobby:openExam:', err);
       }

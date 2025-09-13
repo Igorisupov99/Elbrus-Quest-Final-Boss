@@ -34,6 +34,10 @@ export function LobbyPage() {
   const examFailureModal = useAppSelector(s => s.lobbyPage.examFailureModal);
   const reconnectWaitingModal = useAppSelector(s => s.lobbyPage.reconnectWaitingModal);
   const correctAnswerNotification = useAppSelector(s => s.lobbyPage.correctAnswerNotification);
+  const activeExamId = useAppSelector(s => s.lobbyPage.activeExamId);
+  
+  // Временное логирование для отладки
+  console.log(`🔍 [LOBBY] Текущий activeExamId:`, activeExamId);
   const {
     history,
     connected,
@@ -489,18 +493,25 @@ export function LobbyPage() {
         className={styles.gameArea}
         style={mapNaturalSize ? ({ aspectRatio: `${mapNaturalSize.w} / ${mapNaturalSize.h}` } as React.CSSProperties) : undefined}
       >
-        {points.map(point => (
-          <Point
-            key={point.id}
-            id={point.id}
-            title={point.title}
-            top={point.top}
-            left={point.left}
-            status={point.status}
-            isActive={activeQuestionPointId === point.id}
-            onClick={openModal}
-          />
-        ))}
+        {points.map(point => {
+          // Определяем, активен ли этот поинт
+          const isActivePoint = activeQuestionPointId === point.id;
+          // Определяем, активен ли экзамен на этом поинте
+          const isActiveExam = activeExamId === point.id;
+          
+          return (
+            <Point
+              key={point.id}
+              id={point.id}
+              title={point.title}
+              top={point.top}
+              left={point.left}
+              status={point.status}
+              isActive={isActivePoint || isActiveExam}
+              onClick={openModal}
+            />
+          );
+        })}
         
         {/* Модальные окна рендерятся внутри области карты */}
          <QuestionModal

@@ -40,6 +40,7 @@ interface LobbyState {
   examQuestions: ExamQuestion[];
   examIndex: number;
   examRestoring: boolean;
+  activeExamId: string | null;
   scores: {
     userScore: number;
     sessionScore: number;
@@ -175,6 +176,7 @@ export const initialState: LobbyState = {
   examQuestions: [],
   examIndex: 0,
   examRestoring: false,
+  activeExamId: null,
   modalResult: null,
   scores: { userScore: 0, sessionScore: 0, incorrectAnswers: 0},
   phaseTransitionModal: {
@@ -327,11 +329,15 @@ const lobbyPageReducer = createSlice({
     },
     closeCorrectAnswerNotification(state) {
       state.correctAnswerNotification.isOpen = false;
+    },
+    setActiveExamId(state, action: PayloadAction<string | null>) {
+      console.log(`🔍 [REDUX] Изменяем activeExamId: ${state.activeExamId} -> ${action.payload}`);
+      state.activeExamId = action.payload;
     }
   },
 });
 
-export const { setUsers, setPoints, updatePointStatus, openModal, closeModal, openExamModal, closeExamModal, setExamQuestions, clearExamQuestions, setExamIndex, setScores, mergeScores, incrementIncorrectAnswers, setIncorrectAnswers, setModalResult, openPhaseTransitionModal, closePhaseTransitionModal, openExamFailureModal, closeExamFailureModal, openReconnectWaitingModal, closeReconnectWaitingModal, updateReconnectTimer, setExamRestoring, openCorrectAnswerNotification, closeCorrectAnswerNotification } =
+export const { setUsers, setPoints, updatePointStatus, openModal, closeModal, openExamModal, closeExamModal, setExamQuestions, clearExamQuestions, setExamIndex, setScores, mergeScores, incrementIncorrectAnswers, setIncorrectAnswers, setModalResult, openPhaseTransitionModal, closePhaseTransitionModal, openExamFailureModal, closeExamFailureModal, openReconnectWaitingModal, closeReconnectWaitingModal, updateReconnectTimer, setExamRestoring, openCorrectAnswerNotification, closeCorrectAnswerNotification, setActiveExamId } =
   lobbyPageReducer.actions;
 
 export default lobbyPageReducer.reducer;

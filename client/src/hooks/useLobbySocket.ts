@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { useAppDispatch, useAppSelector } from "../store/hooks";
 import type { RootState } from "../store/store";
 import { type ChatHistoryItem, type IncomingChatMessage, socketClient, type SystemEvent } from "../socket/socketLobbyPage";
-import { initialState, setScores, mergeScores, openModal, setModalResult, closeModal, openExamModal, closeExamModal, setExamQuestions, setExamIndex, clearExamQuestions, openPhaseTransitionModal, openExamFailureModal, openReconnectWaitingModal, closeReconnectWaitingModal, updateReconnectTimer, setExamRestoring, openCorrectAnswerNotification, closeCorrectAnswerNotification } from "../store/lobbyPage/lobbySlice";
+import { initialState, setScores, mergeScores, openModal, setModalResult, closeModal, openExamModal, closeExamModal, setExamQuestions, setExamIndex, clearExamQuestions, openPhaseTransitionModal, openExamFailureModal, openReconnectWaitingModal, closeReconnectWaitingModal, updateReconnectTimer, setExamRestoring, openCorrectAnswerNotification, setActiveExamId } from "../store/lobbyPage/lobbySlice";
 import { updateUserScore } from "../store/authSlice";
 import {
   setUsers,
@@ -166,12 +166,18 @@ export function useLobbySocket(lobbyId: number, onAnswerInputSync?: (answer: str
         }));
       }, 200); // 200мс задержка
     };
-    const onExamStart = (payload: { questions: any[]; index: number }) => {
+    const onExamStart = (payload: { questions: any[]; index: number; examId?: string }) => {
       // Сбрасываем флаг восстановления при начале нового экзамена
       dispatch(setExamRestoring(false));
       dispatch(setExamQuestions(payload.questions));
       dispatch(setExamIndex(payload.index));
       dispatch(openExamModal());
+      
+      // Устанавливаем активный экзамен для визуального отображения
+      if (payload.examId) {
+        dispatch(setActiveExamId(payload.examId));
+        console.log('🔍 [EXAM] Установлен activeExamId при начале экзамена:', payload.examId);
+      }
       
       // Очищаем синхронизированный ответ при начале экзамена
       console.log('🎯 [EXAM] Начало экзамена, очищаем синхронизированный ответ');
@@ -209,6 +215,9 @@ export function useLobbySocket(lobbyId: number, onAnswerInputSync?: (answer: str
       dispatch(setExamIndex(payload.currentIndex));
       dispatch(openExamModal());
       
+      // Устанавливаем активный экзамен для визуального отображения
+      dispatch(setActiveExamId(payload.examId));
+      
       // Синхронизируем таймер после небольшой задержки, чтобы модальное окно успело открыться
       setTimeout(() => {
         console.log('⏰ [EXAM] Синхронизируем таймер при восстановлении после переподключения:', payload.timeLeft);
@@ -237,6 +246,8 @@ export function useLobbySocket(lobbyId: number, onAnswerInputSync?: (answer: str
       dispatch(closeExamModal());
       dispatch(clearExamQuestions());
       dispatch(setExamIndex(0));
+      // Сбрасываем активный экзамен
+      dispatch(setActiveExamId(null));
     };
 
     const onCloseModal = () => {
@@ -318,6 +329,12 @@ export function useLobbySocket(lobbyId: number, onAnswerInputSync?: (answer: str
         successRate: payload.successRate,
         phaseId: payload.phaseId,
       }));
+      
+      // Закрываем экзамен и сбрасываем активный экзамен
+      dispatch(closeExamModal());
+      dispatch(clearExamQuestions());
+      dispatch(setExamIndex(0));
+      dispatch(setActiveExamId(null));
     };
 
     const onExamIncorrectAnswer = (payload: { message: string }) => {
@@ -468,6 +485,10 @@ export function useLobbySocket(lobbyId: number, onAnswerInputSync?: (answer: str
       dispatch(setExamIndex(payload.currentIndex));
       dispatch(openExamModal());
       
+      // Устанавливаем активный экзамен для визуального отображения
+      dispatch(setActiveExamId(payload.examId));
+      console.log('🔍 [EXAM] Установлен activeExamId для неактивного игрока:', payload.examId);
+      
       // Синхронизируем таймер после небольшой задержки, чтобы модальное окно успело открыться
       setTimeout(() => {
         console.log('⏰ [EXAM] Синхронизируем таймер при восстановлении экзамена:', payload.timeLeft);
@@ -493,10 +514,21 @@ export function useLobbySocket(lobbyId: number, onAnswerInputSync?: (answer: str
 
     const onWrongExam = (payload: { requestedExamId: string; activeExamId: string }) => {
       console.log('❌ [INACTIVE] Неправильный экзамен! Запрошен:', payload.requestedExamId, 'активный:', payload.activeExamId);
+      
+      // Устанавливаем активный экзамен для визуального отображения на карте
+      dispatch(setActiveExamId(payload.activeExamId));
+      
       // Эмитим кастомное событие для показа уведомления о неправильном экзамене
       window.dispatchEvent(new CustomEvent('exam:wrongExam', { 
         detail: payload 
       }));
+    };
+
+    const onExamActive = (payload: { examId: string }) => {
+      console.log('🔍 [EXAM] Получена информация об активном экзамене при подключении:', payload.examId);
+      // Устанавливаем активный экзамен для визуального отображения на карте
+      dispatch(setActiveExamId(payload.examId));
+      console.log('🔍 [EXAM] Установлен activeExamId при подключении:', payload.examId);
     };
 
     const onActivePointChanged = (payload: { activePointId: string | null }) => {
@@ -586,6 +618,7 @@ export function useLobbySocket(lobbyId: number, onAnswerInputSync?: (answer: str
     socket.on("lobby:activeExam", onActiveExam);
     socket.on("lobby:noActiveExam", onNoActiveExam);
     socket.on("lobby:wrongExam", onWrongExam);
+    socket.on("lobby:examActive", onExamActive);
     socket.on("lobby:activePointChanged", onActivePointChanged);
     socket.on("lobby:favoriteToggled", onFavoriteToggled);
 
@@ -637,6 +670,7 @@ export function useLobbySocket(lobbyId: number, onAnswerInputSync?: (answer: str
       socket.off("lobby:activeExam", onActiveExam);
       socket.off("lobby:noActiveExam", onNoActiveExam);
       socket.off("lobby:wrongExam", onWrongExam);
+      socket.off("lobby:examActive", onExamActive);
       socket.off("lobby:activePointChanged", onActivePointChanged);
       socket.off("lobby:favoriteToggled", onFavoriteToggled);
       socket.disconnect();

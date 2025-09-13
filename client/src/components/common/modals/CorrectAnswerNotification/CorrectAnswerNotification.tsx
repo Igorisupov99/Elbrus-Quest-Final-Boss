@@ -12,14 +12,14 @@ export default function CorrectAnswerNotification({
   onClose,
   points = 10,
 }: CorrectAnswerNotificationProps) {
-  const [countdown, setCountdown] = useState(3);
+  const [countdown, setCountdown] = useState(2);
 
-  // Автоматически закрываем уведомление через 3 секунды
+  // Автоматически закрываем уведомление через 2 секунды
   useEffect(() => {
     if (isOpen) {
       const timer = setTimeout(() => {
         onClose();
-      }, 3000);
+      }, 2000);
 
       // Обратный отсчет
       const countdownTimer = setInterval(() => {
@@ -37,7 +37,7 @@ export default function CorrectAnswerNotification({
         clearInterval(countdownTimer);
       };
     } else {
-      setCountdown(3); // Сбрасываем счетчик при закрытии
+      setCountdown(2); // Сбрасываем счетчик при закрытии
     }
   }, [isOpen, onClose]);
 

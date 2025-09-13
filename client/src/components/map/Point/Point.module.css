@@ -54,6 +54,45 @@
   animation: starPulse 2s ease-in-out infinite;
 }
 
+/* Базовый класс для активного состояния */
+.active {
+  /* Базовые стили для активного состояния - могут быть расширены */
+  position: relative;
+}
+
+/* Стили для активных обычных поинтов */
+.poi.active .marker {
+  transform: scale(1.1);
+  box-shadow: 
+    0 0 0 2px rgba(255, 223, 140, 0.35) inset,
+    0 0 12px rgba(135, 206, 235, 0.8),
+    0 2px 6px rgba(0,0,0,0.35);
+  border-color: #4682b4;
+  border-width: 3px;
+  background: radial-gradient(circle at 30% 30%, #e0f6ff, #87ceeb 65%, #4682b4);
+}
+
+/* Специальная анимация для активного экзамена */
+.poi[data-point-id="exam"].active .starIcon,
+.poi[data-point-id="exam2"].active .starIcon {
+  animation: activeExamPulse 1s ease-in-out infinite !important;
+}
+
+@keyframes activeExamPulse {
+  0% {
+    transform: scale(1);
+    filter: drop-shadow(0 0 8px rgba(255, 165, 0, 0.9)) brightness(1.2);
+  }
+  50% {
+    transform: scale(1.15);
+    filter: drop-shadow(0 0 20px rgba(255, 165, 0, 1)) brightness(1.4);
+  }
+  100% {
+    transform: scale(1);
+    filter: drop-shadow(0 0 8px rgba(255, 165, 0, 0.9)) brightness(1.2);
+  }
+}
+
 @keyframes starPulse {
   0% {
     transform: scale(1);
