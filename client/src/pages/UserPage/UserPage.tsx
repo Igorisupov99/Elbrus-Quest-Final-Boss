@@ -70,6 +70,7 @@ export function UserPage() {
   const [selectedQuestion, setSelectedQuestion] = useState<FavoriteQuestion | null>(null);
   const [isQuestionModalOpen, setIsQuestionModalOpen] = useState<boolean>(false);
 
+
   // Загрузка данных профиля пользователя
   useEffect(() => {
     if (!userId) {
@@ -231,7 +232,7 @@ export function UserPage() {
       setFavoritesLoading(true);
       try {
         // Получаем публичные избранные вопросы пользователя
-        const response = await api.get<ApiResponse<{ favorites: FavoriteQuestion[] }>>(`/api/favorite/user/${user.id}`, {
+        const response = await api.get<ApiResponse<{ favorites: FavoriteQuestion[] }>>(`/api/favorites/user/${user.id}`, {
           withCredentials: true,
         });
 

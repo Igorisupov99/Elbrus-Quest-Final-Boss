@@ -88,6 +88,7 @@ export function Profile() {
   const currentAvatar = useAppSelector(state => state.avatar.currentAvatar);
 
 
+
   // Для управления формой настроек
   const [formData, setFormData] = useState({
     username: "",

@@ -89,6 +89,7 @@ class FriendshipController {
       // Обновляем статус на принятый
       await friendship.update({ status: 'accepted' });
 
+
       res.json({ 
         message: 'Запрос на дружбу принят',
         data: friendship 
@@ -124,6 +125,7 @@ class FriendshipController {
 
       // Удаляем запрос на дружбу
       await friendship.destroy();
+
 
       res.json({ 
         message: 'Запрос на дружбу отклонен' 
@@ -161,6 +163,7 @@ class FriendshipController {
 
       // Удаляем дружбу
       await friendship.destroy();
+
 
       res.json({ 
         message: 'Пользователь удален из друзей' 
