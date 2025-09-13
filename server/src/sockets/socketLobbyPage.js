@@ -173,7 +173,7 @@ function initLobbySockets(nsp) {
           
           // Вычисляем оставшееся время таймера
           const currentTime = Date.now();
-          const elapsedTime = currentTime - examState.timerStartTime;
+          const elapsedTime = currentTime - examState.questionStartTime;
           const timeLeft = Math.max(0, Math.ceil((examState.timerDuration - elapsedTime) / 1000));
           
           console.log(`⏰ [EXAM] Восстанавливаем таймер: осталось ${timeLeft} секунд`);
@@ -189,8 +189,12 @@ function initLobbySockets(nsp) {
             timeLeft: timeLeft
           });
           
-          // Отправляем актуальное время таймера
-          nsp.to(roomKey).emit('lobby:examTimerReset', { timeLeft: timeLeft });
+          // Отправляем актуальное время таймера всем игрокам с небольшой задержкой
+          // чтобы модальные окна успели открыться
+          setTimeout(() => {
+            console.log(`⏰ [EXAM] Синхронизируем таймер для всех игроков после восстановления: ${timeLeft} секунд`);
+            nsp.to(roomKey).emit('lobby:examTimerReset', { timeLeft: timeLeft });
+          }, 150);
         }
         
         // Проверяем, был ли активен обычный вопрос и восстанавливаем его
@@ -231,6 +235,7 @@ function initLobbySockets(nsp) {
     // Функция для передачи хода следующему игроку
     async function passTurnToNextPlayer() {
       try {
+        console.log(`🎮 [PASS_TURN] Начинаем передачу хода для лобби ${lobbyId}`);
         const currentActivePlayer = await db.UserSession.findOne({
           where: { game_session_id: lobbyId, is_user_active: true },
         });
@@ -265,10 +270,10 @@ function initLobbySockets(nsp) {
         );
 
         // Очищаем состояние экзамена и вопроса при смене игрока
-        // Это предотвращает ситуацию, когда новый активный игрок получает старое состояние
+        // НЕ очищаем состояние экзамена при смене игрока во время активного экзамена
+        // Экзамен должен продолжаться с тем же состоянием для всех игроков
         if (lobbyExamState.has(lobbyId)) {
-          lobbyExamState.delete(lobbyId);
-          console.log(`🗑️ [EXAM] Очищено состояние экзамена при смене игрока для лобби ${lobbyId}`);
+          console.log(`🔄 [EXAM] Экзамен активен, НЕ очищаем состояние при смене игрока для лобби ${lobbyId}`);
         }
         
         if (lobbyQuestionState.has(lobbyId)) {
@@ -641,13 +646,14 @@ function initLobbySockets(nsp) {
       try {
         const questions = payload?.questions || [];
         const examId = payload?.examId === 'exam2' ? 'exam2' : 'exam';
+        console.log(`🎯 [EXAM] Создаем экзамен ${examId} с ${questions.length} вопросами для лобби ${lobbyId}`);
         lobbyExamState.set(lobbyId, { 
           questions, 
           index: 0, 
           correctAnswers: 0, 
           totalQuestions: questions.length, 
           examId,
-          timerStartTime: Date.now(),
+          questionStartTime: Date.now(), // Используем questionStartTime для консистентности
           timerDuration: 30000 // 30 секунд в миллисекундах
         });
         nsp.to(roomKey).emit('lobby:examStart', { questions, index: 0 });
@@ -704,6 +710,7 @@ function initLobbySockets(nsp) {
           socket.emit('lobby:examError', { message: 'Экзамен не активен' });
           return;
         }
+        console.log(`📝 [EXAM] Получен ответ: правильный=${payload?.correct}, текущий вопрос=${state.index + 1}/${state.totalQuestions}, правильных ответов=${state.correctAnswers}`);
         const isCorrect = Boolean(payload && payload.correct);
         const isExamClosedByUser = payload.answer === 'exam_closed_by_user';
         
@@ -770,6 +777,7 @@ function initLobbySockets(nsp) {
           // Увеличиваем счетчик правильных ответов
           state.correctAnswers += 1;
           lobbyExamState.set(lobbyId, state);
+          console.log(`✅ [EXAM] Правильный ответ! Счетчик: ${state.correctAnswers}/${state.totalQuestions}, текущий индекс: ${state.index}`);
           
           // Показываем уведомление всем игрокам
           nsp.to(roomKey).emit('lobby:examCorrectAnswer', {
@@ -778,24 +786,34 @@ function initLobbySockets(nsp) {
           
           // Ждем 2 секунды, затем переходим к следующему вопросу
           setTimeout(async () => {
-            const nextIndex = state.index + 1;
-            if (nextIndex < state.questions.length) {
-              state.index = nextIndex;
+            // Проверяем, что экзамен все еще активен
+            const currentState = lobbyExamState.get(lobbyId);
+            if (!currentState) {
+              console.log(`❌ [EXAM] Экзамен был удален во время ожидания перехода к следующему вопросу!`);
+              return;
+            }
+            
+            const nextIndex = currentState.index + 1;
+            console.log(`🎯 [EXAM] Проверяем переход к следующему вопросу: ${nextIndex}/${currentState.questions.length} (текущий индекс: ${currentState.index})`);
+            if (nextIndex < currentState.questions.length) {
+              console.log(`➡️ [EXAM] Переходим к вопросу ${nextIndex + 1}/${currentState.questions.length}`);
+              currentState.index = nextIndex;
               // Обновляем время начала таймера для нового вопроса
-              state.timerStartTime = Date.now();
-              state.timerDuration = 30000;
-              lobbyExamState.set(lobbyId, state);
-              const nextQuestion = state.questions[nextIndex];
+              currentState.questionStartTime = Date.now();
+              currentState.timerDuration = 30000;
+              lobbyExamState.set(lobbyId, currentState);
+              const nextQuestion = currentState.questions[nextIndex];
               nsp.to(roomKey).emit('lobby:examNext', { index: nextIndex, question: nextQuestion });
               
               // Синхронизируем таймер для всех игроков
               nsp.to(roomKey).emit('lobby:examTimerReset', { timeLeft: 30 });
             } else {
               // Экзамен завершён - проверяем успешность
-              const successRate = state.correctAnswers / state.totalQuestions;
+              console.log(`🏁 [EXAM] Экзамен завершен! nextIndex: ${nextIndex}, questions.length: ${currentState.questions.length}`);
+              const successRate = currentState.correctAnswers / currentState.totalQuestions;
               const isExamPassed = successRate >= 0.6; // 60% минимум
               
-              console.log(`📊 [EXAM] Результат экзамена: ${state.correctAnswers}/${state.totalQuestions} (${(successRate * 100).toFixed(1)}%)`);
+              console.log(`📊 [EXAM] Результат экзамена: ${currentState.correctAnswers}/${currentState.totalQuestions} (${(successRate * 100).toFixed(1)}%)`);
               
               if (isExamPassed) {
                 // Экзамен сдан успешно
@@ -950,10 +968,12 @@ function initLobbySockets(nsp) {
           
           // При неправильном ответе в экзамене переходим к следующему вопросу
           const nextIndex = state.index + 1;
+          console.log(`🎯 [EXAM] [НЕПРАВИЛЬНЫЙ] Проверяем переход к следующему вопросу: ${nextIndex}/${state.questions.length} (текущий индекс: ${state.index})`);
           if (nextIndex < state.questions.length) {
+            console.log(`➡️ [EXAM] [НЕПРАВИЛЬНЫЙ] Переходим к вопросу ${nextIndex + 1}/${state.questions.length}`);
             state.index = nextIndex;
             // Обновляем время начала таймера для нового вопроса
-            state.timerStartTime = Date.now();
+            state.questionStartTime = Date.now();
             state.timerDuration = 30000;
             lobbyExamState.set(lobbyId, state);
             const nextQuestion = state.questions[nextIndex];
@@ -963,6 +983,7 @@ function initLobbySockets(nsp) {
             nsp.to(roomKey).emit('lobby:examTimerReset', { timeLeft: 30 });
           } else {
             // Экзамен завершён - проверяем успешность
+            console.log(`🏁 [EXAM] [НЕПРАВИЛЬНЫЙ] Экзамен завершен! nextIndex: ${nextIndex}, questions.length: ${state.questions.length}`);
             const successRate = state.correctAnswers / state.totalQuestions;
             const isExamPassed = successRate >= 0.6; // 60% минимум
             
@@ -1174,7 +1195,7 @@ function initLobbySockets(nsp) {
           if (requestedExamId === examState.examId) {
             // Вычисляем оставшееся время таймера
             const currentTime = Date.now();
-            const elapsedTime = currentTime - examState.timerStartTime;
+            const elapsedTime = currentTime - examState.questionStartTime;
             const timeLeft = Math.max(0, Math.ceil((examState.timerDuration - elapsedTime) / 1000));
             
             console.log(`✅ [EXAM] Экзамены совпадают! Отправляем активный экзамен`);

@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { useAppDispatch, useAppSelector } from "../store/hooks";
 import type { RootState } from "../store/store";
 import { type ChatHistoryItem, type IncomingChatMessage, socketClient, type SystemEvent } from "../socket/socketLobbyPage";
-import { initialState, setScores, mergeScores, openModal, setModalResult, closeModal, openExamModal, closeExamModal, setExamQuestions, setExamIndex, clearExamQuestions, openPhaseTransitionModal, openExamFailureModal, openReconnectWaitingModal, closeReconnectWaitingModal, updateReconnectTimer } from "../store/lobbyPage/lobbySlice";
+import { initialState, setScores, mergeScores, openModal, setModalResult, closeModal, openExamModal, closeExamModal, setExamQuestions, setExamIndex, clearExamQuestions, openPhaseTransitionModal, openExamFailureModal, openReconnectWaitingModal, closeReconnectWaitingModal, updateReconnectTimer, setExamRestoring } from "../store/lobbyPage/lobbySlice";
 import { updateUserScore } from "../store/authSlice";
 import {
   setUsers,
@@ -166,6 +166,8 @@ export function useLobbySocket(lobbyId: number, onAnswerInputSync?: (answer: str
       }, 200); // 200мс задержка
     };
     const onExamStart = (payload: { questions: any[]; index: number }) => {
+      // Сбрасываем флаг восстановления при начале нового экзамена
+      dispatch(setExamRestoring(false));
       dispatch(setExamQuestions(payload.questions));
       dispatch(setExamIndex(payload.index));
       dispatch(openExamModal());
@@ -184,14 +186,31 @@ export function useLobbySocket(lobbyId: number, onAnswerInputSync?: (answer: str
       currentQuestion: any;
       timeLeft: number;
     }) => {
-      console.log('🔄 [EXAM] Восстанавливаем экзамен:', payload);
+      console.log('🔄 [EXAM] Восстанавливаем экзамен после переподключения:', payload);
+      
+      // Устанавливаем флаг восстановления перед открытием экзамена
+      dispatch(setExamRestoring(true));
       
       // Восстанавливаем состояние экзамена
       dispatch(setExamQuestions(payload.questions));
       dispatch(setExamIndex(payload.currentIndex));
       dispatch(openExamModal());
       
-      console.log(`📊 [EXAM] Экзамен восстановлен: вопрос ${payload.currentIndex + 1}/${payload.totalQuestions}, правильных ответов: ${payload.correctAnswers}`);
+      // Синхронизируем таймер после небольшой задержки, чтобы модальное окно успело открыться
+      setTimeout(() => {
+        console.log('⏰ [EXAM] Синхронизируем таймер при восстановлении после переподключения:', payload.timeLeft);
+        window.dispatchEvent(new CustomEvent('exam:timerReset', { 
+          detail: { timeLeft: payload.timeLeft } 
+        }));
+      }, 100);
+      
+      // Сбрасываем флаг восстановления после синхронизации таймера с дополнительной задержкой
+      setTimeout(() => {
+        console.log('🔄 [EXAM] Сбрасываем флаг восстановления после переподключения');
+        dispatch(setExamRestoring(false));
+      }, 200);
+      
+      console.log(`📊 [EXAM] Экзамен восстановлен после переподключения: вопрос ${payload.currentIndex + 1}/${payload.totalQuestions}, правильных ответов: ${payload.correctAnswers}`);
       console.log(`⏰ [EXAM] Таймер восстановлен: осталось ${payload.timeLeft} секунд`);
     };
 
@@ -222,6 +241,7 @@ export function useLobbySocket(lobbyId: number, onAnswerInputSync?: (answer: str
     };
 
     const onCloseExamModal = () => {
+      dispatch(setExamRestoring(false));
       dispatch(closeExamModal());
     };
 
@@ -421,19 +441,29 @@ export function useLobbySocket(lobbyId: number, onAnswerInputSync?: (answer: str
     }) => {
       console.log('👁️ [INACTIVE] Получен активный экзамен для подключения:', payload);
       
+      // Устанавливаем флаг восстановления перед открытием экзамена
+      dispatch(setExamRestoring(true));
+      
       // Восстанавливаем состояние экзамена для неактивного игрока
       dispatch(setExamQuestions(payload.questions));
       dispatch(setExamIndex(payload.currentIndex));
       dispatch(openExamModal());
       
-      console.log(`📊 [EXAM] Экзамен восстановлен для неактивного игрока: вопрос ${payload.currentIndex + 1}/${payload.totalQuestions}`);
-      
-      // Синхронизируем таймер
+      // Синхронизируем таймер после небольшой задержки, чтобы модальное окно успело открыться
       setTimeout(() => {
+        console.log('⏰ [EXAM] Синхронизируем таймер при восстановлении экзамена:', payload.timeLeft);
         window.dispatchEvent(new CustomEvent('exam:timerReset', { 
           detail: { timeLeft: payload.timeLeft } 
         }));
+      }, 100);
+      
+      // Сбрасываем флаг восстановления после синхронизации таймера с дополнительной задержкой
+      setTimeout(() => {
+        console.log('🔄 [EXAM] Сбрасываем флаг восстановления после синхронизации');
+        dispatch(setExamRestoring(false));
       }, 200);
+      
+      console.log(`📊 [EXAM] Экзамен восстановлен для неактивного игрока: вопрос ${payload.currentIndex + 1}/${payload.totalQuestions}`);
     };
 
     const onNoActiveExam = () => {

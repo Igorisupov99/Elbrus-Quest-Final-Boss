@@ -39,6 +39,7 @@ interface LobbyState {
   examModalOpen: boolean;
   examQuestions: ExamQuestion[];
   examIndex: number;
+  examRestoring: boolean;
   scores: {
     userScore: number;
     sessionScore: number;
@@ -169,6 +170,7 @@ export const initialState: LobbyState = {
   examModalOpen: false,
   examQuestions: [],
   examIndex: 0,
+  examRestoring: false,
   modalResult: null,
   scores: { userScore: 0, sessionScore: 0, incorrectAnswers: 0},
   phaseTransitionModal: {
@@ -302,11 +304,14 @@ const lobbyPageReducer = createSlice({
     },
     updateReconnectTimer(state, action: PayloadAction<number>) {
       state.reconnectWaitingModal.timeLeft = action.payload;
+    },
+    setExamRestoring(state, action: PayloadAction<boolean>) {
+      state.examRestoring = action.payload;
     }
   },
 });
 
-export const { setUsers, setPoints, updatePointStatus, openModal, closeModal, openExamModal, closeExamModal, setExamQuestions, clearExamQuestions, setExamIndex, setScores, mergeScores, incrementIncorrectAnswers, setIncorrectAnswers, setModalResult, openPhaseTransitionModal, closePhaseTransitionModal, openExamFailureModal, closeExamFailureModal, openReconnectWaitingModal, closeReconnectWaitingModal, updateReconnectTimer } =
+export const { setUsers, setPoints, updatePointStatus, openModal, closeModal, openExamModal, closeExamModal, setExamQuestions, clearExamQuestions, setExamIndex, setScores, mergeScores, incrementIncorrectAnswers, setIncorrectAnswers, setModalResult, openPhaseTransitionModal, closePhaseTransitionModal, openExamFailureModal, closeExamFailureModal, openReconnectWaitingModal, closeReconnectWaitingModal, updateReconnectTimer, setExamRestoring } =
   lobbyPageReducer.actions;
 
 export default lobbyPageReducer.reducer;
