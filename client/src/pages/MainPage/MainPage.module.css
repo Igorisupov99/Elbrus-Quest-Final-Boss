@@ -409,6 +409,27 @@
   margin-bottom: 16px;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
   position: relative;
+  animation: filterSlideIn 0.4s ease-out;
+  transform-origin: top;
+}
+
+@keyframes filterSlideIn {
+  from {
+    opacity: 0;
+    transform: translateY(-20px) scale(0.95);
+    max-height: 0;
+    padding-top: 0;
+    padding-bottom: 0;
+    margin-bottom: 0;
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+    max-height: 500px;
+    padding-top: 16px;
+    padding-bottom: 16px;
+    margin-bottom: 16px;
+  }
 }
 
 .filterRow::before {
@@ -570,18 +591,6 @@
   font-weight: 500;
 }
 
-.filterInlineRange {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-
-.filterRangeSeparator {
-  color: var(--fantasy-text);
-  font-weight: bold;
-  font-size: 1rem;
-}
-
 .filterInlineActions {
   display: flex;
   justify-content: flex-end;
@@ -634,19 +643,41 @@
   font-size: 1rem;
   font-weight: bold;
   cursor: pointer;
-  transition: all 0.2s ease-in-out;
+  transition: all 0.3s ease-in-out;
   box-shadow: 0 3px 6px rgba(0, 0, 0, 0.2);
   text-shadow: 0 1px 0 #f3e0c0;
   display: flex;
   align-items: center;
   gap: 8px;
   font-family: inherit;
+  position: relative;
+  overflow: hidden;
+}
+
+.filterButton::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(255, 255, 255, 0.3),
+    transparent
+  );
+  transition: left 0.5s ease;
 }
 
 .filterButton:hover {
   background: linear-gradient(180deg, #f0c33b, #c48a00);
   transform: translateY(-1px);
   box-shadow: 0 5px 10px rgba(0, 0, 0, 0.3);
+}
+
+.filterButton:hover::before {
+  left: 100%;
 }
 
 .filterButton:active {
@@ -730,6 +761,7 @@
 }
 
 .filterInput[type='number'] {
+  appearance: textfield;
   -moz-appearance: textfield;
 }
 
@@ -944,8 +976,6 @@
   white-space: pre-wrap;
   word-break: break-word;
 }
-
-
 
 .chatForm {
   display: flex;
