@@ -39,6 +39,7 @@ export function useLobbySocket(lobbyId: number, onAnswerInputSync?: (answer: str
     };
     const onHistory = (items: ChatHistoryItem[]) => setHistory(items);
     const onChatMessage = (msg: IncomingChatMessage) => setHistory(prev => [...prev, msg]);
+    const onAIMessage = (msg: IncomingChatMessage) => setHistory(prev => [...prev, msg]);
     const onSystem = (evt: SystemEvent) => {
       const text = evt.type === "join" ? `${evt.username} вошёл в лобби` : `${evt.username} покинул лобби`;
       setHistory(prev => [...prev, {
@@ -68,6 +69,22 @@ export function useLobbySocket(lobbyId: number, onAnswerInputSync?: (answer: str
       if (payload.userId && user?.id && Number(payload.userId) === Number(user.id)) {
         dispatch(mergeScores({ userScore: payload.userScore }));
       }
+    };
+
+    const onScoreUpdate = (payload: any) => {
+      console.log('💰 [SCORE UPDATE] Обновление очков после AI запроса:', payload);
+      if (payload.userId && user?.id && Number(payload.userId) === Number(user.id)) {
+        dispatch(mergeScores({ userScore: payload.newScore }));
+        dispatch(updateUserScore(payload.newScore));
+      }
+    };
+
+    const onAIResponse = (payload: any) => {
+      console.log('🤖 [AI RESPONSE] Получен ответ AI для всех игроков:', payload);
+      // Эмитим кастомное событие для QuestionModal
+      window.dispatchEvent(new CustomEvent('ai:response', { 
+        detail: payload 
+      }));
     };
 
     // Убираем обработчик onCorrectAnswer - уведомления о правильных ответах показываются локально
@@ -470,6 +487,7 @@ export function useLobbySocket(lobbyId: number, onAnswerInputSync?: (answer: str
     socket.on("connect_error", onConnectError);
     socket.on("chat:history", onHistory);
     socket.on("chat:message", onChatMessage);
+    socket.on("ai:message", onAIMessage);
     socket.on("system", onSystem);
     socket.on("error", onError);
     socket.on("lobby:users", onUsers);
@@ -491,6 +509,9 @@ export function useLobbySocket(lobbyId: number, onAnswerInputSync?: (answer: str
     socket.on("lobby:updatePointStatus", onPointStatus);
     socket.on("lobby:initScores", onInitScores);
     socket.on("lobby:scores", onScores);
+    socket.on("lobby:scoreUpdate", onScoreUpdate);
+    socket.on("lobby:chatMessage", onAIMessage);
+    socket.on("ai:response", onAIResponse);
     socket.on("lobby:incorrectAnswer", onIncorrectAnswer);
     socket.on("lobby:incorrectCountUpdate", onIncorrectCountUpdate);
     socket.on("lobby:correctAnswer", onCorrectAnswer);
@@ -536,6 +557,7 @@ export function useLobbySocket(lobbyId: number, onAnswerInputSync?: (answer: str
       socket.off("connect_error", onConnectError);
       socket.off("chat:history", onHistory);
       socket.off("chat:message", onChatMessage);
+      socket.off("ai:message", onAIMessage);
       socket.off("system", onSystem);
       socket.off("error", onError);
       socket.off("lobby:users", onUsers);
@@ -543,6 +565,9 @@ export function useLobbySocket(lobbyId: number, onAnswerInputSync?: (answer: str
       socket.off("lobby:updatePointStatus", onPointStatus);
       socket.off("lobby:initScores", onInitScores);
       socket.off("lobby:scores", onScores);
+      socket.off("lobby:scoreUpdate", onScoreUpdate);
+      socket.off("lobby:chatMessage", onAIMessage);
+      socket.off("ai:response", onAIResponse);
       socket.off("lobby:incorrectAnswer", onIncorrectAnswer);
       socket.off("lobby:incorrectCountUpdate", onIncorrectCountUpdate);
       socket.off("lobby:correctAnswer", onCorrectAnswer);
@@ -659,6 +684,14 @@ export function useLobbySocket(lobbyId: number, onAnswerInputSync?: (answer: str
     socketClient.socket.emit("lobby:checkActiveExam", { examId });
   };
 
+  const sendAIQuestion = (question: string) => {
+    if (!question.trim() || !connected) return;
+    socketClient.socket.emit("ai:question", { 
+      message: question, 
+      context: 'Программирование и IT' 
+    });
+  };
+
   return {
     history,
     connected,
@@ -683,5 +716,6 @@ export function useLobbySocket(lobbyId: number, onAnswerInputSync?: (answer: str
     sendLeaveLobby,
     sendCheckActiveQuestion,
     sendCheckActiveExam,
+    sendAIQuestion,
   };
 };

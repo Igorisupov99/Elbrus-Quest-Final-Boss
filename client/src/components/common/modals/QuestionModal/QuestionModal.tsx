@@ -4,6 +4,9 @@ import { FavoriteButton } from "../../FavoriteButton";
 import { ConfirmCloseModal } from "../ConfirmCloseModal/ConfirmCloseModal";
 import styles from "./QuestionModal.module.css";
 import api from "../../../../api/axios";
+import { socketClient } from "../../../../socket/socketLobbyPage";
+
+const AI_QUESTION_COST = 100; // Стоимость запроса к AI
 
 interface QuestionModalProps {
   isOpen: boolean;
@@ -16,6 +19,7 @@ interface QuestionModalProps {
   activePlayerId: number | null;  // 👈 id активного игрока
   activePlayerName: string;       // 👈 имя активного игрока
   mentor_tip?: string | null;     // 👈 подсказка от ментора
+  userScore?: number;             // 👈 очки пользователя
   onAnswerResult?: (
     correct: boolean,
     scores?: { userScore?: number; sessionScore?: number; incorrectAnswers?: number },
@@ -39,6 +43,7 @@ export function QuestionModal({
   activePlayerId,
   activePlayerName,
   mentor_tip,
+  userScore = 0,
   onAnswerResult,
   onCloseModal,
   onTimeoutClose,
@@ -54,6 +59,8 @@ export function QuestionModal({
   const [showHint, setShowHint] = useState(false);
   const [showConfirmClose, setShowConfirmClose] = useState(false);
   const [answerSubmitted, setAnswerSubmitted] = useState(false);
+  const [aiResponse, setAiResponse] = useState<string | null>(null);
+  const [aiLoading, setAiLoading] = useState(false);
   const closeTimeoutRef = useRef<number | null>(null);
   const timerResetTimeoutRef = useRef<number | null>(null);
 
@@ -65,6 +72,8 @@ export function QuestionModal({
     setShowHint(false);
     setShowConfirmClose(false);
     setAnswerSubmitted(false);
+    setAiResponse(null);
+    setAiLoading(false);
     
     // Очищаем таймеры при смене вопроса
     if (closeTimeoutRef.current) {
@@ -156,6 +165,26 @@ export function QuestionModal({
     }
   }, [syncedAnswer, currentUserId, activePlayerId]);
 
+  // Слушаем глобальные события AI ответов
+  useEffect(() => {
+    const handleGlobalAIResponse = (event: CustomEvent) => {
+      const payload = event.detail;
+      console.log('🤖 [QuestionModal] Получен глобальный AI ответ:', payload);
+      
+      // Показываем ответ только если это для текущего вопроса
+      if (payload.questionId === questionId) {
+        setAiResponse(payload.message);
+        setAiLoading(false);
+      }
+    };
+
+    window.addEventListener('ai:response', handleGlobalAIResponse as EventListener);
+    
+    return () => {
+      window.removeEventListener('ai:response', handleGlobalAIResponse as EventListener);
+    };
+  }, [questionId]);
+
   if (!isOpen) return null;
 
   const handleAnswerChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -227,6 +256,39 @@ export function QuestionModal({
     setShowConfirmClose(false);
   };
 
+  const handleAskAI = async () => {
+    if (!lobbyId || !question) return;
+    
+    console.log(`🤖 [AI] Запрос к AI от пользователя с очками: ${userScore}`);
+    
+    setAiLoading(true);
+    setAiResponse(null);
+    
+    try {
+      // Отправляем вопрос AI через socket
+      socketClient.socket.emit('ai:question', {
+        message: `Вопрос: ${question}\nТема: ${topic}`,
+        context: 'Программирование и IT',
+        questionId: questionId,
+        lobbyId: lobbyId,
+        cost: AI_QUESTION_COST
+      });
+      
+      // Таймаут на случай если AI не ответит
+      setTimeout(() => {
+        if (aiLoading) {
+          setAiResponse('AI-ментор временно недоступен');
+          setAiLoading(false);
+        }
+      }, 10000);
+      
+    } catch (error) {
+      console.error('Ошибка при отправке вопроса AI:', error);
+      setAiResponse('Ошибка при обращении к AI-ментору');
+      setAiLoading(false);
+    }
+  };
+
 
   const isCorrectMessage = Boolean(sharedResult && sharedResult.includes('Правильный ответ'));
 
@@ -269,6 +331,38 @@ export function QuestionModal({
                 )}
               </div>
             )}
+
+            {/* AI помощь */}
+            <div className={styles.aiSection}>
+              <div className={styles.aiButtonContainer}>
+                <Button 
+                  onClick={handleAskAI}
+                  disabled={aiLoading}
+                  className={styles.aiButton}
+                >
+                  {aiLoading ? '🤖 AI думает...' : `🤖 Спросить у AI (${AI_QUESTION_COST} очков)`}
+                </Button>
+                <div className={styles.aiCostInfo}>
+                  У вас: {userScore} очков
+                </div>
+              </div>
+              
+              {aiResponse && (
+                <div className={styles.aiResponse}>
+                  <div className={styles.aiResponseHeader}>
+                    <span className={styles.aiIcon}>🤖</span>
+                    <span className={styles.aiTitle}>AI-Ментор:</span>
+                  </div>
+                  <p className={styles.aiText}>{aiResponse}</p>
+                  <Button 
+                    onClick={() => setAiResponse(null)}
+                    className={styles.hideAiButton}
+                  >
+                    Скрыть ответ
+                  </Button>
+                </div>
+              )}
+            </div>
 
             {timerActive && (
               <div className={`${styles.timer} ${

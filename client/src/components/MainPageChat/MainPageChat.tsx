@@ -104,6 +104,8 @@ export default function MainPageChat() {
     setMessage('');
   };
 
+
+
   return (
     <div className={styles.chat}>
       <h3 className={styles.chatTitle}>
@@ -130,6 +132,8 @@ export default function MainPageChat() {
           </div>
         ))}
       </div>
+
+
 
       <div className={styles.chatForm}>
         <input
