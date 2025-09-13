@@ -113,9 +113,9 @@ export function useLobbySocket(lobbyId: number, onAnswerInputSync?: (answer: str
       }));
     };
 
-    const onCorrectAnswer = () => {
+    const onCorrectAnswer = (payload: { userId: number; username: string; message: string }) => {
       // Показываем новое уведомление о правильном ответе всем игрокам
-      dispatch(openCorrectAnswerNotification({ points: 10 }));
+      dispatch(openCorrectAnswerNotification({ points: 10, username: payload.username }));
       
       // Закрываем модалку с вопросом через небольшую задержку
       setTimeout(() => {
@@ -761,8 +761,8 @@ export function useLobbySocket(lobbyId: number, onAnswerInputSync?: (answer: str
     socketClient.socket.emit("lobby:incorrectCountUpdate", { incorrectAnswers: incorrectCount });
   };
 
-  const sendCorrectAnswer = () => {
-    socketClient.socket.emit("lobby:correctAnswer");
+  const sendCorrectAnswer = (pointId: string) => {
+    socketClient.socket.emit("lobby:correctAnswer", { pointId });
   };
 
   const sendPassTurnNotification = () => {

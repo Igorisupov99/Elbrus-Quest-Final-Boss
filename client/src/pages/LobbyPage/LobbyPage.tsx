@@ -93,6 +93,7 @@ export function LobbyPage() {
   const [input, setInput] = useState("");
   const [mapNaturalSize, setMapNaturalSize] = useState<{ w: number; h: number } | null>(null);
   const [currentPointId, setCurrentPointId] = useState<string | null>(null);
+  const [lastAnsweringPlayer, setLastAnsweringPlayer] = useState<string>('Игрок');
   const [syncedAnswer, setSyncedAnswer] = useState("");
   const [syncedExamAnswer, setSyncedExamAnswer] = useState("");
   
@@ -449,11 +450,17 @@ export function LobbyPage() {
     }
     
     if (correct && currentPointId) {
+      // Сохраняем имя текущего активного игрока перед тем как ход передастся
+      const currentActivePlayer = usersInLobby.find(u => u.id === activePlayerId);
+      if (currentActivePlayer) {
+        setLastAnsweringPlayer(currentActivePlayer.username);
+      }
+      
       dispatch(updatePointStatus({ pointId: currentPointId, status: "completed" }));
       sendAnswer(currentPointId, true, answer);
       
       // Отправляем уведомление о правильном ответе всем игрокам
-      sendCorrectAnswer();
+      sendCorrectAnswer(currentPointId);
       
       // Локально закрываем модалку у активного игрока
       setTimeout(() => {
@@ -641,6 +648,7 @@ export function LobbyPage() {
         <CorrectAnswerNotification
           isOpen={correctAnswerNotification.isOpen}
           points={correctAnswerNotification.points}
+          username={correctAnswerNotification.username || lastAnsweringPlayer}
           onClose={() => dispatch(closeCorrectAnswerNotification())}
         />
 

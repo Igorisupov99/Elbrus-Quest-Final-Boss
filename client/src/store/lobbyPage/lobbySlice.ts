@@ -67,6 +67,7 @@ interface LobbyState {
   correctAnswerNotification: {
     isOpen: boolean;
     points: number;
+    username?: string;
   };
 }
 
@@ -324,11 +325,12 @@ const lobbyPageReducer = createSlice({
     },
     openCorrectAnswerNotification(
       state,
-      action: PayloadAction<{ points: number }>
+      action: PayloadAction<{ points: number; username?: string }>
     ) {
       state.correctAnswerNotification = {
         isOpen: true,
         points: action.payload.points,
+        username: action.payload.username,
       };
     },
     closeCorrectAnswerNotification(state) {

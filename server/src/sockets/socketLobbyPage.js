@@ -719,6 +719,35 @@ function initLobbySockets(nsp) {
       console.log('📡 [SOCKET] Событие переслано в комнату:', roomKey);
     });
 
+    // Обработчик уведомления о правильном ответе
+    socket.on('lobby:correctAnswer', ({ pointId }) => {
+      console.log(`🎯 [SOCKET] Получено lobby:correctAnswer от ${socket.user.username}, pointId: ${pointId}`);
+      
+      // Обновляем статус поинта на сервере
+      const points = lobbyPoints.get(lobbyId);
+      if (points && pointId) {
+        const point = points.find((p) => p.id === pointId);
+        if (point) {
+          point.status = 'completed';
+          console.log(`📍 [SOCKET] Обновлен статус поинта ${pointId} на completed`);
+        }
+      }
+      
+      // Отправляем обновление статуса поинта всем игрокам
+      if (pointId) {
+        nsp.to(roomKey).emit('lobby:updatePointStatus', { pointId, status: 'completed' });
+      }
+      
+      // Отправляем уведомление всем игрокам в комнате с именем отвечающего игрока
+      nsp.to(roomKey).emit('lobby:correctAnswer', {
+        userId: socket.user.id,
+        username: socket.user.username,
+        message: "✅ Правильный ответ! (+10 очков)",
+      });
+      
+      console.log(`📡 [SOCKET] Отправлено уведомление о правильном ответе для ${socket.user.username}`);
+    });
+
     // Уведомление о истечении времени
     socket.on('lobby:timeout', async (payload) => {
       console.log('📡 [SOCKET] Получено lobby:timeout, пересылаю:', payload);

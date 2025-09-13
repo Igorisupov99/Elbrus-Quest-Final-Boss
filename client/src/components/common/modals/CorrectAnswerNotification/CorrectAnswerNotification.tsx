@@ -5,12 +5,14 @@ interface CorrectAnswerNotificationProps {
   isOpen: boolean;
   onClose: () => void;
   points?: number;
+  username?: string;
 }
 
 export default function CorrectAnswerNotification({
   isOpen,
   onClose,
   points = 10,
+  username,
 }: CorrectAnswerNotificationProps) {
   const [countdown, setCountdown] = useState(2);
 
@@ -57,7 +59,7 @@ export default function CorrectAnswerNotification({
             Правильный ответ!
           </p>
           <p className={styles.pointsMessage}>
-            Вы получили <span className={styles.points}>+{points} очков</span>
+            {username || 'Игрок'} получил{username ? '' : 'а'} <span className={styles.points}>+{points} очков</span>
           </p>
         </div>
 

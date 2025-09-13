@@ -75,6 +75,7 @@ class QuestionController {
     try {
       const { question_id, answer, lobby_id } = req.body;
       const userId = req.user.id;
+      const username = req.user.username;
       const io = req.io;
 
       if (!question_id) {
@@ -159,6 +160,7 @@ class QuestionController {
           if (isCorrect) {
             io.of("/lobby").to(roomName).emit("lobby:correctAnswer", {
               userId,
+              username,
               message: "✅ Правильный ответ! (+10 очков)",
             });
           }
