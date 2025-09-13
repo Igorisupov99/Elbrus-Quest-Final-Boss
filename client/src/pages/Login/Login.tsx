@@ -15,7 +15,10 @@ export function Login() {
   const navigate = useNavigate();
 
   const { loading, user } = useAppSelector((state) => state.auth);
-  const [toast, setToast] = useState<{ type: 'success' | 'error'; message: string } | null>(null);
+  const [toast, setToast] = useState<{
+    type: 'success' | 'error';
+    message: string;
+  } | null>(null);
 
   const {
     register,
@@ -31,11 +34,19 @@ export function Login() {
   });
 
   const onSubmit = async (data: LoginFormData) => {
-    const result = await dispatch(loginUser({ username: data.username, password: data.password }));
+    const result = await dispatch(
+      loginUser({ username: data.username, password: data.password })
+    );
     if (loginUser.fulfilled.match(result)) {
-      setToast({ type: 'success', message: 'Добро пожаловать в Elbrus Quest!' });
+      setToast({
+        type: 'success',
+        message: 'Добро пожаловать в Elbrus Quest!',
+      });
     } else {
-      setToast({ type: 'error', message: result.payload as string || 'Ошибка входа' });
+      setToast({
+        type: 'error',
+        message: (result.payload as string) || 'Ошибка входа',
+      });
     }
   };
 
@@ -43,10 +54,9 @@ export function Login() {
     if (user) {
       setTimeout(() => {
         navigate('/');
-      }, 3000); 
+      }, 3000);
     }
   }, [user, navigate]);
-
 
   return (
     <div className={styles.loginPage}>
@@ -74,7 +84,11 @@ export function Login() {
             required
           />
 
-          <Button type="submit" loading={loading} className={styles.submitButton}>
+          <Button
+            type="submit"
+            loading={loading}
+            className={styles.submitButton}
+          >
             {loading ? 'Вход...' : 'Начать приключение'}
           </Button>
         </form>
@@ -90,8 +104,12 @@ export function Login() {
       </div>
 
       {toast && (
-        <Toast type={toast.type} message={toast.message} onClose={() => setToast(null)} />
+        <Toast
+          type={toast.type}
+          message={toast.message}
+          onClose={() => setToast(null)}
+        />
       )}
     </div>
   );
-};
+}

@@ -68,7 +68,23 @@ function initLobbySockets(nsp) {
           include: [{ model: db.User, as: 'user' }],
         });
 
-        const activePlayerId = activeUserSession ? activeUserSession.user.id : null;
+        let activePlayerId = activeUserSession ? activeUserSession.user.id : null;
+
+        // Если нет активного игрока, но есть подключенные пользователи, назначаем первого
+        if (!activePlayerId && users.length > 0) {
+          const firstUser = users[0];
+          const userSession = await db.UserSession.findOne({
+            where: { game_session_id: lobbyId, user_id: firstUser.id },
+          });
+          
+          if (userSession) {
+            await userSession.update({ is_user_active: true });
+            activePlayerId = firstUser.id;
+            console.log(
+              `🎮 Автоматически назначен активный игрок в лобби ${lobbyId}: ${firstUser.username}`
+            );
+          }
+        }
 
         nsp.to(roomKey).emit('lobby:users', { users, activePlayerId });
       } catch (err) {
@@ -281,11 +297,28 @@ function initLobbySockets(nsp) {
         where: { game_session_id: lobbyId, is_user_active: true },
       });
 
+      // Проверяем, есть ли активный игрок в базе данных
       if (!existingActivePlayer) {
         await userSession.update({ is_user_active: true });
         console.log(
           `🎮 Первый активный игрок в лобби ${lobbyId}: ${socket.user.username}`
         );
+      } else {
+        // Дополнительная проверка: если активный игрок есть в БД, но не подключен к лобби
+        const activePlayerInLobby = Array.from(lobbyUsers.get(lobbyId).values())
+          .find(user => user.id === existingActivePlayer.user_id);
+        
+        if (!activePlayerInLobby) {
+          // Активный игрок не подключен, делаем текущего игрока активным
+          await db.UserSession.update(
+            { is_user_active: false },
+            { where: { id: existingActivePlayer.id } }
+          );
+          await userSession.update({ is_user_active: true });
+          console.log(
+            `🎮 Активный игрок не подключен, новый активный игрок в лобби ${lobbyId}: ${socket.user.username}`
+          );
+        }
       }
     } catch (err) {
       console.error('Ошибка инициализации UserSession:', err);
