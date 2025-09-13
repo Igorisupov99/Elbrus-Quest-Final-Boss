@@ -1,4 +1,4 @@
-import React, { memo, useCallback } from 'react';
+import React, { useCallback } from 'react';
 import type { AvatarShopFilters, AvatarCategory, AvatarRarity } from '../../../types/avatar';
 import styles from './AvatarFilters.module.css';
 
@@ -29,24 +29,24 @@ const AvatarFiltersComponent: React.FC<AvatarFiltersProps> = ({
   ];
 
   const handleCategoryChange = useCallback((category: AvatarCategory | undefined) => {
-    onFiltersChange(prev => ({ ...prev, category }));
-  }, [onFiltersChange]);
+    onFiltersChange({ ...filters, category });
+  }, [onFiltersChange, filters]);
 
   const handleRarityChange = useCallback((rarity: AvatarRarity | undefined) => {
-    onFiltersChange(prev => ({ ...prev, rarity }));
-  }, [onFiltersChange]);
+    onFiltersChange({ ...filters, rarity });
+  }, [onFiltersChange, filters]);
 
   const handleShowOwnedChange = useCallback((showOwned: boolean) => {
-    onFiltersChange(prev => ({ ...prev, showOwned }));
-  }, [onFiltersChange]);
+    onFiltersChange({ ...filters, showOwned });
+  }, [onFiltersChange, filters]);
 
   const handleShowLockedChange = useCallback((showLocked: boolean) => {
-    onFiltersChange(prev => ({ ...prev, showLocked }));
-  }, [onFiltersChange]);
+    onFiltersChange({ ...filters, showLocked });
+  }, [onFiltersChange, filters]);
 
   const handleSearchChange = useCallback((searchQuery: string) => {
-    onFiltersChange(prev => ({ ...prev, searchQuery: searchQuery || undefined }));
-  }, [onFiltersChange]);
+    onFiltersChange({ ...filters, searchQuery: searchQuery || undefined });
+  }, [onFiltersChange, filters]);
 
   const clearFilters = useCallback(() => {
     onFiltersChange({});
