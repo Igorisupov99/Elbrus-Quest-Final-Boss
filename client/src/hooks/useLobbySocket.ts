@@ -360,6 +360,11 @@ export function useLobbySocket(lobbyId: number, onAnswerInputSync?: (answer: str
       dispatch(closeReconnectWaitingModal());
     };
 
+    const onExamError = (payload: { message: string }) => {
+      console.log('❌ [EXAM] Ошибка экзамена:', payload.message);
+      // Можно добавить уведомление пользователю
+    };
+
     const onActiveQuestion = (payload: { 
       questionId: number;
       topic: string;
@@ -519,6 +524,7 @@ export function useLobbySocket(lobbyId: number, onAnswerInputSync?: (answer: str
     socket.on("lobby:reconnectTimerUpdate", onReconnectTimerUpdate);
     socket.on("lobby:reconnectTimeout", onReconnectTimeout);
     socket.on("lobby:reconnectCanceled", onReconnectCanceled);
+    socket.on("lobby:examError", onExamError);
     socket.on("lobby:timeout", onTimeout);
     socket.on("lobby:passTurnNotification", onPassTurnNotification);
     socket.on("lobby:closeModal", onCloseModal);
@@ -572,6 +578,7 @@ export function useLobbySocket(lobbyId: number, onAnswerInputSync?: (answer: str
       socket.off("lobby:reconnectTimerUpdate", onReconnectTimerUpdate);
       socket.off("lobby:reconnectTimeout", onReconnectTimeout);
       socket.off("lobby:reconnectCanceled", onReconnectCanceled);
+      socket.off("lobby:examError", onExamError);
       socket.off("lobby:closeModal", onCloseModal);
       socket.off("lobby:newAchievements", onNewAchievements);
       socket.off("user:newAchievements", onUserNewAchievements);

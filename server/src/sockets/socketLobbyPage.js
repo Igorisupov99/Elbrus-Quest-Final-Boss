@@ -699,7 +699,11 @@ function initLobbySockets(nsp) {
     socket.on('lobby:examAnswer', async (payload) => {
       try {
         const state = lobbyExamState.get(lobbyId);
-        if (!state) return;
+        if (!state) {
+          console.log(`❌ [EXAM] Попытка отправить ответ в несуществующий экзамен для лобби ${lobbyId}`);
+          socket.emit('lobby:examError', { message: 'Экзамен не активен' });
+          return;
+        }
         const isCorrect = Boolean(payload && payload.correct);
         const isExamClosedByUser = payload.answer === 'exam_closed_by_user';
         
@@ -1106,6 +1110,8 @@ function initLobbySockets(nsp) {
         }
       } catch (err) {
         console.error('Ошибка в lobby:examAnswer:', err);
+        // Уведомляем клиента об ошибке
+        socket.emit('lobby:examError', { message: 'Ошибка при обработке ответа экзамена' });
       }
     });
 

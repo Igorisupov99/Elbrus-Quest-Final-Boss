@@ -53,6 +53,7 @@ export function ExamModal({
   const [timeLeft, setTimeLeft] = useState(30);
   const [timerActive, setTimerActive] = useState(false);
   const [showConfirmClose, setShowConfirmClose] = useState(false);
+  const [answerSubmitted, setAnswerSubmitted] = useState(false);
 
   const totalQuestions = examQuestions.length;
   const currentQuestion = examQuestions[currentQuestionIndex];
@@ -74,6 +75,7 @@ export function ExamModal({
     setCorrectAnswer(null);
     setTimeLeft(30);
     setTimerActive(false);
+    setAnswerSubmitted(false); // Сбрасываем флаг отправки ответа
     
     // НЕ сбрасываем result - уведомления показываются через сокет
     
@@ -97,12 +99,12 @@ export function ExamModal({
           if (Number(currentUserId) === Number(activePlayerId)) {
             // Автоматически отправляем ответ при истечении времени
             console.log("⏰ Время истекло в экзамене, автоматически отправляем ответ:", answer.trim() || "пустой");
-            if (answer.trim()) {
+            if (answer.trim() && !answerSubmitted) {
               handleSubmit();
             } else {
-              // Если ответ пустой в экзамене — считаем как неправильный ответ
+              // Если ответ пустой в экзамене или уже отправлен — считаем как неправильный ответ
               // Используем сокетную логику для корректного перехода к следующему вопросу
-              console.log("⏰ Пустой ответ при истечении времени в экзамене - считаем как неправильный");
+              console.log("⏰ Пустой ответ или уже отправленный ответ при истечении времени в экзамене - считаем как неправильный");
               // Убираем локальное уведомление - оно будет показано через сокет всем игрокам
               onAdvance?.(false, true); // Передаем true для указания таймаута
             }
@@ -165,6 +167,7 @@ export function ExamModal({
     if (syncedAnswer !== undefined && Number(currentUserId) !== Number(activePlayerId)) {
       // Обновляем ввод только для неактивных игроков
       setAnswer(syncedAnswer);
+      setAnswerSubmitted(false); // Сбрасываем флаг при синхронизации
     }
   }, [syncedAnswer, currentUserId, activePlayerId]);
 
@@ -181,9 +184,10 @@ export function ExamModal({
   };
 
   const handleSubmit = async () => {
-    if (!currentQuestion) return;
+    if (!currentQuestion || answerSubmitted) return;
 
     setTimerActive(false); // Останавливаем таймер при отправке ответа
+    setAnswerSubmitted(true); // Блокируем повторную отправку
 
     try {
       setLoading(true);
@@ -214,7 +218,9 @@ export function ExamModal({
       
     } catch (err) {
       console.error("Ошибка при отправке ответа:", err);
-      setResult("⚠ Ошибка при проверке ответа");
+      setResult("⚠ Ошибка при проверке ответа. Попробуйте еще раз.");
+      setAnswerSubmitted(false); // Разрешаем повторную отправку при ошибке
+      setTimerActive(true); // Восстанавливаем таймер при ошибке
     } finally {
       setLoading(false);
     }
@@ -300,7 +306,7 @@ export function ExamModal({
               }
               value={answer}
               onChange={handleAnswerChange}
-              disabled={loading || Number(currentUserId) !== Number(activePlayerId)}
+              disabled={loading || answerSubmitted || Number(currentUserId) !== Number(activePlayerId)}
               onKeyDown={(e) => {
                 if (e.key === 'Enter' && !e.shiftKey && Number(currentUserId) === Number(activePlayerId)) {
                   e.preventDefault();
@@ -312,8 +318,8 @@ export function ExamModal({
             <div className={styles.actions}>
               <Button onClick={handleClose}>Закрыть</Button>
               {Number(currentUserId) === Number(activePlayerId) && (
-                <Button onClick={handleSubmit} disabled={loading}>
-                  Отправить
+                <Button onClick={handleSubmit} disabled={loading || answerSubmitted}>
+                  {answerSubmitted ? 'Отправлено' : 'Отправить'}
                 </Button>
               )}
             </div>
