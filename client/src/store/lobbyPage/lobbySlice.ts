@@ -210,6 +210,10 @@ const lobbyPageReducer = createSlice({
       state,
       action: PayloadAction<{ users: LobbyUser[]; activePlayerId: number | null }>
     ) {
+      console.log('🔄 [REDUX] Обновление пользователей:', { 
+        users: action.payload.users.map(u => ({ id: u.id, username: u.username })), 
+        activePlayerId: action.payload.activePlayerId 
+      });
       state.users = action.payload.users;
       state.activePlayerId = action.payload.activePlayerId;
     },

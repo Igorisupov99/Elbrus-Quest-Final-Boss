@@ -36,6 +36,26 @@ export function LobbyPage() {
   useEffect(() => {
     console.log(`💰 [LobbyPage] Текущие очки пользователя: ${userScore}`);
   }, [userScore]);
+
+  // Проверка и назначение активного игрока
+  useEffect(() => {
+    console.log(`🎮 [LOBBY] Проверка активного игрока:`, { 
+      activePlayerId, 
+      usersInLobby: usersInLobby.length, 
+      currentUserId: user?.id,
+      currentUserInLobby: usersInLobby.find(u => u.id === user?.id) 
+    });
+    
+    if (!activePlayerId && usersInLobby.length > 0 && user?.id) {
+      // Если нет активного игрока, но есть пользователи в лобби, назначаем активным текущего пользователя
+      const currentUserInLobby = usersInLobby.find(u => u.id === user.id);
+      if (currentUserInLobby) {
+        console.log(`🎮 [LOBBY] Нет активного игрока, назначаем активным текущего пользователя: ${user.username}`);
+        // Отправляем запрос на сервер для назначения активного игрока
+        sendPassTurn();
+      }
+    }
+  }, [activePlayerId, usersInLobby, user?.id]);
   const examFailureModal = useAppSelector(s => s.lobbyPage.examFailureModal);
   const reconnectWaitingModal = useAppSelector(s => s.lobbyPage.reconnectWaitingModal);
   const correctAnswerNotification = useAppSelector(s => s.lobbyPage.correctAnswerNotification);

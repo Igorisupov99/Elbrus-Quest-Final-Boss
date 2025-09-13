@@ -51,7 +51,10 @@ export function useLobbySocket(lobbyId: number, onAnswerInputSync?: (answer: str
     };
     const onError = (payload: any) => console.error("ошибка чата", payload);
 
-    const onUsers = ({ users, activePlayerId }: any) => dispatch(setUsers({ users, activePlayerId }));
+    const onUsers = ({ users, activePlayerId }: any) => {
+      console.log('👥 [USERS] Обновление списка пользователей:', { users, activePlayerId });
+      dispatch(setUsers({ users, activePlayerId }));
+    };
     const onInitPoints = (points: any) => dispatch(setPoints(points));
     const onPointStatus = ({ pointId, status}: any) => {
       console.log('🎯 [POINT STATUS] Обновление статуса поинта:', { pointId, status });
@@ -715,6 +718,7 @@ export function useLobbySocket(lobbyId: number, onAnswerInputSync?: (answer: str
   };
 
   const sendAnswer = (pointId: string, correct: boolean, answer?: string) => {
+    console.log('📤 [SEND ANSWER] Отправляем ответ на сервер:', { lobbyId, pointId, correct, answer });
     socketClient.socket.emit("lobby:answer", { lobbyId, pointId, correct, answer });
   };
 
@@ -749,6 +753,7 @@ export function useLobbySocket(lobbyId: number, onAnswerInputSync?: (answer: str
   };
 
   const sendPassTurn = () => {
+    console.log('📤 [SEND PASS TURN] Отправляем запрос на передачу хода');
     socketClient.socket.emit("lobby:passTurn");
   };
 
