@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { favoriteApi } from '../../api/favorites/favoriteApi';
 import type { FavoriteQuestion } from '../../types/favorite';
 import { FavoriteButton } from '../../components/common/FavoriteButton';
+import { AIChatModal } from '../../components/AIChatModal/AIChatModal';
 import styles from './FavoritesPage.module.css';
 
 const FavoritesPage: React.FC = () => {
@@ -14,6 +15,8 @@ const FavoritesPage: React.FC = () => {
     totalItems: 0,
     itemsPerPage: 10
   });
+  const [aiChatOpen, setAiChatOpen] = useState(false);
+  const [selectedQuestion, setSelectedQuestion] = useState<FavoriteQuestion | null>(null);
 
   // Загрузка избранных вопросов
   const loadFavorites = async (page: number = 1) => {
@@ -70,6 +73,18 @@ const FavoritesPage: React.FC = () => {
           : fav
       )
     );
+  };
+
+  // Обработчик открытия чата с АИ
+  const handleOpenAIChat = (question: FavoriteQuestion) => {
+    setSelectedQuestion(question);
+    setAiChatOpen(true);
+  };
+
+  // Обработчик закрытия чата с АИ
+  const handleCloseAIChat = () => {
+    setAiChatOpen(false);
+    setSelectedQuestion(null);
   };
 
   if (loading && favorites.length === 0) {
@@ -149,6 +164,12 @@ const FavoritesPage: React.FC = () => {
                   </div>
 
                   <div className={styles.questionActions}>
+                    <button
+                      className={styles.aiChatButton}
+                      onClick={() => handleOpenAIChat(favorite)}
+                    >
+                      🤖 Обсудить с АИ
+                    </button>
                     {favorite.question.mentorTip && (
                       <button
                         className={styles.showAnswerButton}
@@ -226,6 +247,15 @@ const FavoritesPage: React.FC = () => {
         <div className={styles.loadingOverlay}>
           <div className={styles.spinner}></div>
         </div>
+      )}
+
+      {/* Модальное окно чата с АИ */}
+      {selectedQuestion && (
+        <AIChatModal
+          isOpen={aiChatOpen}
+          onClose={handleCloseAIChat}
+          question={selectedQuestion}
+        />
       )}
     </div>
   );
