@@ -243,10 +243,10 @@ export function ExamModal({
     setAnswer(newAnswer);
     
     // Отправляем изменения инпута через сокет, если это активный игрок
-    // Функциональность синхронизации будет добавлена позже
-    // if (Number(currentUserId) === Number(activePlayerId) && onAnswerSync) {
-    //   onAnswerSync(newAnswer, activePlayerName);
-    // }
+    if (Number(currentUserId) === Number(activePlayerId) && onAnswerSync) {
+      console.log('📤 [EXAM] Отправляем синхронизацию ввода:', newAnswer);
+      onAnswerSync(newAnswer, activePlayerName);
+    }
   };
 
   const handleSubmit = async () => {
