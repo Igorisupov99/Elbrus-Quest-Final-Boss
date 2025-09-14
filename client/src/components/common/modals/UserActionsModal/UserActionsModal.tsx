@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import styles from './UserActionsModal.module.css';
-import { UserProfileModal } from '../UserProfileModal';
 import { getUserByUsername, checkFriendshipStatus } from '../../../../api/friendship/friendshipApi';
 
 interface UserActionsModalProps {
@@ -18,8 +18,9 @@ export default function UserActionsModal({
   //onGoToProfile,
   onAddFriend,
 }: UserActionsModalProps) {
-  const [isProfileModalOpen, setIsProfileModalOpen] = useState(false);
+  const navigate = useNavigate();
   const [friendshipStatus, setFriendshipStatus] = useState<'none' | 'pending' | 'accepted' | 'blocked' | 'loading'>('loading');
+  const [userToNavigate, setUserToNavigate] = useState<{ id: number; username: string } | null>(null);
 
   // Проверяем статус дружбы при открытии модального окна
   useEffect(() => {
@@ -36,6 +37,12 @@ export default function UserActionsModal({
       const userResponse = await getUserByUsername(username);
       
       if (userResponse.success && userResponse.data) {
+        // Сохраняем данные пользователя для навигации
+        setUserToNavigate({
+          id: userResponse.data.id,
+          username: userResponse.data.username
+        });
+        
         // Затем проверяем статус дружбы
         const statusResponse = await checkFriendshipStatus(userResponse.data.id);
         
@@ -46,28 +53,29 @@ export default function UserActionsModal({
         }
       } else {
         setFriendshipStatus('none');
+        setUserToNavigate(null);
       }
     } catch (error) {
       console.error('Ошибка при проверке статуса дружбы:', error);
       setFriendshipStatus('none');
+      setUserToNavigate(null);
     }
   };
 
   if (!isOpen) return null;
 
   const handleGoToProfile = () => {
-    setIsProfileModalOpen(true);
-    // Не закрываем текущую модалку, чтобы можно было вернуться
+    // Переходим на страницу профиля пользователя
+    if (userToNavigate?.id) {
+      onClose(); // Закрываем модальное окно
+      navigate(`/user/${userToNavigate.id}`);
+    }
   };
 
   const handleAddFriend = () => {
     // Просто вызываем переданную функцию из родительского компонента
     onAddFriend?.();
     onClose();
-  };
-
-  const handleProfileModalClose = () => {
-    setIsProfileModalOpen(false);
   };
 
   const renderFriendshipButton = () => {
@@ -132,13 +140,6 @@ export default function UserActionsModal({
         </button>
       </div>
 
-      {/* Модальное окно профиля пользователя */}
-      <UserProfileModal
-        isOpen={isProfileModalOpen}
-        onClose={handleProfileModalClose}
-        username={username}
-        onAddFriend={handleAddFriend}
-      />
     </div>
   );
 }

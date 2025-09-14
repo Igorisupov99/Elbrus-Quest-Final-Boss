@@ -334,7 +334,7 @@ export function LobbyPage() {
   };
 
   const handleGoToProfile = () => {
-    // TODO: Реализовать переход в профиль пользователя
+    // Логика перехода в профиль теперь реализована в UserActionsModal
     console.log(`Переход в профиль пользователя: ${selectedUsername}`);
   };
 
