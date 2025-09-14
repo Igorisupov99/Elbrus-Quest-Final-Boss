@@ -294,23 +294,23 @@ export function Profile() {
 
   // Функции для карусели избранных вопросов
   const nextFavorites = () => {
-    if (favoriteQuestions.length > 5) {
+    if (favoriteQuestions.length > 3) {
       setCurrentFavoriteIndex((prev) => 
-        prev + 5 >= favoriteQuestions.length ? 0 : prev + 5
+        prev + 3 >= favoriteQuestions.length ? 0 : prev + 3
       );
     }
   };
 
   const prevFavorites = () => {
-    if (favoriteQuestions.length > 5) {
+    if (favoriteQuestions.length > 3) {
       setCurrentFavoriteIndex((prev) => 
-        prev - 5 < 0 ? Math.max(0, favoriteQuestions.length - 5) : prev - 5
+        prev - 3 < 0 ? Math.max(0, favoriteQuestions.length - 3) : prev - 3
       );
     }
   };
 
   const getVisibleFavorites = () => {
-    return favoriteQuestions.slice(currentFavoriteIndex, currentFavoriteIndex + 5);
+    return favoriteQuestions.slice(currentFavoriteIndex, currentFavoriteIndex + 3);
   };
 
   // Функции для карусели друзей
@@ -649,22 +649,7 @@ export function Profile() {
         </div>
       </div>
 
-      {/* Блок 1.2 - Статистика */}
-      <div className={styles.statisticsBlock}>
-        <h3 className={styles.blockTitle}>Статистика</h3>
-        <div className={styles.statsGrid}>
-          <div className={styles.statCard}>
-            <div className={styles.statValue}>{user.score ?? 0}</div>
-            <div className={styles.statLabel}>Очки</div>
-          </div>
-          <div className={styles.statCard}>
-            <div className={styles.statValue}>0</div>
-            <div className={styles.statLabel}>Игры</div>
-          </div>
-        </div>
-      </div>
-
-      {/* Блок достижений */}
+      {/* Блок 1.2 - Достижения */}
       <div className={styles.achievementsBlock}>
         <div className={styles.achievementsHeader}>
           <h3 className={styles.blockTitle}>Достижения</h3>
@@ -714,11 +699,99 @@ export function Profile() {
           </div>
         )}
       </div>
+
+      {/* Блок избранных вопросов */}
+      <div className={styles.favoriteQuestionsSection}>
+          <div className={styles.favoritesHeader}>
+            <h3 className={styles.blockTitle}>Избранные вопросы</h3>
+            {favoriteQuestions.length > 3 && (
+              <div className={styles.carouselControls}>
+                <button 
+                  className={styles.carouselButton}
+                  onClick={prevFavorites}
+                  aria-label="Предыдущие вопросы"
+                >
+                  ↑
+                </button>
+                <button 
+                  className={styles.carouselButton}
+                  onClick={nextFavorites}
+                  aria-label="Следующие вопросы"
+                >
+                  ↓
+                </button>
+              </div>
+            )}
+        </div>
+        
+        <div className={styles.favoritesCarousel}>
+          {favoritesLoading ? (
+            <div className={styles.loading}>Загрузка избранных вопросов...</div>
+          ) : favoriteQuestions.length === 0 ? (
+            <div className={styles.emptyMessage}>У вас нет избранных вопросов</div>
+          ) : (
+            <div className={styles.questionsList}>
+              {getVisibleFavorites().map((favorite, index) => (
+                <div 
+                  key={`favorite-${favorite.id}-${favorite.question.id}-${index}`} 
+                  className={styles.questionCard}
+                  onClick={() => handleQuestionClick(favorite)}
+                >
+                  <div className={styles.questionHeader}>
+                    <span className={styles.topicBadge}>
+                      {favorite.question.topic.title}
+                    </span>
+                    <span className={styles.phaseInfo}>
+                      Фаза {favorite.question.topic.phaseId}
+                    </span>
+                  </div>
+                  
+                  <div className={styles.questionContent}>
+                    <p className={styles.questionText}>
+                      {favorite.question.text}
+                    </p>
+                    
+                    <div className={styles.questionMeta}>
+                      <span className={styles.questionType}>
+                        {favorite.question.questionType}
+                      </span>
+                      <span className={styles.addedDate}>
+                        {new Date(favorite.createdAt).toLocaleDateString('ru-RU')}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+        
+        {favoriteQuestions.length > 0 && (
+          <div className={styles.favoritesIndicator}>
+            {favoriteQuestions.length > 3 ? `${currentFavoriteIndex + 1}-${Math.min(currentFavoriteIndex + 3, favoriteQuestions.length)} из ${favoriteQuestions.length}` : `${favoriteQuestions.length} вопрос${favoriteQuestions.length === 1 ? '' : favoriteQuestions.length < 5 ? 'а' : 'ов'}`}
+          </div>
+        )}
+      </div>
     </div>
 
     {/* Правый блок (1/3 ширины) */}
     <div className={styles.rightBlock}>
       
+      {/* Секция статистики */}
+      <div className={styles.statisticsBlock}>
+        <h3 className={styles.blockTitle}>Статистика</h3>
+        <div className={styles.statsGrid}>
+          <div className={styles.statCard}>
+            <div className={styles.statValue}>{user.score ?? 0}</div>
+            <div className={styles.statLabel}>Очки</div>
+          </div>
+          <div className={styles.statCard}>
+            <div className={styles.statValue}>0</div>
+            <div className={styles.statLabel}>Игры</div>
+          </div>
+        </div>
+      </div>
+
       {/* Секция друзей */}
       <div className={styles.friendsSection}>
         <h3 className={styles.blockTitle}>Друзья</h3>
@@ -1279,79 +1352,6 @@ export function Profile() {
               </div>
             )}
           </>
-        )}
-      </div>
-
-      {/* Секция избранных вопросов */}
-      <div className={styles.favoriteQuestionsSection}>
-        <div className={styles.favoritesHeader}>
-          <h3 className={styles.blockTitle}>Избранные вопросы</h3>
-          {favoriteQuestions.length > 5 && (
-            <div className={styles.carouselControls}>
-              <button 
-                className={styles.carouselButton}
-                onClick={prevFavorites}
-                aria-label="Предыдущие вопросы"
-              >
-                ↑
-              </button>
-              <button 
-                className={styles.carouselButton}
-                onClick={nextFavorites}
-                aria-label="Следующие вопросы"
-              >
-                ↓
-              </button>
-            </div>
-          )}
-        </div>
-        
-        <div className={styles.favoritesCarousel}>
-          {favoritesLoading ? (
-            <div className={styles.loading}>Загрузка избранных вопросов...</div>
-          ) : favoriteQuestions.length === 0 ? (
-            <div className={styles.emptyMessage}>У вас нет избранных вопросов</div>
-          ) : (
-            <div className={styles.questionsList}>
-              {getVisibleFavorites().map((favorite, index) => (
-                <div 
-                  key={`favorite-${favorite.id}-${favorite.question.id}-${index}`} 
-                  className={styles.questionCard}
-                  onClick={() => handleQuestionClick(favorite)}
-                >
-                  <div className={styles.questionHeader}>
-                    <span className={styles.topicBadge}>
-                      {favorite.question.topic.title}
-                    </span>
-                    <span className={styles.phaseInfo}>
-                      Фаза {favorite.question.topic.phaseId}
-                    </span>
-                  </div>
-                  
-                  <div className={styles.questionContent}>
-                    <p className={styles.questionText}>
-                      {favorite.question.text}
-                    </p>
-                    
-                    <div className={styles.questionMeta}>
-                      <span className={styles.questionType}>
-                        {favorite.question.questionType}
-                      </span>
-                      <span className={styles.addedDate}>
-                        {new Date(favorite.createdAt).toLocaleDateString('ru-RU')}
-                      </span>
-                    </div>
-                  </div>
-                </div>
-              ))}
-            </div>
-          )}
-        </div>
-        
-        {favoriteQuestions.length > 0 && (
-          <div className={styles.favoritesIndicator}>
-            {favoriteQuestions.length > 5 ? `${currentFavoriteIndex + 1}-${Math.min(currentFavoriteIndex + 5, favoriteQuestions.length)} из ${favoriteQuestions.length}` : `${favoriteQuestions.length} вопрос${favoriteQuestions.length === 1 ? '' : favoriteQuestions.length < 5 ? 'а' : 'ов'}`}
-          </div>
         )}
       </div>
     </div>

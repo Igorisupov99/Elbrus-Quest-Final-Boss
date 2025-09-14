@@ -2,12 +2,21 @@ import axios from '../axios';
 import type { Achievement, UserAchievement, AchievementStats } from '../../types/achievement';
 
 export const achievementApi = {
-  // Получить все достижения пользователя
+  // Получить все достижения текущего пользователя
   async getUserAchievements(): Promise<{
     achievements: UserAchievement[];
     stats: AchievementStats;
   }> {
     const response = await axios.get('/api/achievement/user');
+    return response.data.data; // Извлекаем data из ответа
+  },
+
+  // Получить все достижения пользователя по ID
+  async getUserAchievementsById(userId: number): Promise<{
+    achievements: UserAchievement[];
+    stats: AchievementStats;
+  }> {
+    const response = await axios.get(`/api/achievement/user/${userId}`);
     return response.data.data; // Извлекаем data из ответа
   },
 
