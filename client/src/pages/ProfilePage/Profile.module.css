@@ -13,27 +13,47 @@
 /* Основная секция профиля */
 .profileSection {
   min-height: 100vh;
-  padding: 20px;
-  background: linear-gradient(135deg, #f4e1c1, #e6d2b5, #d8c3a5);
-  color: var(--fantasy-text);
+  background: radial-gradient(
+      circle at 30% 20%,
+      rgba(139, 90, 43, 0.2) 0%,
+      transparent 60%
+    ),
+    radial-gradient(
+      circle at 70% 80%,
+      rgba(212, 165, 116, 0.15) 0%,
+      transparent 60%
+    ),
+    linear-gradient(
+      135deg,
+      #d4a574 0%,
+      #c8996a 25%,
+      #b8895c 50%,
+      #a67a4e 75%,
+      #946b40 100%
+    );
   font-family: 'Cinzel', serif;
+  padding: 20px;
+  box-sizing: border-box;
+  position: relative;
 }
 
 .header {
-  color: var(--fantasy-text);
+  color: #4b2e05;
   font-weight: 700;
-  font-size: 2rem;
-  margin-bottom: 32px;
+  font-size: 2.2rem;
+  margin: 0 0 30px 0;
   text-align: center;
-  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.1);
+  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3), 1px 1px 2px rgba(0, 0, 0, 0.5);
   letter-spacing: 1px;
+  position: relative;
+  text-transform: uppercase;
 }
 
 /* Основной контейнер с двумя блоками */
 .mainContainer {
   display: flex;
   gap: 24px;
-  max-width: 1200px;
+  max-width: 1440px;
   margin: 0 auto;
   min-height: 600px;
 }
@@ -43,7 +63,32 @@
   flex: 2;
   display: flex;
   flex-direction: column;
-  gap: 24px;
+  gap: 20px;
+  background: linear-gradient(
+    145deg,
+    rgba(248, 235, 215, 0.95),
+    rgba(245, 222, 179, 0.9)
+  );
+  border: 3px solid #8b5a2b;
+  border-radius: 15px;
+  padding: 25px;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.4),
+    inset 0 1px 0 rgba(255, 248, 230, 0.6),
+    inset 0 -1px 0 rgba(139, 90, 43, 0.3);
+  position: relative;
+  overflow: hidden;
+}
+
+.leftBlock::before {
+  content: '';
+  position: absolute;
+  top: -3px;
+  left: -3px;
+  right: -3px;
+  bottom: -3px;
+  background: linear-gradient(45deg, #8b5a2b, #a67a4e, #8b5a2b);
+  border-radius: 15px;
+  z-index: -1;
 }
 
 /* Правый блок (1/3 ширины) */
@@ -51,28 +96,64 @@
   flex: 1;
   display: flex;
   flex-direction: column;
-  gap: 24px;
+  gap: 20px;
+  background: linear-gradient(
+    145deg,
+    rgba(248, 235, 215, 0.95),
+    rgba(245, 222, 179, 0.9)
+  );
+  border: 3px solid #8b5a2b;
+  border-radius: 15px;
+  padding: 25px;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.4),
+    inset 0 1px 0 rgba(255, 248, 230, 0.6),
+    inset 0 -1px 0 rgba(139, 90, 43, 0.3);
+  position: relative;
+  overflow: hidden;
+}
+
+.rightBlock::before {
+  content: '';
+  position: absolute;
+  top: -3px;
+  left: -3px;
+  right: -3px;
+  bottom: -3px;
+  background: linear-gradient(45deg, #8b5a2b, #a67a4e, #8b5a2b);
+  border-radius: 15px;
+  z-index: -1;
 }
 
 /* Блок 1.1 - Основная информация профиля */
 .profileInfoBlock {
-  background: linear-gradient(
-    180deg,
-    var(--fantasy-surface),
-    var(--fantasy-surface-2)
-  );
-  color: var(--fantasy-text);
-  border: 2px solid var(--fantasy-border);
+  background: linear-gradient(145deg, #f8ebd7 0%, #f5deb3 50%, #f0d498 100%);
+  color: #4b2e05;
+  border: 3px solid #8b5a2b;
   border-radius: 12px;
   padding: 32px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3),
+    inset 0 1px 0 rgba(255, 248, 230, 0.8),
+    inset 0 -1px 0 rgba(139, 90, 43, 0.2);
   display: flex;
   align-items: center;
   gap: 32px;
   height: 320px;
   position: relative;
   overflow: hidden;
-  transition: all 0.2s ease-in-out;
+  transition: all 0.3s ease;
+  margin-bottom: 8px;
+}
+
+.profileInfoBlock::after {
+  content: '';
+  position: absolute;
+  top: 3px;
+  left: 3px;
+  right: 3px;
+  bottom: 3px;
+  border: 1px solid rgba(139, 90, 43, 0.3);
+  border-radius: 8px;
+  pointer-events: none;
 }
 
 .profileInfoBlock::before {
@@ -81,12 +162,18 @@
   top: 0;
   left: 0;
   right: 0;
-  height: 3px;
-  background: linear-gradient(
-    90deg,
-    var(--fantasy-gold),
-    var(--fantasy-gold-2)
-  );
+  height: 2px;
+  background: linear-gradient(90deg, #d4a017, #f0c33b, #d4a017);
+  z-index: 1;
+}
+
+.profileInfoBlock:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.4),
+    inset 0 1px 0 rgba(255, 248, 230, 0.9),
+    inset 0 -1px 0 rgba(139, 90, 43, 0.3);
+  border-color: #a97400;
+  background: linear-gradient(145deg, #fff8dc 0%, #f5deb3 50%, #f0d498 100%);
 }
 
 .avatarSection {
@@ -104,37 +191,60 @@
   object-fit: cover;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
   background: #ddd;
+  margin-top: 32px;
 }
 
 .editButton {
   appearance: none;
-  border: 2px solid var(--fantasy-accent);
-  background: linear-gradient(
-    180deg,
-    var(--fantasy-gold),
-    var(--fantasy-gold-2)
-  );
+  border: 3px solid #8b5a2b;
+  background: linear-gradient(145deg, #d4a017 0%, #f0c33b 50%, #a97400 100%);
   color: #2c1810;
-  border-radius: 8px;
-  padding: 12px 24px;
-  font-size: 1.1rem;
   font-weight: bold;
+  font-size: 1.3rem;
+  border-radius: 12px;
+  padding: 16px 32px;
   cursor: pointer;
-  transition: all 0.2s ease-in-out;
-  box-shadow: 0 3px 6px rgba(0, 0, 0, 0.2);
-  text-shadow: 0 1px 0 #f3e0c0;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3),
+    inset 0 1px 0 rgba(255, 248, 230, 0.6),
+    inset 0 -1px 0 rgba(139, 90, 43, 0.3);
+  transition: all 0.3s ease;
+  text-shadow: 0 1px 0 #f3e0c0, 1px 1px 2px rgba(0, 0, 0, 0.3);
+  letter-spacing: 0.5px;
+  display: block;
+  margin: 8px auto 20px auto;
+  max-width: 250px;
+  min-height: 50px;
+  text-align: center;
+  position: relative;
   font-family: inherit;
 }
 
+.editButton::after {
+  content: '';
+  position: absolute;
+  top: 3px;
+  left: 3px;
+  right: 3px;
+  bottom: 3px;
+  border: 1px solid rgba(139, 90, 43, 0.3);
+  border-radius: 8px;
+  pointer-events: none;
+}
+
 .editButton:hover {
-  background: linear-gradient(180deg, #f0c33b, #c48a00);
-  transform: translateY(-1px);
-  box-shadow: 0 5px 10px rgba(0, 0, 0, 0.3);
+  background: linear-gradient(145deg, #f0c33b 0%, #ffd700 50%, #d4a017 100%);
+  transform: translateY(-3px);
+  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.4),
+    inset 0 1px 0 rgba(255, 248, 230, 0.8),
+    inset 0 -1px 0 rgba(139, 90, 43, 0.4);
+  border-color: #a97400;
 }
 
 .editButton:active {
-  transform: translateY(1px);
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+  transform: translateY(-1px);
+  box-shadow: 0 3px 6px rgba(0, 0, 0, 0.3),
+    inset 0 1px 0 rgba(255, 248, 230, 0.5),
+    inset 0 -1px 0 rgba(139, 90, 43, 0.2);
 }
 
   .avatarControls {
@@ -142,22 +252,56 @@
   }
 
   .avatarShopLink {
-    display: inline-block;
-    padding: 8px 16px;
-    background: linear-gradient(135deg, #4a90e2, #357abd);
-    color: white;
+    appearance: none;
+    border: 3px solid #8b5a2b;
+    background: linear-gradient(145deg, #d4a017 0%, #f0c33b 50%, #a97400 100%);
+    color: #2c1810;
+    font-weight: bold;
+    font-size: 1.5rem;
+    border-radius: 12px;
+    padding: 12px;
+    cursor: pointer;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3),
+      inset 0 1px 0 rgba(255, 248, 230, 0.6),
+      inset 0 -1px 0 rgba(139, 90, 43, 0.3);
+    transition: all 0.3s ease;
+    text-shadow: 0 1px 0 #f3e0c0, 1px 1px 2px rgba(0, 0, 0, 0.3);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
     text-decoration: none;
-    border-radius: 6px;
-    font-size: 0.9rem;
-    font-weight: 600;
-    transition: all 0.2s ease;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+    font-family: inherit;
+    width: 50px;
+    height: 50px;
+    line-height: 1;
+  }
+
+  .avatarShopLink::after {
+    content: '';
+    position: absolute;
+    top: 3px;
+    left: 3px;
+    right: 3px;
+    bottom: 3px;
+    border: 1px solid rgba(139, 90, 43, 0.3);
+    border-radius: 8px;
+    pointer-events: none;
   }
 
   .avatarShopLink:hover {
-    background: linear-gradient(135deg, #5ba0f2, #4580cd);
+    background: linear-gradient(145deg, #f0c33b 0%, #ffd700 50%, #d4a017 100%);
+    transform: translateY(-3px);
+    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.4),
+      inset 0 1px 0 rgba(255, 248, 230, 0.8),
+      inset 0 -1px 0 rgba(139, 90, 43, 0.4);
+    border-color: #a97400;
+  }
+
+  .avatarShopLink:active {
     transform: translateY(-1px);
-    box-shadow: 0 3px 6px rgba(0, 0, 0, 0.25);
+    box-shadow: 0 3px 6px rgba(0, 0, 0, 0.3),
+      inset 0 1px 0 rgba(255, 248, 230, 0.5),
+      inset 0 -1px 0 rgba(139, 90, 43, 0.2);
   }
 
 .basicInfo {
@@ -169,10 +313,17 @@
 }
 
 .username {
-  font-size: 2.5rem;
+  font-size: 1.49rem;
   font-weight: 700;
   color: #2c1810;
   margin: 0;
+}
+
+.userEmail {
+  font-size: 1.02rem;
+  color: #6b4e3d;
+  margin: 4px 0;
+  font-weight: 500;
 }
 
 .friendsCount {
@@ -184,21 +335,32 @@
 
 /* Блок 1.2 - Статистика */
 .statisticsBlock {
-  background: linear-gradient(
-    180deg,
-    var(--fantasy-surface),
-    var(--fantasy-surface-2)
-  );
-  color: var(--fantasy-text);
-  border: 2px solid var(--fantasy-border);
+  background: linear-gradient(145deg, #f8ebd7 0%, #f5deb3 50%, #f0d498 100%);
+  color: #4b2e05;
+  border: 3px solid #8b5a2b;
   border-radius: 12px;
   padding: 24px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3),
+    inset 0 1px 0 rgba(255, 248, 230, 0.8),
+    inset 0 -1px 0 rgba(139, 90, 43, 0.2);
   position: relative;
   overflow: hidden;
-  transition: all 0.2s ease-in-out;
+  transition: all 0.3s ease;
   flex: none;
   height: fit-content;
+  margin-bottom: 8px;
+}
+
+.statisticsBlock::after {
+  content: '';
+  position: absolute;
+  top: 3px;
+  left: 3px;
+  right: 3px;
+  bottom: 3px;
+  border: 1px solid rgba(139, 90, 43, 0.3);
+  border-radius: 8px;
+  pointer-events: none;
 }
 
 .statisticsBlock::before {
@@ -207,22 +369,30 @@
   top: 0;
   left: 0;
   right: 0;
-  height: 3px;
-  background: linear-gradient(
-    90deg,
-    var(--fantasy-gold),
-    var(--fantasy-gold-2)
-  );
+  height: 2px;
+  background: linear-gradient(90deg, #d4a017, #f0c33b, #d4a017);
+  z-index: 1;
+}
+
+.statisticsBlock:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.4),
+    inset 0 1px 0 rgba(255, 248, 230, 0.9),
+    inset 0 -1px 0 rgba(139, 90, 43, 0.3);
+  border-color: #a97400;
+  background: linear-gradient(145deg, #fff8dc 0%, #f5deb3 50%, #f0d498 100%);
 }
 
 .blockTitle {
-  font-size: 1.8rem;
+  color: #4b2e05;
   font-weight: 700;
-  color: var(--fantasy-text);
-  margin: 0 0 24px 0;
+  font-size: 1.54rem;
+  margin: 0 0 30px 0;
   text-align: center;
-  text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.1);
-  letter-spacing: 0.5px;
+  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3), 1px 1px 2px rgba(0, 0, 0, 0.5);
+  letter-spacing: 1px;
+  position: relative;
+  text-transform: uppercase;
 }
 
 .statsGrid {
@@ -260,19 +430,30 @@
 
 /* Блок достижений */
 .achievementsBlock {
-  background: linear-gradient(
-    180deg,
-    var(--fantasy-surface),
-    var(--fantasy-surface-2)
-  );
-  color: var(--fantasy-text);
-  border: 2px solid var(--fantasy-border);
+  background: linear-gradient(145deg, #f8ebd7 0%, #f5deb3 50%, #f0d498 100%);
+  color: #4b2e05;
+  border: 3px solid #8b5a2b;
   border-radius: 12px;
   padding: 32px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3),
+    inset 0 1px 0 rgba(255, 248, 230, 0.8),
+    inset 0 -1px 0 rgba(139, 90, 43, 0.2);
   position: relative;
   overflow: hidden;
-  transition: all 0.2s ease-in-out;
+  transition: all 0.3s ease;
+  margin-bottom: 8px;
+}
+
+.achievementsBlock::after {
+  content: '';
+  position: absolute;
+  top: 3px;
+  left: 3px;
+  right: 3px;
+  bottom: 3px;
+  border: 1px solid rgba(139, 90, 43, 0.3);
+  border-radius: 8px;
+  pointer-events: none;
 }
 
 .achievementsBlock::before {
@@ -281,24 +462,35 @@
   top: 0;
   left: 0;
   right: 0;
-  height: 3px;
-  background: linear-gradient(
-    90deg,
-    var(--fantasy-gold),
-    var(--fantasy-gold-2)
-  );
+  height: 2px;
+  background: linear-gradient(90deg, #d4a017, #f0c33b, #d4a017);
+  z-index: 1;
+}
+
+.achievementsBlock:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.4),
+    inset 0 1px 0 rgba(255, 248, 230, 0.9),
+    inset 0 -1px 0 rgba(139, 90, 43, 0.3);
+  border-color: #a97400;
+  background: linear-gradient(145deg, #fff8dc 0%, #f5deb3 50%, #f0d498 100%);
 }
 
 .achievementsHeader {
   display: flex;
-  justify-content: space-between;
+  justify-content: center;
   align-items: center;
   margin-bottom: 20px;
+  position: relative;
 }
 
 .carouselControls {
   display: flex;
   gap: 8px;
+  position: absolute;
+  right: 0;
+  top: 50%;
+  transform: translateY(-50%);
 }
 
 .carouselButton {
@@ -363,19 +555,31 @@
 /* Блок 2 - Секции друзей и избранных вопросов */
 .friendsSection,
 .favoriteQuestionsSection {
-  background: linear-gradient(
-    180deg,
-    var(--fantasy-surface),
-    var(--fantasy-surface-2)
-  );
-  color: var(--fantasy-text);
-  border: 2px solid var(--fantasy-border);
+  background: linear-gradient(145deg, #f8ebd7 0%, #f5deb3 50%, #f0d498 100%);
+  color: #4b2e05;
+  border: 3px solid #8b5a2b;
   border-radius: 12px;
   padding: 24px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3),
+    inset 0 1px 0 rgba(255, 248, 230, 0.8),
+    inset 0 -1px 0 rgba(139, 90, 43, 0.2);
   position: relative;
   overflow: hidden;
-  transition: all 0.2s ease-in-out;
+  transition: all 0.3s ease;
+  margin-bottom: 8px;
+}
+
+.friendsSection::after,
+.favoriteQuestionsSection::after {
+  content: '';
+  position: absolute;
+  top: 3px;
+  left: 3px;
+  right: 3px;
+  bottom: 3px;
+  border: 1px solid rgba(139, 90, 43, 0.3);
+  border-radius: 8px;
+  pointer-events: none;
 }
 
 .friendsSection::before,
@@ -385,12 +589,19 @@
   top: 0;
   left: 0;
   right: 0;
-  height: 3px;
-  background: linear-gradient(
-    90deg,
-    var(--fantasy-gold),
-    var(--fantasy-gold-2)
-  );
+  height: 2px;
+  background: linear-gradient(90deg, #d4a017, #f0c33b, #d4a017);
+  z-index: 1;
+}
+
+.friendsSection:hover,
+.favoriteQuestionsSection:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.4),
+    inset 0 1px 0 rgba(255, 248, 230, 0.9),
+    inset 0 -1px 0 rgba(139, 90, 43, 0.3);
+  border-color: #a97400;
+  background: linear-gradient(145deg, #fff8dc 0%, #f5deb3 50%, #f0d498 100%);
 }
 
 /* Дополнительные стили для секции друзей */
@@ -410,9 +621,10 @@
 
 .favoritesHeader {
   display: flex;
-  justify-content: space-between;
+  justify-content: center;
   align-items: center;
   margin-bottom: 20px;
+  position: relative;
 }
 
 .favoritesCarousel {
@@ -515,6 +727,73 @@
   font-size: 1rem;
   font-weight: 500;
   font-style: italic;
+}
+
+/* Вкладки для заявок в друзья */
+.tabsContainer {
+  display: flex;
+  margin-bottom: 24px;
+  gap: 12px;
+}
+
+.tab {
+  appearance: none;
+  border: 3px solid #8b5a2b;
+  background: linear-gradient(145deg, #d4a017 0%, #f0c33b 50%, #a97400 100%);
+  color: #2c1810;
+  font-weight: bold;
+  font-size: 1.1rem;
+  border-radius: 12px;
+  padding: 6px 12px;
+  cursor: pointer;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3),
+    inset 0 1px 0 rgba(255, 248, 230, 0.6),
+    inset 0 -1px 0 rgba(139, 90, 43, 0.3);
+  transition: all 0.3s ease;
+  text-shadow: 0 1px 0 #f3e0c0, 1px 1px 2px rgba(0, 0, 0, 0.3);
+  letter-spacing: 0.5px;
+  text-align: center;
+  position: relative;
+  flex: 1;
+  min-height: 25px;
+  font-family: inherit;
+}
+
+.tab::after {
+  content: '';
+  position: absolute;
+  top: 3px;
+  left: 3px;
+  right: 3px;
+  bottom: 3px;
+  border: 1px solid rgba(139, 90, 43, 0.3);
+  border-radius: 8px;
+  pointer-events: none;
+}
+
+.tab:hover {
+  background: linear-gradient(145deg, #f0c33b 0%, #ffd700 50%, #d4a017 100%);
+  transform: translateY(-3px);
+  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.4),
+    inset 0 1px 0 rgba(255, 248, 230, 0.8),
+    inset 0 -1px 0 rgba(139, 90, 43, 0.4);
+  border-color: #a97400;
+}
+
+.activeTab {
+  background: linear-gradient(145deg, #f0c33b 0%, #ffd700 50%, #d4a017 100%);
+  transform: translateY(-2px);
+  box-shadow: 0 5px 10px rgba(0, 0, 0, 0.4),
+    inset 0 1px 0 rgba(255, 248, 230, 0.8),
+    inset 0 -1px 0 rgba(139, 90, 43, 0.4);
+  border-color: #a97400;
+}
+
+.tab:active {
+  transform: translateY(-1px);
+  box-shadow: 0 3px 6px rgba(0, 0, 0, 0.3),
+    inset 0 1px 0 rgba(255, 248, 230, 0.5),
+    inset 0 -1px 0 rgba(139, 90, 43, 0.2);
 }
 
 /* Модальное окно - стили остаются прежними */
@@ -735,10 +1014,11 @@
   .avatar {
     width: 300px;
     height: 150px;
+    margin-top: 24px;
   }
   
   .username {
-    font-size: 2rem;
+    font-size: 1.19rem;
   }
   
   .statsGrid {
@@ -767,10 +1047,11 @@
   .avatar {
     width: 240px;
     height: 120px;
+    margin-top: 20px;
   }
   
   .username {
-    font-size: 1.8rem;
+    font-size: 1.07rem;
   }
   
   .statsGrid {
@@ -796,6 +1077,7 @@
     box-shadow: 0 4px 12px rgba(0,0,0,0.2);
     background: #ddd;
     border: 3px solid var(--fantasy-gold);
+    margin-top: 16px;
   }
   
   .basicInfo {
@@ -803,9 +1085,13 @@
   }
   
   .username {
-    font-size: 1.5rem;
+    font-size: 0.89rem;
   }
   
+  .userEmail {
+    font-size: 0.85rem;
+  }
+
   .friendsCount {
     font-size: 1.1rem;
   }
@@ -930,31 +1216,6 @@
     width: 100%;
   }
 
-  .requestButton {
-    padding: 12px 24px;
-    font-weight: bold;
-    font-size: 1.1rem;
-    border-radius: 8px;
-    border: 2px solid #6b3e15;
-    background: linear-gradient(180deg, #d8a35d, #b0752d);
-    color: #2c1810;
-    text-shadow: 0 1px 0 #f3e0c0;
-    box-shadow: 0 4px 0 #6b3e15, 0 6px 10px rgba(0, 0, 0, 0.25);
-    cursor: pointer;
-    transition: all 0.2s ease;
-    box-sizing: border-box; /* Включаем padding и border в общую ширину */
-  }
-
-  .requestButton:hover {
-    background: linear-gradient(180deg, #e8b76d, #c6853d);
-    transform: translateY(-2px);
-    box-shadow: 0 6px 0 #6b3e15, 0 8px 12px rgba(0, 0, 0, 0.3);
-  }
-  
-  .requestButton:active {
-    transform: translateY(2px);
-    box-shadow: 0 2px 0 #6b3e15, 0 3px 6px rgba(0, 0, 0, 0.2);
-  }
 
   .requestStatus {
     display: flex;
@@ -1001,35 +1262,6 @@
     box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
   }
 
-  /* Вкладки */
-  .tabsContainer {
-    display: flex;
-    margin-bottom: 24px;
-    border-bottom: 2px solid #d8a35d;
-  }
-
-  .tab {
-    flex: 1;
-    padding: 12px 20px;
-    background: transparent;
-    border: none;
-    color: #5c3d2e;
-    font-size: 1.1rem;
-    font-weight: 600;
-    cursor: pointer;
-    transition: all 0.3s ease;
-    border-bottom: 3px solid transparent;
-  }
-
-  .tab:hover {
-    background: rgba(216, 163, 93, 0.2);
-  }
-
-  .activeTab {
-    color: #2c1810;
-    border-bottom-color: #b0752d;
-    background: rgba(216, 163, 93, 0.3);
-  }
 
   /* Контент вкладок */
   .tabContent {

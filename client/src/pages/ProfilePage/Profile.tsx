@@ -590,13 +590,12 @@ export function Profile() {
 
   return (
 <section className={styles.profileSection}>
-  <h1 className={styles.header}>Профиль</h1>
-
   <div className={styles.mainContainer}>
     {/* Левый блок (2/3 ширины) */}
     <div className={styles.leftBlock}>
       
       {/* Блок 1.1 - Основная информация */}
+      <h3 className={styles.blockTitle}>👤 Профиль</h3>
       <div className={styles.profileInfoBlock}>
         <div className={styles.avatarSection} style={{ position: 'relative' }}>
           <Link 
@@ -604,33 +603,12 @@ export function Profile() {
             className={styles.avatarShopLink}
             style={{
               position: 'absolute',
-              top: '0',
-              right: '0',
-              zIndex: 10,
-              padding: '8px 12px',
-              background: 'linear-gradient(135deg, #d8a35d, #b0752d)',
-              color: '#2c1810',
-              textDecoration: 'none',
-              borderRadius: '8px',
-              fontSize: '0.9rem',
-              fontWeight: '600',
-              border: '2px solid #8b5a2b',
-              boxShadow: '0 2px 6px rgba(0, 0, 0, 0.15)',
-              transition: 'all 0.2s ease',
-              textShadow: '0 1px 0 #f3e0c0'
-            }}
-            onMouseEnter={(e) => {
-              e.currentTarget.style.background = 'linear-gradient(135deg, #e8b76d, #c6853d)';
-              e.currentTarget.style.transform = 'translateY(-2px)';
-              e.currentTarget.style.boxShadow = '0 4px 8px rgba(0, 0, 0, 0.2)';
-            }}
-            onMouseLeave={(e) => {
-              e.currentTarget.style.background = 'linear-gradient(135deg, #d8a35d, #b0752d)';
-              e.currentTarget.style.transform = 'translateY(0)';
-              e.currentTarget.style.boxShadow = '0 2px 6px rgba(0, 0, 0, 0.15)';
+              top: '40px',
+              right: '8px',
+              zIndex: 10
             }}
           >
-            🛒 Магазин аватаров
+            🛒
           </Link>
           
           <img
@@ -640,11 +618,12 @@ export function Profile() {
           />
           
           <button className={styles.editButton} onClick={openSettings}>
-            Редактировать
+            ⚙️ Редактировать
           </button>
         </div>
         <div className={styles.basicInfo}>
           <h2 className={styles.username}>{user.username}</h2>
+          <p className={styles.userEmail}>📧 {user.email}</p>
           <p className={styles.friendsCount}>{getFriendsCountText(friends.length)}</p>
         </div>
       </div>
@@ -652,7 +631,7 @@ export function Profile() {
       {/* Блок 1.2 - Достижения */}
       <div className={styles.achievementsBlock}>
         <div className={styles.achievementsHeader}>
-          <h3 className={styles.blockTitle}>Достижения</h3>
+          <h3 className={styles.blockTitle}>🏆 Достижения</h3>
           {achievements.length > 3 && (
             <div className={styles.carouselControls}>
               <button 
@@ -703,7 +682,7 @@ export function Profile() {
       {/* Блок избранных вопросов */}
       <div className={styles.favoriteQuestionsSection}>
           <div className={styles.favoritesHeader}>
-            <h3 className={styles.blockTitle}>Избранные вопросы</h3>
+            <h3 className={styles.blockTitle}>⭐ Избранные вопросы</h3>
             {favoriteQuestions.length > 3 && (
               <div className={styles.carouselControls}>
                 <button 
@@ -779,7 +758,7 @@ export function Profile() {
       
       {/* Секция статистики */}
       <div className={styles.statisticsBlock}>
-        <h3 className={styles.blockTitle}>Статистика</h3>
+          <h3 className={styles.blockTitle}>📊 Статистика</h3>
         <div className={styles.statsGrid}>
           <div className={styles.statCard}>
             <div className={styles.statValue}>{user.score ?? 0}</div>
@@ -794,83 +773,24 @@ export function Profile() {
 
       {/* Секция друзей */}
       <div className={styles.friendsSection}>
-        <h3 className={styles.blockTitle}>Друзья</h3>
+          <h3 className={styles.blockTitle}>👥 Друзья</h3>
         
         {friendsLoading ? (
           <div className={styles.loading}>Загрузка...</div>
         ) : (
           <>
-            <div 
-              className={styles.friendsActions}
-              style={{
-                display: 'flex',
-                flexDirection: 'column',
-                gap: '12px',
-                marginBottom: '16px',
-                padding: '16px',
-                border: '2px solid #6b3e15',
-                borderRadius: '12px',
-                background: '#fffaf0',
-                boxShadow: '0 4px 8px rgba(0, 0, 0, 0.15)'
-              }}
-            >
+            <div className={styles.tabsContainer}>
               <button 
-                className={styles.requestButton}
+                className={styles.tab}
                 onClick={openIncomingModal}
-                style={{
-                  width: '100%',
-                  background: 'linear-gradient(135deg, #d8a35d, #b0752d)',
-                  color: '#2c1810',
-                  fontSize: '1.2rem',
-                  fontWeight: '700',
-                  textShadow: '0 1px 0 #f3e0c0',
-                  border: '2px solid #8b5a2b',
-                  padding: '1px 24px',
-                  borderRadius: '8px',
-                  cursor: 'pointer',
-                  transition: 'all 0.2s ease'
-                }}
-                onMouseEnter={(e: MouseEvent<HTMLButtonElement>) => {
-                  e.currentTarget.style.background = 'linear-gradient(135deg, #e8b76d, #c6853d)';
-                  e.currentTarget.style.transform = 'translateY(-2px)';
-                  e.currentTarget.style.boxShadow = '0 6px 12px rgba(0, 0, 0, 0.2)';
-                }}
-                onMouseLeave={(e: MouseEvent<HTMLButtonElement>) => {
-                  e.currentTarget.style.background = 'linear-gradient(135deg, #d8a35d, #b0752d)';
-                  e.currentTarget.style.transform = 'translateY(0)';
-                  e.currentTarget.style.boxShadow = 'none';
-                }}
               >
-                Входящие заявки ({incomingRequests.length})
+                📨 Входящие заявки ({incomingRequests.length})
               </button>
               <button 
-                className={styles.requestButton}
+                className={styles.tab}
                 onClick={openOutgoingModal}
-                style={{
-                  width: '100%',
-                  background: 'linear-gradient(135deg, #d8a35d, #b0752d)',
-                  color: '#2c1810',
-                  fontSize: '1.2rem',
-                  fontWeight: '700',
-                  textShadow: '0 1px 0 #f3e0c0',
-                  border: '2px solid #8b5a2b',
-                  padding: '1px 24px',
-                  borderRadius: '8px',
-                  cursor: 'pointer',
-                  transition: 'all 0.2s ease'
-                }}
-                onMouseEnter={(e: MouseEvent<HTMLButtonElement>) => {
-                  e.currentTarget.style.background = 'linear-gradient(135deg, #e8b76d, #c6853d)';
-                  e.currentTarget.style.transform = 'translateY(-2px)';
-                  e.currentTarget.style.boxShadow = '0 6px 12px rgba(0, 0, 0, 0.2)';
-                }}
-                onMouseLeave={(e: MouseEvent<HTMLButtonElement>) => {
-                  e.currentTarget.style.background = 'linear-gradient(135deg, #d8a35d, #b0752d)';
-                  e.currentTarget.style.transform = 'translateY(0)';
-                  e.currentTarget.style.boxShadow = 'none';
-                }}
               >
-                Отправленные заявки ({outgoingRequests.length})
+                📤 Отправленные заявки ({outgoingRequests.length})
               </button>
             </div>
             

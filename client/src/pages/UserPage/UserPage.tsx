@@ -471,7 +471,6 @@ export function UserPage() {
         >
           ← Назад
         </button>
-        <h1 className={styles.header}>Профиль пользователя</h1>
       </div>
 
       <div className={styles.mainContainer}>
@@ -479,6 +478,7 @@ export function UserPage() {
         <div className={styles.leftBlock}>
           
           {/* Блок 1.1 - Основная информация */}
+          <h3 className={styles.blockTitle}>👤 Профиль</h3>
           <div className={styles.profileInfoBlock}>
             <div className={styles.avatarSection}>
               <UserAvatar
@@ -607,7 +607,7 @@ export function UserPage() {
           {/* Блок 1.2 - Достижения */}
           <div className={styles.achievementsBlock}>
             <div className={styles.achievementsHeader}>
-              <h3 className={styles.blockTitle}>Достижения</h3>
+              <h3 className={styles.blockTitle}>🏆 Достижения</h3>
               {achievements.length > 3 && (
                 <div className={styles.carouselControls}>
                   <button 
@@ -658,7 +658,7 @@ export function UserPage() {
           {/* Блок избранных вопросов */}
           <div className={styles.favoriteQuestionsSection}>
             <div className={styles.favoritesHeader}>
-              <h3 className={styles.blockTitle}>Избранные вопросы</h3>
+              <h3 className={styles.blockTitle}>⭐ Избранные вопросы</h3>
               {favoriteQuestions.length > 3 && (
                 <div className={styles.carouselControls}>
                   <button 
@@ -734,7 +734,7 @@ export function UserPage() {
           
           {/* Секция статистики */}
           <div className={styles.statisticsBlock}>
-            <h3 className={styles.blockTitle}>Статистика</h3>
+            <h3 className={styles.blockTitle}>📊 Статистика</h3>
             <div className={styles.statsGrid}>
               <div className={styles.statCard}>
                 <div className={styles.statValue}>{user.score ?? 0}</div>
@@ -749,7 +749,7 @@ export function UserPage() {
 
           {/* Секция друзей */}
           <div className={styles.friendsSection}>
-            <h3 className={styles.blockTitle}>Друзья</h3>
+            <h3 className={styles.blockTitle}>👥 Друзья</h3>
             
             {friendsLoading ? (
               <div className={styles.loading}>Загрузка...</div>
