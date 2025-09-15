@@ -12,9 +12,32 @@
 
 .page {
   min-height: 100vh;
-  background: linear-gradient(135deg, #f4e1c1, #e6d2b5, #d8c3a5);
   font-family: 'Cinzel', serif;
   padding: 20px 0;
+  position: relative;
+}
+
+.page::before {
+  content: '';
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: url('/fcbdb22c-619d-4a24-b5b5-784e11027e94.png') no-repeat center center;
+  background-size: cover;
+  z-index: -2;
+}
+
+.page::after {
+  content: '';
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(135deg, rgba(244, 225, 193, 0.7), rgba(230, 210, 181, 0.7), rgba(216, 195, 165, 0.7));
+  z-index: -1;
 }
 
 .container {

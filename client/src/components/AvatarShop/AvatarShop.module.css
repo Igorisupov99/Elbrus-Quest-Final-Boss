@@ -15,7 +15,6 @@
   margin: 0 auto;
   padding: 20px;
   min-height: 100vh;
-  background: linear-gradient(135deg, #f4e1c1, #e6d2b5, #d8c3a5);
   font-family: 'Cinzel', serif;
 }
 
@@ -30,8 +29,8 @@
   text-align: center;
   background: linear-gradient(
     180deg,
-    var(--fantasy-surface),
-    var(--fantasy-surface-2)
+    rgba(245, 222, 179, 0.8),
+    rgba(255, 248, 220, 0.8)
   );
   color: var(--fantasy-text);
   border: 2px solid var(--fantasy-border);
@@ -41,6 +40,7 @@
   max-width: 400px;
   position: relative;
   overflow: hidden;
+  backdrop-filter: blur(5px);
 }
 
 .error::before {
@@ -136,8 +136,8 @@
   padding: 16px 24px;
   background: linear-gradient(
     180deg,
-    var(--fantasy-surface),
-    var(--fantasy-surface-2)
+    rgba(245, 222, 179, 0.8),
+    rgba(255, 248, 220, 0.8)
   );
   color: var(--fantasy-text);
   border: 2px solid var(--fantasy-border);
@@ -145,6 +145,7 @@
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
   position: relative;
   overflow: hidden;
+  backdrop-filter: blur(5px);
 }
 
 .resultsHeader::before {
@@ -189,8 +190,8 @@
   text-align: center;
   background: linear-gradient(
     180deg,
-    var(--fantasy-surface),
-    var(--fantasy-surface-2)
+    rgba(245, 222, 179, 0.8),
+    rgba(255, 248, 220, 0.8)
   );
   color: var(--fantasy-text);
   border: 2px solid var(--fantasy-border);
@@ -198,6 +199,7 @@
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
   position: relative;
   overflow: hidden;
+  backdrop-filter: blur(5px);
 }
 
 .emptyState::before {

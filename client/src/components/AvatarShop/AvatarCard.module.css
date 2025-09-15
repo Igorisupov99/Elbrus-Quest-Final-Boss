@@ -1,11 +1,12 @@
 .card {
-  background: #ffffff;
+  background: rgba(255, 255, 255, 0.8);
   border-radius: 12px;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
   overflow: hidden;
   transition: all 0.3s ease;
   position: relative;
   border: 2px solid transparent;
+  backdrop-filter: blur(5px);
 }
 
 .card:hover {
@@ -132,8 +133,9 @@
   align-items: center;
   margin-bottom: 8px;
   padding: 8px 12px;
-  background: #f9fafb;
+  background: rgba(249, 250, 251, 0.8);
   border-radius: 8px;
+  backdrop-filter: blur(3px);
 }
 
 .priceLabel {
@@ -153,8 +155,9 @@
   align-items: center;
   margin-bottom: 16px;
   padding: 8px 12px;
-  background: #f0f9ff;
+  background: rgba(240, 249, 255, 0.8);
   border-radius: 8px;
+  backdrop-filter: blur(3px);
 }
 
 .scoreLabel {
