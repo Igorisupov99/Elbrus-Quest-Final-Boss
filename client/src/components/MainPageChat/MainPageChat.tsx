@@ -12,6 +12,7 @@ export default function MainPageChat() {
   const [connecting, setConnecting] = useState(true);
 
   const listRef = useRef<HTMLDivElement | null>(null);
+  const textareaRef = useRef<HTMLTextAreaElement | null>(null);
 
   useEffect(() => {
     const setupChatListeners = () => {
@@ -102,6 +103,10 @@ export default function MainPageChat() {
     if (!text || !connected) return;
     mainSocketClient.socket.emit('chat:message', text);
     setMessage('');
+    // Reset textarea height to original size
+    if (textareaRef.current) {
+      textareaRef.current.style.height = '40px';
+    }
   };
 
   return (
@@ -133,6 +138,7 @@ export default function MainPageChat() {
 
       <div className={styles.chatForm}>
         <textarea
+          ref={textareaRef}
           value={message}
           onChange={(e) => {
             setMessage(e.target.value);

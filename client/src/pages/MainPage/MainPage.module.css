@@ -13,7 +13,8 @@
 
 /* Main page container */
 .mainPage {
-  min-height: 100vh;
+  height: 100vh;
+  max-height: 100vh;
   background: linear-gradient(rgba(0, 0, 0, 0.3), rgba(0, 0, 0, 0.4)),
     url('/ChatGPT Image Sep 13, 2025, 03_54_08 PM copy.png');
   background-size: cover;
@@ -25,6 +26,7 @@
   gap: 20px;
   box-sizing: border-box;
   position: relative;
+  overflow: hidden;
 }
 
 /* Main content area */
@@ -68,7 +70,7 @@
 
 /* Chat sidebar */
 .chatSidebar {
-  width: 340px;
+  width: 420px;
   display: flex;
   flex-direction: column;
   height: calc(
@@ -409,12 +411,10 @@
 
 /* ===== Filter Button and Dropdown Styling ===== */
 .filterContainer {
-  position: absolute;
-  top: -35px;
-  left: 0;
-  z-index: 10;
+  position: relative;
   display: flex;
-  justify-content: flex-end;
+  justify-content: flex-start;
+  margin-bottom: 10px;
 }
 
 /* ===== Inline Filter Li Styling ===== */
