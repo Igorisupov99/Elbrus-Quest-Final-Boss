@@ -68,7 +68,7 @@
 
 /* Chat sidebar */
 .chatSidebar {
-  width: 340px;
+  width: 420px;
   display: flex;
   flex-direction: column;
   height: calc(
