@@ -36,6 +36,11 @@ function initLobbySockets(nsp) {
       username: socket.user.username,
     });
 
+    // инициализация счетчика неправильных ответов для лобби (ПЕРЕД отправкой очков)
+    if (!incorrectAnswersMap.has(lobbyId)) {
+      incorrectAnswersMap.set(lobbyId, 0);
+    }
+
     // Обновление очков
     const user = await db.User.findByPk(socket.user.id);
     const session = await db.UserSession.findOne({
@@ -43,6 +48,7 @@ function initLobbySockets(nsp) {
     });
 
     const incorrectAnswers = incorrectAnswersMap.get(lobbyId) || 0;
+    
     // Общий счёт лобби — сумма по всем участникам
     const allSessions = await db.UserSession.findAll({ where: { game_session_id: lobbyId } });
     const lobbyTotalScore = allSessions.reduce((sum, s) => sum + Number(s.score || 0), 0);
@@ -461,6 +467,7 @@ function initLobbySockets(nsp) {
         { id: 'exam4', status: 'locked', phase_id: 4, topic_id: 0 },
       ]);
     }
+
     socket.emit('lobby:initPoints', lobbyPoints.get(lobbyId));
 
     // системное событие о подключении
@@ -792,6 +799,27 @@ function initLobbySockets(nsp) {
       if (activeUserSession && activeUserSession.user_id === socket.user.id) {
         console.log('⏰ [SOCKET] Timeout от активного игрока, передаем ход следующему');
         
+        // Увеличиваем счетчик неправильных ответов при таймауте
+        const current = incorrectAnswersMap.get(lobbyId) || 0;
+        const newCount = current + 1;
+        incorrectAnswersMap.set(lobbyId, newCount);
+        
+        console.log(`📊 [SOCKET] Увеличиваем счетчик неправильных ответов из-за таймаута: ${current} -> ${newCount}`);
+        
+        // Отправляем обновленный счетчик всем игрокам
+        const allSessions = await db.UserSession.findAll({ where: { game_session_id: lobbyId } });
+        const lobbyTotalScore = allSessions.reduce((sum, s) => sum + Number(s.score || 0), 0);
+        
+        const incorrectAnswersPayload = {
+          userId: socket.user.id,
+          userScore: activeUserSession.score || 0,
+          sessionScore: lobbyTotalScore,
+          incorrectAnswers: newCount,
+        };
+        
+        console.log(`📡 [SOCKET] Отправляем lobby:incorrectAnswer из-за таймаута:`, incorrectAnswersPayload);
+        nsp.to(roomKey).emit('lobby:incorrectAnswer', incorrectAnswersPayload);
+        
         // Очищаем состояние вопроса при таймауте
         if (lobbyQuestionState.has(lobbyId)) {
           lobbyQuestionState.delete(lobbyId);
@@ -949,6 +977,9 @@ function initLobbySockets(nsp) {
           incorrectAnswersMap.set(lobbyId, 0);
           console.log(`🎯 [SOCKET] Счётчик неправильных ответов обнулён при провале экзамена для лобби ${lobbyId}`);
           
+          // Отправляем обновление счетчика всем игрокам
+          nsp.to(roomKey).emit('lobby:incorrectCountUpdate', { incorrectAnswers: 0 });
+          
           // Сбрасываем фазу - делаем все точки текущей фазы доступными для повторного прохождения
           const points = lobbyPoints.get(lobbyId);
           if (points) {
@@ -1038,6 +1069,9 @@ function initLobbySockets(nsp) {
                 // Обнуляем счётчик неправильных ответов после успешной сдачи экзамена
                 incorrectAnswersMap.set(lobbyId, 0);
                 console.log(`🎯 [SOCKET] Счётчик неправильных ответов обнулён для лобби ${lobbyId}`);
+                
+                // Отправляем обновление счетчика всем игрокам
+                nsp.to(roomKey).emit('lobby:incorrectCountUpdate', { incorrectAnswers: 0 });
                 
                 // Начисляем 30 очков каждому игроку в лобби за успешную сдачу экзамена
                 try {
@@ -1131,6 +1165,9 @@ function initLobbySockets(nsp) {
                 incorrectAnswersMap.set(lobbyId, 0);
                 console.log(`🎯 [SOCKET] Счётчик неправильных ответов обнулён при провале экзамена для лобби ${lobbyId}`);
                 
+                // Отправляем обновление счетчика всем игрокам
+                nsp.to(roomKey).emit('lobby:incorrectCountUpdate', { incorrectAnswers: 0 });
+                
                 // Сбрасываем фазу - делаем все точки текущей фазы доступными для повторного прохождения
                 const points = lobbyPoints.get(lobbyId);
                 if (points) {
@@ -1212,6 +1249,9 @@ function initLobbySockets(nsp) {
               // Обнуляем счётчик неправильных ответов после успешной сдачи экзамена
               incorrectAnswersMap.set(lobbyId, 0);
               console.log(`🎯 [SOCKET] Счётчик неправильных ответов обнулён для лобби ${lobbyId}`);
+              
+              // Отправляем обновление счетчика всем игрокам
+              nsp.to(roomKey).emit('lobby:incorrectCountUpdate', { incorrectAnswers: 0 });
               
               // Начисляем 30 очков каждому игроку в лобби за успешную сдачу экзамена
               try {
