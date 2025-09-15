@@ -30,6 +30,7 @@ export function LobbyPage() {
   const points = useAppSelector(s => s.lobbyPage.points);
   const { user } = useAppSelector(s => s.auth)
   const { userScore, sessionScore, incorrectAnswers } = useAppSelector(s => s.lobbyPage.scores);
+  const roomName = useAppSelector(s => s.lobbyPage.roomName);
   const phaseTransitionModal = useAppSelector(s => s.lobbyPage.phaseTransitionModal);
   
   // Логирование очков для отладки
@@ -667,28 +668,26 @@ export function LobbyPage() {
           Выйти из комнаты
         </Button>
 
-        <div className={styles.usersList}>
-          <h3>Пользователи в комнате</h3>
-          <ul>
-            {usersInLobby.map(user => (
-              <li
-                key={user.id}
-                className={styles.userItem}
-                style={{
-                  color: user.id === activePlayerId ? '#4caf50' : 'inherit',
-                  fontWeight: user.id === activePlayerId ? 'bold' : 'normal'
-                }}
-              >
-                <span 
-                  className={styles.clickableUsername}
-                  onClick={() => handleUserClick(user.username)}
+        <div className={styles.roomInfo}>
+          <h3>Комната: {roomName || `Лобби ${lobbyId}`}</h3>
+          <div className={styles.usersList}>
+            <h4>Игроки в комнате:</h4>
+            <ul>
+              {usersInLobby.map(user => (
+                <li
+                  key={user.id}
+                  className={styles.userItem}
                 >
-                  {user.username}
-                </span>
-                {user.id === activePlayerId && ' (активный)'}
-              </li>
-            ))}
-          </ul>
+                  <span 
+                    className={`${styles.username} ${user.id === activePlayerId ? styles.activePlayerGreen : ''}`}
+                    onClick={() => handleUserClick(user.username)}
+                  >
+                    {user.username}
+                  </span>
+                </li>
+              ))}
+            </ul>
+          </div>
         </div>
 
         <div className={styles.scores}>

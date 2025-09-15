@@ -53,11 +53,16 @@ function initLobbySockets(nsp) {
     const allSessions = await db.UserSession.findAll({ where: { game_session_id: lobbyId } });
     const lobbyTotalScore = allSessions.reduce((sum, s) => sum + Number(s.score || 0), 0);
 
+    // Получаем информацию о комнате
+    const gameSession = await db.GameSession.findByPk(lobbyId);
+    const roomName = gameSession?.room_name || `Комната ${lobbyId}`;
+
     socket.emit("lobby:initScores", {
       userId: socket.user.id,
       userScore: user?.score ?? 0,
       sessionScore: lobbyTotalScore,
       incorrectAnswers, // общее значение для всей комнаты
+      roomName, // добавляем название комнаты
     });
     
 

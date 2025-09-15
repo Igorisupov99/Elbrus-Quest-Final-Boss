@@ -69,6 +69,7 @@ interface LobbyState {
     points: number;
     username?: string;
   };
+  roomName: string;
 }
 
 export const initialState: LobbyState = {
@@ -293,6 +294,7 @@ export const initialState: LobbyState = {
     isOpen: false,
     points: 10,
   },
+  roomName: "",
 };
 
 const lobbyPageReducer = createSlice({
@@ -349,9 +351,16 @@ const lobbyPageReducer = createSlice({
     },
     setScores(
       state,
-      action: PayloadAction<{ userScore: number; sessionScore: number; incorrectAnswers: number }>
+      action: PayloadAction<{ userScore: number; sessionScore: number; incorrectAnswers: number; roomName?: string }>
     ) {
-      state.scores = action.payload;
+      state.scores = {
+        userScore: action.payload.userScore,
+        sessionScore: action.payload.sessionScore,
+        incorrectAnswers: action.payload.incorrectAnswers,
+      };
+      if (action.payload.roomName) {
+        state.roomName = action.payload.roomName;
+      }
     },
     mergeScores(
       state,
