@@ -447,6 +447,18 @@ function initLobbySockets(nsp) {
         { id: '7', status: 'locked', phase_id: 2, topic_id: 8 },
         { id: '8', status: 'locked', phase_id: 2, topic_id: 9 },
         { id: 'exam2', status: 'locked', phase_id: 2, topic_id: 0 },
+        // Фаза 3 (заблокировано до завершения экзамена 2)
+        { id: '9', status: 'locked', phase_id: 3, topic_id: 11 },
+        { id: '10', status: 'locked', phase_id: 3, topic_id: 12 },
+        { id: '11', status: 'locked', phase_id: 3, topic_id: 13 },
+        { id: '12', status: 'locked', phase_id: 3, topic_id: 14 },
+        { id: 'exam3', status: 'locked', phase_id: 3, topic_id: 0 },
+        // Фаза 4 (заблокировано до завершения экзамена 3)
+        { id: '13', status: 'locked', phase_id: 4, topic_id: 16 },
+        { id: '14', status: 'locked', phase_id: 4, topic_id: 17 },
+        { id: '15', status: 'locked', phase_id: 4, topic_id: 18 },
+        { id: '16', status: 'locked', phase_id: 4, topic_id: 19 },
+        { id: 'exam4', status: 'locked', phase_id: 4, topic_id: 0 },
       ]);
     }
     socket.emit('lobby:initPoints', lobbyPoints.get(lobbyId));

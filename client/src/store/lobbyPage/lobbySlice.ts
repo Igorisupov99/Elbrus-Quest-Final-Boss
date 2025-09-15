@@ -165,6 +165,98 @@ export const initialState: LobbyState = {
       status: "locked",
       phaseId: 2,
       topicId: 0
+    },
+    // Фаза 3 — четыре точки и экзамен 3 (изначально заблокированы)
+    {
+      id: "9",
+      title: "Тема 9",
+      top: 15,
+      left: 20,
+      status: "locked",
+      phaseId: 3,
+      topicId: 11
+    },
+    {
+      id: "10",
+      title: "Тема 10",
+      top: 20,
+      left: 45,
+      status: "locked",
+      phaseId: 3,
+      topicId: 12
+    },
+    {
+      id: "11",
+      title: "Тема 11",
+      top: 25,
+      left: 70,
+      status: "locked",
+      phaseId: 3,
+      topicId: 13
+    },
+    {
+      id: "12",
+      title: "Тема 12",
+      top: 30,
+      left: 60,
+      status: "locked",
+      phaseId: 3,
+      topicId: 14
+    },
+    {
+      id: "exam3",
+      title: "Экзамен 3",
+      top: 35,
+      left: 35,
+      status: "locked",
+      phaseId: 3,
+      topicId: 0
+    },
+    // Фаза 4 — четыре точки и экзамен 4 (изначально заблокированы)
+    {
+      id: "13",
+      title: "Тема 13",
+      top: 10,
+      left: 80,
+      status: "locked",
+      phaseId: 4,
+      topicId: 16
+    },
+    {
+      id: "14",
+      title: "Тема 14",
+      top: 15,
+      left: 85,
+      status: "locked",
+      phaseId: 4,
+      topicId: 17
+    },
+    {
+      id: "15",
+      title: "Тема 15",
+      top: 20,
+      left: 90,
+      status: "locked",
+      phaseId: 4,
+      topicId: 18
+    },
+    {
+      id: "16",
+      title: "Тема 16",
+      top: 25,
+      left: 95,
+      status: "locked",
+      phaseId: 4,
+      topicId: 19
+    },
+    {
+      id: "exam4",
+      title: "Экзамен 4",
+      top: 30,
+      left: 88,
+      status: "locked",
+      phaseId: 4,
+      topicId: 0
     }
   ],
   modal: {
