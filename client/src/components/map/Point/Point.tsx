@@ -26,7 +26,7 @@ export const Point = memo(function Point({
   isActive = false,
   onClick,
 }: PointProps) {
-  const isExam = id === "exam" || id === "exam2";
+  const isExam = id.startsWith("exam");
   
   // Временное логирование для отладки активного экзамена
   if (isExam) {

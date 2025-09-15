@@ -36,6 +36,11 @@ function initLobbySockets(nsp) {
       username: socket.user.username,
     });
 
+    // инициализация счетчика неправильных ответов для лобби (ПЕРЕД отправкой очков)
+    if (!incorrectAnswersMap.has(lobbyId)) {
+      incorrectAnswersMap.set(lobbyId, 0);
+    }
+
     // Обновление очков
     const user = await db.User.findByPk(socket.user.id);
     const session = await db.UserSession.findOne({
@@ -43,15 +48,21 @@ function initLobbySockets(nsp) {
     });
 
     const incorrectAnswers = incorrectAnswersMap.get(lobbyId) || 0;
+    
     // Общий счёт лобби — сумма по всем участникам
     const allSessions = await db.UserSession.findAll({ where: { game_session_id: lobbyId } });
     const lobbyTotalScore = allSessions.reduce((sum, s) => sum + Number(s.score || 0), 0);
+
+    // Получаем информацию о комнате
+    const gameSession = await db.GameSession.findByPk(lobbyId);
+    const roomName = gameSession?.room_name || `Комната ${lobbyId}`;
 
     socket.emit("lobby:initScores", {
       userId: socket.user.id,
       userScore: user?.score ?? 0,
       sessionScore: lobbyTotalScore,
       incorrectAnswers, // общее значение для всей комнаты
+      roomName, // добавляем название комнаты
     });
     
 
@@ -447,8 +458,21 @@ function initLobbySockets(nsp) {
         { id: '7', status: 'locked', phase_id: 2, topic_id: 8 },
         { id: '8', status: 'locked', phase_id: 2, topic_id: 9 },
         { id: 'exam2', status: 'locked', phase_id: 2, topic_id: 0 },
+        // Фаза 3 (заблокировано до завершения экзамена 2)
+        { id: '9', status: 'locked', phase_id: 3, topic_id: 11 },
+        { id: '10', status: 'locked', phase_id: 3, topic_id: 12 },
+        { id: '11', status: 'locked', phase_id: 3, topic_id: 13 },
+        { id: '12', status: 'locked', phase_id: 3, topic_id: 14 },
+        { id: 'exam3', status: 'locked', phase_id: 3, topic_id: 0 },
+        // Фаза 4 (заблокировано до завершения экзамена 3)
+        { id: '13', status: 'locked', phase_id: 4, topic_id: 16 },
+        { id: '14', status: 'locked', phase_id: 4, topic_id: 17 },
+        { id: '15', status: 'locked', phase_id: 4, topic_id: 18 },
+        { id: '16', status: 'locked', phase_id: 4, topic_id: 19 },
+        { id: 'exam4', status: 'locked', phase_id: 4, topic_id: 0 },
       ]);
     }
+
     socket.emit('lobby:initPoints', lobbyPoints.get(lobbyId));
 
     // системное событие о подключении
@@ -780,6 +804,27 @@ function initLobbySockets(nsp) {
       if (activeUserSession && activeUserSession.user_id === socket.user.id) {
         console.log('⏰ [SOCKET] Timeout от активного игрока, передаем ход следующему');
         
+        // Увеличиваем счетчик неправильных ответов при таймауте
+        const current = incorrectAnswersMap.get(lobbyId) || 0;
+        const newCount = current + 1;
+        incorrectAnswersMap.set(lobbyId, newCount);
+        
+        console.log(`📊 [SOCKET] Увеличиваем счетчик неправильных ответов из-за таймаута: ${current} -> ${newCount}`);
+        
+        // Отправляем обновленный счетчик всем игрокам
+        const allSessions = await db.UserSession.findAll({ where: { game_session_id: lobbyId } });
+        const lobbyTotalScore = allSessions.reduce((sum, s) => sum + Number(s.score || 0), 0);
+        
+        const incorrectAnswersPayload = {
+          userId: socket.user.id,
+          userScore: activeUserSession.score || 0,
+          sessionScore: lobbyTotalScore,
+          incorrectAnswers: newCount,
+        };
+        
+        console.log(`📡 [SOCKET] Отправляем lobby:incorrectAnswer из-за таймаута:`, incorrectAnswersPayload);
+        nsp.to(roomKey).emit('lobby:incorrectAnswer', incorrectAnswersPayload);
+        
         // Очищаем состояние вопроса при таймауте
         if (lobbyQuestionState.has(lobbyId)) {
           lobbyQuestionState.delete(lobbyId);
@@ -937,6 +982,9 @@ function initLobbySockets(nsp) {
           incorrectAnswersMap.set(lobbyId, 0);
           console.log(`🎯 [SOCKET] Счётчик неправильных ответов обнулён при провале экзамена для лобби ${lobbyId}`);
           
+          // Отправляем обновление счетчика всем игрокам
+          nsp.to(roomKey).emit('lobby:incorrectCountUpdate', { incorrectAnswers: 0 });
+          
           // Сбрасываем фазу - делаем все точки текущей фазы доступными для повторного прохождения
           const points = lobbyPoints.get(lobbyId);
           if (points) {
@@ -959,7 +1007,7 @@ function initLobbySockets(nsp) {
           
           // Отправляем уведомление о провале экзамена
           nsp.to(roomKey).emit('lobby:examFailed', {
-            message: `❌ Экзамен провален! Экзамен был закрыт пользователем. Фаза ${state.examId === 'exam2' ? '2' : '1'} сброшена для повторного прохождения.`,
+            message: `❌ Экзамен провален! Экзамен был закрыт пользователем. Фаза ${state.examId === 'exam' ? '0' : state.examId === 'exam2' ? '1' : state.examId === 'exam3' ? '2' : '3'} сброшена для повторного прохождения.`,
             correctAnswers: state.correctAnswers,
             totalQuestions: state.totalQuestions,
             successRate: state.correctAnswers / state.totalQuestions,
@@ -1026,6 +1074,9 @@ function initLobbySockets(nsp) {
                 // Обнуляем счётчик неправильных ответов после успешной сдачи экзамена
                 incorrectAnswersMap.set(lobbyId, 0);
                 console.log(`🎯 [SOCKET] Счётчик неправильных ответов обнулён для лобби ${lobbyId}`);
+                
+                // Отправляем обновление счетчика всем игрокам
+                nsp.to(roomKey).emit('lobby:incorrectCountUpdate', { incorrectAnswers: 0 });
                 
                 // Начисляем 30 очков каждому игроку в лобби за успешную сдачу экзамена
                 try {
@@ -1119,6 +1170,9 @@ function initLobbySockets(nsp) {
                 incorrectAnswersMap.set(lobbyId, 0);
                 console.log(`🎯 [SOCKET] Счётчик неправильных ответов обнулён при провале экзамена для лобби ${lobbyId}`);
                 
+                // Отправляем обновление счетчика всем игрокам
+                nsp.to(roomKey).emit('lobby:incorrectCountUpdate', { incorrectAnswers: 0 });
+                
                 // Сбрасываем фазу - делаем все точки текущей фазы доступными для повторного прохождения
                 const points = lobbyPoints.get(lobbyId);
                 if (points) {
@@ -1141,7 +1195,7 @@ function initLobbySockets(nsp) {
                 
                 // Отправляем уведомление о провале экзамена
                 nsp.to(roomKey).emit('lobby:examFailed', {
-                  message: `❌ Экзамен провален! Правильных ответов: ${state.correctAnswers}/${state.totalQuestions} (${(successRate * 100).toFixed(1)}%). Фаза ${state.examId === 'exam2' ? '2' : '1'} сброшена для повторного прохождения.`,
+                  message: `❌ Экзамен провален! Правильных ответов: ${state.correctAnswers}/${state.totalQuestions} (${(successRate * 100).toFixed(1)}%). Фаза ${state.examId === 'exam' ? '0' : state.examId === 'exam2' ? '1' : state.examId === 'exam3' ? '2' : '3'} сброшена для повторного прохождения.`,
                   correctAnswers: state.correctAnswers,
                   totalQuestions: state.totalQuestions,
                   successRate: successRate,
@@ -1200,6 +1254,9 @@ function initLobbySockets(nsp) {
               // Обнуляем счётчик неправильных ответов после успешной сдачи экзамена
               incorrectAnswersMap.set(lobbyId, 0);
               console.log(`🎯 [SOCKET] Счётчик неправильных ответов обнулён для лобби ${lobbyId}`);
+              
+              // Отправляем обновление счетчика всем игрокам
+              nsp.to(roomKey).emit('lobby:incorrectCountUpdate', { incorrectAnswers: 0 });
               
               // Начисляем 30 очков каждому игроку в лобби за успешную сдачу экзамена
               try {
@@ -1315,7 +1372,7 @@ function initLobbySockets(nsp) {
               
               // Отправляем уведомление о провале экзамена
               nsp.to(roomKey).emit('lobby:examFailed', {
-                message: `❌ Экзамен провален! Правильных ответов: ${state.correctAnswers}/${state.totalQuestions} (${(successRate * 100).toFixed(1)}%). Фаза ${state.examId === 'exam2' ? '2' : '1'} сброшена для повторного прохождения.`,
+                message: `❌ Экзамен провален! Правильных ответов: ${state.correctAnswers}/${state.totalQuestions} (${(successRate * 100).toFixed(1)}%). Фаза ${state.examId === 'exam' ? '0' : state.examId === 'exam2' ? '1' : state.examId === 'exam3' ? '2' : '3'} сброшена для повторного прохождения.`,
                 correctAnswers: state.correctAnswers,
                 totalQuestions: state.totalQuestions,
                 successRate: successRate,

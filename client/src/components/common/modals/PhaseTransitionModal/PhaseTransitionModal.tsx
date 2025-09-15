@@ -41,7 +41,7 @@ export default function PhaseTransitionModal({
             Экзамен успешно сдан!
           </p>
           <p className={styles.phaseMessage}>
-            Вы переходите на <span className={styles.phaseNumber}>Фазу {phaseNumber}</span>
+            Вы переходите на <span className={styles.phaseNumber}>Фазу {phaseNumber - 1}</span>
           </p>
           <p className={styles.rewardMessage}>
             Каждый игрок получил <span className={styles.rewardPoints}>+{rewardPoints} очков</span>

@@ -30,6 +30,7 @@ export function LobbyPage() {
   const points = useAppSelector(s => s.lobbyPage.points);
   const { user } = useAppSelector(s => s.auth)
   const { userScore, sessionScore, incorrectAnswers } = useAppSelector(s => s.lobbyPage.scores);
+  const roomName = useAppSelector(s => s.lobbyPage.roomName);
   const phaseTransitionModal = useAppSelector(s => s.lobbyPage.phaseTransitionModal);
   
   // Логирование очков для отладки
@@ -75,7 +76,6 @@ export function LobbyPage() {
     sendOpenExam,
     sendExamAnswerProgress,
     sendCloseModal,
-    sendIncorrectAnswer,
     sendPassTurn,
     sendCorrectAnswer,
     sendAnswerInput,
@@ -297,7 +297,11 @@ export function LobbyPage() {
       console.log('❌ [INACTIVE] Неправильный экзамен - показываем уведомление');
       
       // Находим название активного экзамена
-      const examName = activeExamId === 'exam2' ? 'Экзамен 2' : 'Экзамен';
+      let examName = 'Экзамен 0';
+      if (activeExamId === 'exam') examName = 'Экзамен 0';
+      else if (activeExamId === 'exam2') examName = 'Экзамен 1';
+      else if (activeExamId === 'exam3') examName = 'Экзамен 2';
+      else if (activeExamId === 'exam4') examName = 'Экзамен 3';
       
       setInactivePlayerNotification(`Активный экзамен: "${examName}"`);
       setTimeout(() => setInactivePlayerNotification(null), 3000);
@@ -481,16 +485,13 @@ export function LobbyPage() {
         setCurrentPointId(null);
       }, 3000);
     } else if (currentPointId) {
-      // При неправильном ответе увеличиваем счетчик неправильных ответов локально
-      const newIncorrectCount = (incorrectAnswers || 0) + 1;
-      dispatch(mergeScores({
-        incorrectAnswers: newIncorrectCount
-      }));
-      
+      // НЕ увеличиваем счетчик локально - это делается через сокеты для синхронизации всех игроков
       // НЕ отправляем ответ на сервер при неправильном ответе
       // Игрок может попробовать еще раз
-      // Отправляем только уведомление об увеличении счетчика
-      sendIncorrectAnswer(newIncorrectCount);
+      console.log('❌ [CLIENT] Неправильный ответ, отправляем на сервер:', { currentPointId, answer });
+      sendAnswer(currentPointId, false, answer);
+    } else {
+      console.log('❌ [CLIENT] Неправильный ответ, но currentPointId пустой:', { currentPointId, answer });
     }
   };
 
@@ -500,13 +501,7 @@ export function LobbyPage() {
     
     console.log('🔒 [CLOSE] Активный игрок закрывает модалку - засчитываем как неправильный ответ и передаем ход');
     
-    // Засчитываем неправильный ответ при закрытии активным игроком
-    const newIncorrectCount = (incorrectAnswers || 0) + 1;
-    dispatch(mergeScores({
-      incorrectAnswers: newIncorrectCount
-    }));
-    
-    // Отправляем событие таймаута на сервер (сервер сам передаст ход и покажет уведомление)
+    // Отправляем событие таймаута на сервер (сервер сам увеличит счетчик, передаст ход и покажет уведомление)
     sendTimeout(currentPointId);
     
     // Локально закрываем модалку после показа уведомления
@@ -673,28 +668,26 @@ export function LobbyPage() {
           Выйти из комнаты
         </Button>
 
-        <div className={styles.usersList}>
-          <h3>Пользователи в комнате</h3>
-          <ul>
-            {usersInLobby.map(user => (
-              <li
-                key={user.id}
-                className={styles.userItem}
-                style={{
-                  color: user.id === activePlayerId ? '#4caf50' : 'inherit',
-                  fontWeight: user.id === activePlayerId ? 'bold' : 'normal'
-                }}
-              >
-                <span 
-                  className={styles.clickableUsername}
-                  onClick={() => handleUserClick(user.username)}
+        <div className={styles.roomInfo}>
+          <h3>Комната: {roomName || `Лобби ${lobbyId}`}</h3>
+          <div className={styles.usersList}>
+            <h4>Игроки в комнате:</h4>
+            <ul>
+              {usersInLobby.map(user => (
+                <li
+                  key={user.id}
+                  className={styles.userItem}
                 >
-                  {user.username}
-                </span>
-                {user.id === activePlayerId && ' (активный)'}
-              </li>
-            ))}
-          </ul>
+                  <span 
+                    className={`${styles.username} ${user.id === activePlayerId ? styles.activePlayerGreen : ''}`}
+                    onClick={() => handleUserClick(user.username)}
+                  >
+                    {user.username}
+                  </span>
+                </li>
+              ))}
+            </ul>
+          </div>
         </div>
 
         <div className={styles.scores}>

@@ -130,10 +130,9 @@ class QuestionController {
         updatedUser = await User.findByPk(userId);
 
         if (lobby_id) {
-          // 👇 увеличиваем общий счётчик ошибок лобби
-          const current = incorrectAnswersMap.get(lobby_id) || 0;
-          incorrectAnswersCount = current + 1;
-          incorrectAnswersMap.set(lobby_id, incorrectAnswersCount);
+          // НЕ увеличиваем счетчик здесь - это делается в сокетах для синхронизации
+          // Получаем текущий счетчик для возврата в ответе
+          incorrectAnswersCount = incorrectAnswersMap.get(lobby_id) || 0;
           
           // НЕ вычитаем баллы из сессии лобби
           updatedSession = await UserSession.findOne({

@@ -380,7 +380,7 @@ export function QuestionModal({
               className={styles.input}
               placeholder={
                 Number(currentUserId) === Number(activePlayerId)
-                  ? "Ваш ответ... (пустой ответ = неправильный)"
+                  ? "Ваш ответ..."
                   : `Отвечает ${activePlayerName}...`
               }
               value={answer}

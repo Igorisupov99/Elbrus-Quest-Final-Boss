@@ -344,12 +344,13 @@ export function ExamModal({
 
         {!isCorrectMessage && totalQuestions > 0 && currentQuestion && (
           <>
+            <div className={styles.topicSection}>
+              <h3 className={styles.topic}>{currentQuestion.topic_title}</h3>
+            </div>
+
             <div className={styles.progress}>
               <p>Осталось ответить на {totalQuestions - currentQuestionIndex} вопросов из {totalQuestions}</p>
             </div>
-
-            <h3 className={styles.topic}>{currentQuestion.topic_title}</h3>
-            <p className={styles.question}>{currentQuestion.question_text}</p>
 
             {timerActive && (
               <div className={`${styles.timer} ${
@@ -372,12 +373,18 @@ export function ExamModal({
               </div>
             )}
 
+            {/* Секция вопроса */}
+            <div className={styles.questionSection}>
+              <div className={styles.questionLabel}>Вопрос экзамена</div>
+              <p className={styles.question}>{currentQuestion.question_text}</p>
+            </div>
+
             <input
               type="text"
               className={styles.input}
               placeholder={
                 Number(currentUserId) === Number(activePlayerId)
-                  ? "Ваш ответ... (пустой ответ = неправильный)"
+                  ? "Ваш ответ..."
                   : `Отвечает ${activePlayerName}...`
               }
               value={answer}
@@ -392,12 +399,16 @@ export function ExamModal({
             />
 
             <div className={styles.actions}>
-              <Button onClick={handleClose}>Закрыть</Button>
-              {Number(currentUserId) === Number(activePlayerId) && (
-                <Button onClick={handleSubmit} disabled={loading || answerSubmitted}>
-                  {answerSubmitted ? 'Отправлено' : 'Отправить'}
-                </Button>
-              )}
+              <div className={styles.leftActions}>
+                <Button onClick={handleClose}>Закрыть</Button>
+              </div>
+              <div className={styles.rightActions}>
+                {Number(currentUserId) === Number(activePlayerId) && (
+                  <Button onClick={handleSubmit} disabled={loading || answerSubmitted}>
+                    {answerSubmitted ? 'Отправлено' : 'Отправить'}
+                  </Button>
+                )}
+              </div>
             </div>
           </>
         )}
@@ -406,7 +417,10 @@ export function ExamModal({
           <div className={styles.loading}>
             <p>Загрузка вопросов экзамена...</p>
             <div className={styles.actions}>
-              <Button onClick={handleClose}>Закрыть</Button>
+              <div className={styles.leftActions}>
+                <Button onClick={handleClose}>Закрыть</Button>
+              </div>
+              <div className={styles.rightActions}></div>
             </div>
           </div>
         )}

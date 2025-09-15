@@ -7,7 +7,10 @@ html, body {
 .lobbyPage {
   display: flex;
   height: calc(100vh - 70px); /* вычитаем высоту хедера */
-  background: linear-gradient(135deg, #f4e1c1, #e6d2b5, #d8c3a5);
+  background-image: url('/d5b6364e-a9f2-43a0-b862-f62e0e1c2596.png');
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
   font-family: 'Cinzel', serif;
   padding: 20px;
   gap: 20px;
@@ -30,6 +33,7 @@ html, body {
   background-repeat: no-repeat;
   background-position: top left;
   background-size: 100% 100%;
+  opacity: 0.7; /* 30% прозрачности */
 }
 
 .sidebar {
@@ -71,7 +75,7 @@ html, body {
   display: flex;
   flex-direction: column;
   flex: 1;
-  background: #f5deb3; /* пергамент */
+  background: rgba(245, 222, 179, 0.7); /* пергамент с 30% прозрачностью */
   border-radius: 12px;
   padding: 12px;
   box-shadow: 0 6px 16px rgba(0,0,0,0.25);
@@ -282,8 +286,9 @@ html, body {
 }
 
 .activePlayer {
-  color: #4caf50;
+  color: #ff6b35; /* Яркий оранжевый цвет для лучшей видимости на фоне */
   font-weight: bold;
+  text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.7); /* Тень для лучшей читаемости */
 }
 
 .userItem {
@@ -300,4 +305,76 @@ html, body {
 .clickableUsername:hover {
   color: #2563eb;
   text-decoration-color: #2563eb;
+}
+
+.roomInfo {
+  background: rgba(245, 222, 179, 0.7);
+  border-radius: 12px;
+  padding: 16px;
+  box-shadow: 0 6px 16px rgba(0,0,0,0.25);
+}
+
+.roomInfo h3 {
+  margin: 0 0 12px 0;
+  font-weight: 700;
+  color: #5c3d2e;
+  font-size: 1.1rem;
+}
+
+.usersList {
+  margin-top: 12px;
+}
+
+.usersList h4 {
+  margin: 0 0 8px 0;
+  font-weight: 600;
+  color: #5c3d2e;
+  font-size: 0.95rem;
+}
+
+.usersList ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.username {
+  cursor: pointer;
+  transition: color 0.2s ease;
+  text-decoration: underline;
+  text-decoration-color: transparent;
+  color: #5c3d2e;
+}
+
+.username:hover {
+  color: #2563eb;
+  text-decoration-color: #2563eb;
+}
+
+.activePlayerGreen {
+  color: #4caf50 !important;
+  font-weight: bold;
+  text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.3);
+}
+
+.activePlayerGreen:hover {
+  color: #45a049 !important;
+}
+
+.scores {
+  background: rgba(245, 222, 179, 0.7);
+  border-radius: 12px;
+  padding: 16px;
+  box-shadow: 0 6px 16px rgba(0,0,0,0.25);
+}
+
+.scores h3 {
+  margin: 0 0 12px 0;
+  font-weight: 700;
+  color: #5c3d2e;
+}
+
+.scores p {
+  margin: 4px 0;
+  color: #5c3d2e;
 }

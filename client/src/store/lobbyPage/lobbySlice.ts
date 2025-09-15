@@ -69,6 +69,7 @@ interface LobbyState {
     points: number;
     username?: string;
   };
+  roomName: string;
 }
 
 export const initialState: LobbyState = {
@@ -78,7 +79,7 @@ export const initialState: LobbyState = {
     {
       id: "1",
       title: "Тема 1",
-      top: 49,
+      top: 48.6,
       left: 38,
       status: "available",
       phaseId: 1,
@@ -87,8 +88,8 @@ export const initialState: LobbyState = {
     {
       id: "2",
       title: "Тема 2",
-      top: 56,
-      left: 35,
+      top: 55.5,
+      left: 34.9,
       status: "available",
       phaseId: 1,
       topicId: 2
@@ -97,7 +98,7 @@ export const initialState: LobbyState = {
       id: "3",
       title: "Тема 3",
       top: 62,
-      left: 26.5,
+      left: 26.4,
       status: "available",
       phaseId: 1,
       topicId: 3
@@ -106,7 +107,7 @@ export const initialState: LobbyState = {
       id: "4",
       title: "Тема 4",
       top: 69,
-      left: 33,
+      left: 33.3,
       status: "available",
       phaseId: 1,
       topicId: 4
@@ -115,7 +116,7 @@ export const initialState: LobbyState = {
       id: "exam",
       title: "Экзамен",
       top: 77,
-      left: 32.8,
+      left: 32.6,
       status: "locked",
       phaseId: 1,
       topicId: 0
@@ -125,7 +126,7 @@ export const initialState: LobbyState = {
       id: "5",
       title: "Тема 5",
       top: 83,
-      left: 24,
+      left: 24.4,
       status: "locked",
       phaseId: 2,
       topicId: 6
@@ -133,8 +134,8 @@ export const initialState: LobbyState = {
     {
       id: "6",
       title: "Тема 6",
-      top: 90.5,
-      left: 30,
+      top: 89.45,
+      left: 28,
       status: "locked",
       phaseId: 2,
       topicId: 7
@@ -142,8 +143,8 @@ export const initialState: LobbyState = {
     {
       id: "7",
       title: "Тема 7",
-      top: 95.47,
-      left: 42,
+      top: 92,
+      left: 34,
       status: "locked",
       phaseId: 2,
       topicId: 8
@@ -151,8 +152,8 @@ export const initialState: LobbyState = {
     {
       id: "8",
       title: "Тема 8",
-      top: 95.4,
-      left: 57,
+      top: 94.9,
+      left: 41,
       status: "locked",
       phaseId: 2,
       topicId: 9
@@ -160,10 +161,102 @@ export const initialState: LobbyState = {
     {
       id: "exam2",
       title: "Экзамен 2",
-      top: 87,
-      left: 56.44,
+      top: 96.5,
+      left: 49,
       status: "locked",
       phaseId: 2,
+      topicId: 0
+    },
+    // Фаза 3 — четыре точки и экзамен 3 (изначально заблокированы)
+    {
+      id: "9",
+      title: "Тема 9",
+      top: 95.1,
+      left: 57,
+      status: "locked",
+      phaseId: 3,
+      topicId: 11
+    },
+    {
+      id: "10",
+      title: "Тема 10",
+      top: 87,
+      left: 56.6,
+      status: "locked",
+      phaseId: 3,
+      topicId: 12
+    },
+    {
+      id: "11",
+      title: "Тема 11",
+      top: 80.55,
+      left: 60,
+      status: "locked",
+      phaseId: 3,
+      topicId: 13
+    },
+    {
+      id: "12",
+      title: "Тема 12",
+      top: 77.1,
+      left: 66,
+      status: "locked",
+      phaseId: 3,
+      topicId: 14
+    },
+    {
+      id: "exam3",
+      title: "Экзамен 3",
+      top: 70,
+      left: 67.7,
+      status: "locked",
+      phaseId: 3,
+      topicId: 0
+    },
+    // Фаза 4 — четыре точки и экзамен 4 (изначально заблокированы)
+    {
+      id: "13",
+      title: "Тема 13",
+      top: 65,
+      left: 62.8,
+      status: "locked",
+      phaseId: 4,
+      topicId: 16
+    },
+    {
+      id: "14",
+      title: "Тема 14",
+      top: 58.9,
+      left: 65,
+      status: "locked",
+      phaseId: 4,
+      topicId: 17
+    },
+    {
+      id: "15",
+      title: "Тема 15",
+      top: 54,
+      left: 69.3,
+      status: "locked",
+      phaseId: 4,
+      topicId: 18
+    },
+    {
+      id: "16",
+      title: "Тема 16",
+      top: 47,
+      left: 67.7,
+      status: "locked",
+      phaseId: 4,
+      topicId: 19
+    },
+    {
+      id: "exam4",
+      title: "Экзамен 4",
+      top: 42,
+      left: 72,
+      status: "locked",
+      phaseId: 4,
       topicId: 0
     }
   ],
@@ -201,6 +294,7 @@ export const initialState: LobbyState = {
     isOpen: false,
     points: 10,
   },
+  roomName: "",
 };
 
 const lobbyPageReducer = createSlice({
@@ -257,9 +351,16 @@ const lobbyPageReducer = createSlice({
     },
     setScores(
       state,
-      action: PayloadAction<{ userScore: number; sessionScore: number; incorrectAnswers: number }>
+      action: PayloadAction<{ userScore: number; sessionScore: number; incorrectAnswers: number; roomName?: string }>
     ) {
-      state.scores = action.payload;
+      state.scores = {
+        userScore: action.payload.userScore,
+        sessionScore: action.payload.sessionScore,
+        incorrectAnswers: action.payload.incorrectAnswers,
+      };
+      if (action.payload.roomName) {
+        state.roomName = action.payload.roomName;
+      }
     },
     mergeScores(
       state,

@@ -81,6 +81,7 @@ export function useLobbySocket(lobbyId: number, onAnswerInputSync?: (answer: str
         userScore: payload.userScore ?? 0,
         sessionScore: payload.sessionScore ?? 0,
         incorrectAnswers: nextIncorrect,
+        roomName: payload.roomName,
       }));
     };
 
