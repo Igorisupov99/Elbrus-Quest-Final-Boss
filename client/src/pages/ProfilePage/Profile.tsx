@@ -1423,311 +1423,99 @@ export function Profile() {
       {/* Модальное окно входящих заявок */}
       {isIncomingModalOpen && (
         <div className={styles.modalOverlay} onClick={closeIncomingModal}>
-          <div
-            className={styles.modalContent}
-            onClick={e => e.stopPropagation()}
-            style={{
-              maxWidth: '600px',
-              maxHeight: '80vh',
-              overflow: 'hidden',
-              background: 'linear-gradient(135deg, #fffaf0 0%, #fff8dc 100%)',
-              border: '3px solid #d8a35d',
-              borderRadius: '16px',
-              boxShadow: '0 20px 40px rgba(0, 0, 0, 0.3), 0 0 0 1px rgba(216, 163, 93, 0.2)',
-              position: 'relative'
-            }}
-          >
-            {/* Декоративная полоска сверху */}
-            <div
-              style={{
-                position: 'absolute',
-                top: 0,
-                left: 0,
-                right: 0,
-                height: '6px',
-                background: 'linear-gradient(90deg, #8b4513, #a0522d, #cd853f)',
-                borderRadius: '16px 16px 0 0'
-              }}
-            />
-            
+          <div className={styles.modalContent} onClick={e => e.stopPropagation()}>
             <button 
               className={styles.closeBtn} 
               onClick={closeIncomingModal} 
               aria-label="Закрыть модальное окно"
-              style={{
-                position: 'absolute',
-                top: '15px',
-                right: '20px',
-                width: '35px',
-                height: '35px',
-                border: 'none',
-                background: 'linear-gradient(135deg, #dc3545, #c82333)',
-                color: 'white',
-                borderRadius: '50%',
-                fontSize: '18px',
-                fontWeight: 'bold',
-                cursor: 'pointer',
-                zIndex: 10,
-                boxShadow: '0 4px 8px rgba(220, 53, 69, 0.3)',
-                transition: 'all 0.2s ease'
-              }}
-              onMouseEnter={(e: MouseEvent<HTMLButtonElement>) => {
-                e.currentTarget.style.background = 'linear-gradient(135deg, #e74c3c, #c0392b)';
-                e.currentTarget.style.transform = 'scale(1.1)';
-                e.currentTarget.style.boxShadow = '0 6px 12px rgba(220, 53, 69, 0.4)';
-              }}
-              onMouseLeave={(e: MouseEvent<HTMLButtonElement>) => {
-                e.currentTarget.style.background = 'linear-gradient(135deg, #dc3545, #c82333)';
-                e.currentTarget.style.transform = 'scale(1)';
-                e.currentTarget.style.boxShadow = '0 4px 8px rgba(220, 53, 69, 0.3)';
-              }}
             >
               ×
             </button>
             
-            <div style={{ padding: '25px 30px' }}>
-              <div
-                style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '12px',
-                  marginBottom: '25px',
-                  paddingBottom: '15px',
-                  borderBottom: '2px solid #d8a35d'
-                }}
-              >
-                <div
-                  style={{
-                    width: '50px',
-                    height: '50px',
-                    borderRadius: '50%',
-                    background: 'linear-gradient(135deg, #8b4513, #a0522d)',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    fontSize: '24px',
-                    boxShadow: '0 4px 12px rgba(139, 69, 19, 0.3)'
-                  }}
-                >
-                  📨
-                </div>
-                <div>
-                  <h2 
-                    style={{
-                      margin: '0',
-                      fontSize: '1.8rem',
-                      fontWeight: '700',
-                      color: '#2c1810',
-                      textShadow: '0 1px 2px rgba(0, 0, 0, 0.1)'
-                    }}
-                  >
-                    Входящие заявки
-                  </h2>
-                  <p
-                    style={{
-                      margin: '4px 0 0 0',
-                      fontSize: '1.1rem',
-                      color: '#8b4513',
-                      fontWeight: '600'
-                    }}
-                  >
-                    {incomingRequests.length} {incomingRequests.length === 1 ? 'заявка' : incomingRequests.length < 5 ? 'заявки' : 'заявок'}
-                  </p>
-                </div>
+            <div className={styles.modalHeader}>
+              <div className={styles.modalIcon}>
+                <span className={styles.modalIconText}>📨</span>
               </div>
-              
-              <div 
-                style={{
-                  maxHeight: '400px',
-                  overflowY: 'auto',
-                  paddingRight: '10px'
-                }}
-              >
-                {incomingRequests.length === 0 ? (
+              <div>
+                <h2 className={styles.modalTitle}>Входящие заявки</h2>
+                <p className={styles.modalSubtitle}>
+                  {incomingRequests.length} {incomingRequests.length === 1 ? 'заявка' : incomingRequests.length < 5 ? 'заявки' : 'заявок'}
+                </p>
+              </div>
+            </div>
+            
+            <div className={styles.modalBody}>
+              {incomingRequests.length === 0 ? (
+                <div className={styles.modalEmptyState}>
+                  <div className={styles.modalEmptyIcon}>📭</div>
+                  Нет входящих заявок
+                </div>
+              ) : (
+                incomingRequests.map((request, index) => (
                   <div 
-                    style={{
-                      textAlign: 'center',
-                      padding: '40px 20px',
-                      color: '#8b7355',
-                      fontSize: '1.2rem',
-                      fontStyle: 'italic'
+                    key={`incoming-${request.id}-${index}`} 
+                    className={styles.requestItem}
+                    onClick={() => {
+                      if (request.user?.id) {
+                        closeIncomingModal();
+                        navigate(`/user/${request.user.id}`);
+                      }
                     }}
                   >
-                    <div style={{ fontSize: '48px', marginBottom: '16px' }}>📭</div>
-                    Нет входящих заявок
-                  </div>
-                ) : (
-                  incomingRequests.map((request, index) => (
-                    <div 
-                      key={`incoming-${request.id}-${index}`} 
-                      onClick={() => {
-                        if (request.user?.id) {
-                          closeIncomingModal();
-                          navigate(`/user/${request.user.id}`);
-                        }
-                      }}
+                    <div className={styles.requestItemLeftBorder} />
+                    
+                    <UserAvatar
+                      userId={request.user?.id || 0}
+                      fallbackImageUrl={request.user?.image_url || "/default-avatar.svg"}
+                      size="medium"
+                      shape="square"
+                      alt={`Аватар ${request.user?.username}`}
                       style={{
-                        display: 'flex',
-                        alignItems: 'center',
-                        gap: '16px',
-                        padding: '20px',
-                        marginBottom: '16px',
-                        background: '#fff',
-                        borderRadius: '12px',
-                        border: '2px solid #e9ecef',
-                        boxShadow: '0 4px 12px rgba(0, 0, 0, 0.08)',
-                        transition: 'all 0.2s ease',
-                        position: 'relative',
-                        overflow: 'hidden',
-                        cursor: 'pointer'
+                        border: '3px solid #8b4513',
+                        boxShadow: '0 4px 8px rgba(139, 69, 19, 0.2)',
+                        flexShrink: 0
                       }}
-                      onMouseEnter={(e) => {
-                        e.currentTarget.style.transform = 'translateY(-2px)';
-                        e.currentTarget.style.boxShadow = '0 8px 20px rgba(0, 0, 0, 0.15)';
-                        e.currentTarget.style.borderColor = '#8b4513';
-                      }}
-                      onMouseLeave={(e) => {
-                        e.currentTarget.style.transform = 'translateY(0)';
-                        e.currentTarget.style.boxShadow = '0 4px 12px rgba(0, 0, 0, 0.08)';
-                        e.currentTarget.style.borderColor = '#e9ecef';
-                      }}
-                    >
-                      {/* Декоративная полоска слева */}
-                      <div
-                        style={{
-                          position: 'absolute',
-                          left: 0,
-                          top: 0,
-                          bottom: 0,
-                          width: '4px',
-                          background: 'linear-gradient(180deg, #8b4513, #a0522d)'
-                        }}
-                      />
-                      
-                      <UserAvatar
-                        userId={request.user?.id || 0}
-                        fallbackImageUrl={request.user?.image_url || "/default-avatar.svg"}
-                        size="medium"
-                        shape="square"
-                        alt={`Аватар ${request.user?.username}`}
-                        style={{
-                          border: '3px solid #8b4513',
-                          boxShadow: '0 4px 8px rgba(139, 69, 19, 0.2)',
-                          flexShrink: 0
-                        }}
-                      />
-                      
-                      <div style={{ flex: 1 }}>
-                        <h4 
-                          style={{
-                            margin: '0 0 6px 0',
-                            fontSize: '1.3rem',
-                            fontWeight: '700',
-                            color: '#2c1810'
-                          }}
-                        >
-                          {request.user?.username}
-                        </h4>
-                        {request.user?.email && (
-                          <p 
-                            style={{
-                              margin: '0 0 4px 0',
-                              fontSize: '0.9rem',
-                              color: '#6c757d'
-                            }}
-                          >
-                            📧 {request.user.email}
-                          </p>
-                        )}
-                        {request.user?.score !== undefined && (
-                          <p 
-                            style={{
-                              margin: '0',
-                              fontSize: '1rem',
-                              color: '#d8a35d',
-                              fontWeight: '600'
-                            }}
-                          >
-                            🏆 Очки: {request.user.score}
-                          </p>
-                        )}
-                      </div>
-                      
-                      <div 
-                        style={{
-                          display: 'flex',
-                          flexDirection: 'column',
-                          gap: '8px',
-                          flexShrink: 0
+                    />
+                    
+                    <div className={styles.requestItemInfo}>
+                      <h4 className={styles.requestItemName}>
+                        {request.user?.username}
+                      </h4>
+                      {request.user?.email && (
+                        <p className={styles.requestItemEmail}>
+                          📧 {request.user.email}
+                        </p>
+                      )}
+                      {request.user?.score !== undefined && (
+                        <p className={styles.requestItemScore}>
+                          🏆 Очки: {request.user.score}
+                        </p>
+                      )}
+                    </div>
+                    
+                    <div className={styles.requestActions}>
+                      <button
+                        className={`${styles.requestActionButton} ${styles.requestActionButtonAccept}`}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleAcceptRequest(request.id);
                         }}
                       >
-                        <button
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            handleAcceptRequest(request.id);
-                          }}
-                          style={{
-                            padding: '10px 20px',
-                            background: 'linear-gradient(135deg, #8b4513, #a0522d)',
-                            color: 'white',
-                            border: '2px solid #654321',
-                            borderRadius: '8px',
-                            fontSize: '0.95rem',
-                            fontWeight: '700',
-                            cursor: 'pointer',
-                            transition: 'all 0.2s ease',
-                            boxShadow: '0 3px 8px rgba(139, 69, 19, 0.3)',
-                            textShadow: '0 1px 2px rgba(0, 0, 0, 0.2)'
-                          }}
-                          onMouseEnter={(e: MouseEvent<HTMLButtonElement>) => {
-                            e.currentTarget.style.background = 'linear-gradient(135deg, #a0522d, #cd853f)';
-                            e.currentTarget.style.transform = 'translateY(-2px)';
-                            e.currentTarget.style.boxShadow = '0 6px 12px rgba(139, 69, 19, 0.4)';
-                          }}
-                          onMouseLeave={(e: MouseEvent<HTMLButtonElement>) => {
-                            e.currentTarget.style.background = 'linear-gradient(135deg, #8b4513, #a0522d)';
-                            e.currentTarget.style.transform = 'translateY(0)';
-                            e.currentTarget.style.boxShadow = '0 3px 8px rgba(139, 69, 19, 0.3)';
-                          }}
-                        >
-                          ✅ Принять
-                        </button>
-                        <button
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            handleRejectRequest(request.id);
-                          }}
-                          style={{
-                            padding: '10px 20px',
-                            background: 'linear-gradient(135deg, #dc3545, #c82333)',
-                            color: 'white',
-                            border: '2px solid #b21e2f',
-                            borderRadius: '8px',
-                            fontSize: '0.95rem',
-                            fontWeight: '700',
-                            cursor: 'pointer',
-                            transition: 'all 0.2s ease',
-                            boxShadow: '0 3px 8px rgba(220, 53, 69, 0.3)',
-                            textShadow: '0 1px 2px rgba(0, 0, 0, 0.2)'
-                          }}
-                          onMouseEnter={(e: MouseEvent<HTMLButtonElement>) => {
-                            e.currentTarget.style.background = 'linear-gradient(135deg, #e74c3c, #c0392b)';
-                            e.currentTarget.style.transform = 'translateY(-2px)';
-                            e.currentTarget.style.boxShadow = '0 6px 12px rgba(220, 53, 69, 0.4)';
-                          }}
-                          onMouseLeave={(e: MouseEvent<HTMLButtonElement>) => {
-                            e.currentTarget.style.background = 'linear-gradient(135deg, #dc3545, #c82333)';
-                            e.currentTarget.style.transform = 'translateY(0)';
-                            e.currentTarget.style.boxShadow = '0 3px 8px rgba(220, 53, 69, 0.3)';
-                          }}
-                        >
-                          ❌ Отклонить
-                        </button>
-                      </div>
+                        ✅ Принять
+                      </button>
+                      <button
+                        className={`${styles.requestActionButton} ${styles.requestActionButtonReject}`}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleRejectRequest(request.id);
+                        }}
+                      >
+                        ❌ Отклонить
+                      </button>
                     </div>
-                  ))
-                )}
-              </div>
+                  </div>
+                ))
+              )}
             </div>
           </div>
         </div>
@@ -1736,261 +1524,83 @@ export function Profile() {
       {/* Модальное окно исходящих заявок */}
       {isOutgoingModalOpen && (
         <div className={styles.modalOverlay} onClick={closeOutgoingModal}>
-          <div
-            className={styles.modalContent}
-            onClick={e => e.stopPropagation()}
-            style={{
-              maxWidth: '600px',
-              maxHeight: '80vh',
-              overflow: 'hidden',
-              background: 'linear-gradient(135deg, #fffaf0 0%, #fff8dc 100%)',
-              border: '3px solid #d8a35d',
-              borderRadius: '16px',
-              boxShadow: '0 20px 40px rgba(0, 0, 0, 0.3), 0 0 0 1px rgba(216, 163, 93, 0.2)',
-              position: 'relative'
-            }}
-          >
-            {/* Декоративная полоска сверху */}
-            <div
-              style={{
-                position: 'absolute',
-                top: 0,
-                left: 0,
-                right: 0,
-                height: '6px',
-                background: 'linear-gradient(90deg, #d2691e, #cd853f, #daa520)',
-                borderRadius: '16px 16px 0 0'
-              }}
-            />
-            
+          <div className={styles.modalContent} onClick={e => e.stopPropagation()}>
             <button 
               className={styles.closeBtn} 
               onClick={closeOutgoingModal} 
               aria-label="Закрыть модальное окно"
-              style={{
-                position: 'absolute',
-                top: '15px',
-                right: '20px',
-                width: '35px',
-                height: '35px',
-                border: 'none',
-                background: 'linear-gradient(135deg, #dc3545, #c82333)',
-                color: 'white',
-                borderRadius: '50%',
-                fontSize: '18px',
-                fontWeight: 'bold',
-                cursor: 'pointer',
-                zIndex: 10,
-                boxShadow: '0 4px 8px rgba(220, 53, 69, 0.3)',
-                transition: 'all 0.2s ease'
-              }}
-              onMouseEnter={(e: MouseEvent<HTMLButtonElement>) => {
-                e.currentTarget.style.background = 'linear-gradient(135deg, #e74c3c, #c0392b)';
-                e.currentTarget.style.transform = 'scale(1.1)';
-                e.currentTarget.style.boxShadow = '0 6px 12px rgba(220, 53, 69, 0.4)';
-              }}
-              onMouseLeave={(e: MouseEvent<HTMLButtonElement>) => {
-                e.currentTarget.style.background = 'linear-gradient(135deg, #dc3545, #c82333)';
-                e.currentTarget.style.transform = 'scale(1)';
-                e.currentTarget.style.boxShadow = '0 4px 8px rgba(220, 53, 69, 0.3)';
-              }}
             >
               ×
             </button>
             
-            <div style={{ padding: '25px 30px' }}>
-              <div
-                style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '12px',
-                  marginBottom: '25px',
-                  paddingBottom: '15px',
-                  borderBottom: '2px solid #d8a35d'
-                }}
-              >
-                <div
-                  style={{
-                    width: '50px',
-                    height: '50px',
-                    borderRadius: '50%',
-                    background: 'linear-gradient(135deg, #d2691e, #cd853f)',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    fontSize: '24px',
-                    boxShadow: '0 4px 12px rgba(210, 105, 30, 0.3)'
-                  }}
-                >
-                  📤
-                </div>
-                <div>
-                  <h2 
-                    style={{
-                      margin: '0',
-                      fontSize: '1.8rem',
-                      fontWeight: '700',
-                      color: '#2c1810',
-                      textShadow: '0 1px 2px rgba(0, 0, 0, 0.1)'
-                    }}
-                  >
-                    Отправленные заявки
-                  </h2>
-                  <p
-                    style={{
-                      margin: '4px 0 0 0',
-                      fontSize: '1.1rem',
-                      color: '#d2691e',
-                      fontWeight: '600'
-                    }}
-                  >
-                    {outgoingRequests.length} {outgoingRequests.length === 1 ? 'заявка' : outgoingRequests.length < 5 ? 'заявки' : 'заявок'}
-                  </p>
-                </div>
+            <div className={styles.modalHeader}>
+              <div className={styles.modalIcon}>
+                <span className={styles.modalIconText}>📤</span>
               </div>
-              
-              <div 
-                style={{
-                  maxHeight: '400px',
-                  overflowY: 'auto',
-                  paddingRight: '10px'
-                }}
-              >
-                {outgoingRequests.length === 0 ? (
+              <div>
+                <h2 className={styles.modalTitle}>Отправленные заявки</h2>
+                <p className={styles.modalSubtitle}>
+                  {outgoingRequests.length} {outgoingRequests.length === 1 ? 'заявка' : outgoingRequests.length < 5 ? 'заявки' : 'заявок'}
+                </p>
+              </div>
+            </div>
+            
+            <div className={styles.modalBody}>
+              {outgoingRequests.length === 0 ? (
+                <div className={styles.modalEmptyState}>
+                  <div className={styles.modalEmptyIcon}>📪</div>
+                  Нет отправленных заявок
+                </div>
+              ) : (
+                outgoingRequests.map((request, index) => (
                   <div 
-                    style={{
-                      textAlign: 'center',
-                      padding: '40px 20px',
-                      color: '#8b7355',
-                      fontSize: '1.2rem',
-                      fontStyle: 'italic'
+                    key={`outgoing-${request.id}-${index}`} 
+                    className={`${styles.requestItem} ${styles.requestItemOutgoing}`}
+                    onClick={() => {
+                      if (request.friend?.id) {
+                        closeOutgoingModal();
+                        navigate(`/user/${request.friend.id}`);
+                      }
                     }}
                   >
-                    <div style={{ fontSize: '48px', marginBottom: '16px' }}>📪</div>
-                    Нет отправленных заявок
-                  </div>
-                ) : (
-                  outgoingRequests.map((request, index) => (
-                    <div 
-                      key={`outgoing-${request.id}-${index}`} 
-                      onClick={() => {
-                        if (request.friend?.id) {
-                          closeOutgoingModal();
-                          navigate(`/user/${request.friend.id}`);
-                        }
-                      }}
+                    <div className={styles.requestItemLeftBorder} />
+                    
+                    <UserAvatar
+                      userId={request.friend?.id || 0}
+                      fallbackImageUrl={request.friend?.image_url || "/default-avatar.svg"}
+                      size="medium"
+                      shape="square"
+                      alt={`Аватар ${request.friend?.username}`}
                       style={{
-                        display: 'flex',
-                        alignItems: 'center',
-                        gap: '16px',
-                        padding: '20px',
-                        marginBottom: '16px',
-                        background: '#fff',
-                        borderRadius: '12px',
-                        border: '2px solid #e9ecef',
-                        boxShadow: '0 4px 12px rgba(0, 0, 0, 0.08)',
-                        transition: 'all 0.2s ease',
-                        position: 'relative',
-                        overflow: 'hidden',
-                        cursor: 'pointer'
+                        border: '3px solid #d2691e',
+                        boxShadow: '0 4px 8px rgba(210, 105, 30, 0.2)',
+                        flexShrink: 0
                       }}
-                      onMouseEnter={(e) => {
-                        e.currentTarget.style.transform = 'translateY(-2px)';
-                        e.currentTarget.style.boxShadow = '0 8px 20px rgba(0, 0, 0, 0.15)';
-                        e.currentTarget.style.borderColor = '#d2691e';
-                      }}
-                      onMouseLeave={(e) => {
-                        e.currentTarget.style.transform = 'translateY(0)';
-                        e.currentTarget.style.boxShadow = '0 4px 12px rgba(0, 0, 0, 0.08)';
-                        e.currentTarget.style.borderColor = '#e9ecef';
-                      }}
-                    >
-                      {/* Декоративная полоска слева */}
-                      <div
-                        style={{
-                          position: 'absolute',
-                          left: 0,
-                          top: 0,
-                          bottom: 0,
-                          width: '4px',
-                          background: 'linear-gradient(180deg, #d2691e, #cd853f)'
-                        }}
-                      />
-                      
-                      <UserAvatar
-                        userId={request.friend?.id || 0}
-                        fallbackImageUrl={request.friend?.image_url || "/default-avatar.svg"}
-                        size="medium"
-                        shape="square"
-                        alt={`Аватар ${request.friend?.username}`}
-                        style={{
-                          border: '3px solid #d2691e',
-                          boxShadow: '0 4px 8px rgba(210, 105, 30, 0.2)',
-                          flexShrink: 0
-                        }}
-                      />
-                      
-                      <div style={{ flex: 1 }}>
-                        <h4 
-                          style={{
-                            margin: '0 0 6px 0',
-                            fontSize: '1.3rem',
-                            fontWeight: '700',
-                            color: '#2c1810'
-                          }}
-                        >
-                          {request.friend?.username}
-                        </h4>
-                        {request.friend?.email && (
-                          <p 
-                            style={{
-                              margin: '0 0 4px 0',
-                              fontSize: '0.9rem',
-                              color: '#6c757d'
-                            }}
-                          >
-                            📧 {request.friend.email}
-                          </p>
-                        )}
-                        {request.friend?.score !== undefined && (
-                          <p 
-                            style={{
-                              margin: '0',
-                              fontSize: '1rem',
-                              color: '#d8a35d',
-                              fontWeight: '600'
-                            }}
-                          >
-                            🏆 Очки: {request.friend.score}
-                          </p>
-                        )}
-                      </div>
-                      
-                      <div 
-                        style={{
-                          display: 'flex',
-                          alignItems: 'center',
-                          justifyContent: 'center',
-                          padding: '12px 20px',
-                          background: 'linear-gradient(135deg, #f4e4bc, #f0d89e)',
-                          border: '2px solid #d2691e',
-                          borderRadius: '20px',
-                          color: '#8b4513',
-                          fontSize: '0.95rem',
-                          fontWeight: '700',
-                          textShadow: '0 1px 2px rgba(0, 0, 0, 0.1)',
-                          boxShadow: '0 3px 8px rgba(210, 105, 30, 0.2)',
-                          flexShrink: 0,
-                          minWidth: '140px'
-                        }}
-                      >
-                        <span style={{ marginRight: '8px', fontSize: '16px' }}>⏳</span>
-                        Ожидает ответа
-                      </div>
+                    />
+                    
+                    <div className={styles.requestItemInfo}>
+                      <h4 className={styles.requestItemName}>
+                        {request.friend?.username}
+                      </h4>
+                      {request.friend?.email && (
+                        <p className={styles.requestItemEmail}>
+                          📧 {request.friend.email}
+                        </p>
+                      )}
+                      {request.friend?.score !== undefined && (
+                        <p className={styles.requestItemScore}>
+                          🏆 Очки: {request.friend.score}
+                        </p>
+                      )}
                     </div>
-                  ))
-                )}
-              </div>
+                    
+                    <div className={styles.requestStatusBadge}>
+                      <span className={styles.requestStatusIcon}>⏳</span>
+                      Ожидает ответа
+                    </div>
+                  </div>
+                ))
+              )}
             </div>
           </div>
         </div>

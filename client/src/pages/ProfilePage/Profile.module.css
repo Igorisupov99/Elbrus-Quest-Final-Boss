@@ -796,135 +796,16 @@
     inset 0 -1px 0 rgba(139, 90, 43, 0.2);
 }
 
-/* Модальное окно - стили остаются прежними */
-.modalOverlay {
-    position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-    background: rgba(0, 0, 0, 0.5);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-    z-index: 1000;
-  }
-  
-  .modalContent {
-    position: relative;
-  background: #f5deb3;
-    border-radius: 12px;
-    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.25);
-    padding: 24px;
-    max-width: 400px;
-    width: 90%;
-    box-sizing: border-box;
-  }
-  
-  .modalHeader {
-    margin: 0 0 16px;
-    font-size: 1.5rem;
-    font-weight: 700;
-    color: #5c3d2e;
-    text-align: center;
-  }
-  
-  .formGroup {
-    margin-bottom: 12px;
-  }
-  
-  .formGroup label {
-    display: block;
-    margin-bottom: 4px;
-    font-weight: 600;
-    color: #8b4513;
-  }
-  
-  .formGroup input {
-    width: 100%;
-    padding: 8px 10px;
-    border: 1px solid rgba(0, 0, 0, 0.2);
-    border-radius: 8px;
-    background: #fffaf0;
-    color: #5c3d2e;
-    font-size: 1rem;
-    box-sizing: border-box;
-  }
-  
-  .closeBtn {
-    position: absolute;
-    top: 12px;
-    right: 12px;
-    background: transparent;
-    border: none;
-    font-size: 1.4rem;
-    color: #5c3d2e;
-    cursor: pointer;
-  }
-  
-  .modalActions {
-    display: flex;
-    justify-content: space-between;
-    margin-top: 20px;
-  }
-  
-  .button {
-    appearance: none;
-    border: 2px solid var(--fantasy-accent);
-    background: linear-gradient(
-      180deg,
-      var(--fantasy-gold),
-      var(--fantasy-gold-2)
-    );
-    color: #2c1810;
-    border-radius: 8px;
-    padding: 10px 14px;
-    font-size: 1rem;
-    font-weight: bold;
-    cursor: pointer;
-    transition: all 0.2s ease-in-out;
-    box-shadow: 0 3px 6px rgba(0, 0, 0, 0.2);
-    text-shadow: 0 1px 0 #f3e0c0;
-    font-family: inherit;
-    flex: 1;
-    text-align: center;
-    margin: 0 4px;
-  }
-  
-  .button:hover {
-    background: linear-gradient(180deg, #f0c33b, #c48a00);
-    transform: translateY(-1px);
-    box-shadow: 0 5px 10px rgba(0, 0, 0, 0.3);
-  }
-  
-  .button:active {
-    transform: translateY(1px);
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
-  }
-  
-  .saveBtn {
-  /* базовые стили от .button */
-  }
-  
-  .deleteBtn {
-    background: linear-gradient(180deg, #d32f2f, #b71c1c);
-    border-color: #7f1a1a;
-    color: #fff8dc;
-  }
-  
-  .deleteBtn:hover {
-    background: linear-gradient(180deg, #e35252, #c03939);
-  }
-  
 /* Состояния загрузки и ошибок */
-  .loading,
-  .error,
-  .notFound {
-    padding: 20px;
-    text-align: center;
-    color: #5c3d2e;
-    font-weight: 600;
-  }
+.loading,
+.error,
+.notFound {
+  padding: 20px;
+  text-align: center;
+  color: #5c3d2e;
+  font-weight: 600;
+}
+
 .error {
   color: #d32f2f;
   background: #ffebee;
@@ -1445,5 +1326,326 @@
       margin-right: 8px;
       margin-bottom: 0;
     }
+  }
+}
+
+/* ===== Modal Styling (matching MainPage modal style) ===== */
+.modalOverlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.6);
+  backdrop-filter: blur(3px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  min-height: 100dvh;
+}
+
+.modalContent {
+  position: relative;
+  width: min(607px, 95vw); /* Reduced by additional 10% */
+  max-height: 85vh;
+  overflow: auto;
+  background: linear-gradient(180deg, #24170e, #2c1b10);
+  color: #f7f4ef;
+  border: 2px solid #4f311b;
+  border-radius: 16px;
+  padding: 24px;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4), 0 8px 16px rgba(0, 0, 0, 0.3);
+  animation: modal-pop 0.3s ease-out;
+}
+
+@keyframes modal-pop {
+  from {
+    transform: translateY(20px) scale(0.95);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0) scale(1);
+    opacity: 1;
+  }
+}
+
+.closeBtn {
+  position: absolute;
+  top: 12px;
+  right: 16px;
+  width: 32px;
+  height: 32px;
+  border: 2px solid #4f311b;
+  border-radius: 50%;
+  background: #2a1b10;
+  color: #f7f4ef;
+  cursor: pointer;
+  font-size: 18px;
+  font-weight: bold;
+  line-height: 1;
+  display: grid;
+  place-items: center;
+  transition: all 0.2s ease;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
+}
+
+.closeBtn:hover {
+  background: #352214;
+  border-color: #b8922d;
+  transform: scale(1.1);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.4);
+}
+
+.closeBtn:active {
+  transform: scale(0.95);
+}
+
+/* Modal Header Styling */
+.modalHeader {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 20px;
+  padding-bottom: 16px;
+  border-bottom: 2px solid #4f311b;
+}
+
+.modalIcon {
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #8b4513, #a0522d);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 4px 12px rgba(139, 69, 19, 0.3);
+  flex-shrink: 0;
+}
+
+.modalIconText {
+  font-size: 24px;
+  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.3));
+}
+
+.modalTitle {
+  margin: 0;
+  font-size: 1.8rem;
+  font-weight: 700;
+  color: #f7f4ef;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+  letter-spacing: 0.5px;
+}
+
+.modalSubtitle {
+  margin: 4px 0 0 0;
+  font-size: 1.1rem;
+  color: #b8922d;
+  font-weight: 600;
+}
+
+/* Modal Body Styling */
+.modalBody {
+  max-height: 400px;
+  overflow-y: auto;
+  padding-right: 10px;
+}
+
+.modalEmptyState {
+  text-align: center;
+  padding: 40px 20px;
+  color: #8b7355;
+  font-size: 1.2rem;
+  font-style: italic;
+}
+
+.modalEmptyIcon {
+  font-size: 48px;
+  margin-bottom: 16px;
+}
+
+/* Request Item Styling */
+.requestItem {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 20px;
+  margin-bottom: 16px;
+  background: linear-gradient(180deg, #3c2b20, #453224); /* 20% lighter */
+  border: 2px solid #4f311b;
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+  transition: all 0.2s ease;
+  position: relative;
+  overflow: hidden;
+  cursor: pointer;
+}
+
+.requestItem:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.4);
+  border-color: #b8922d;
+}
+
+.requestItemLeftBorder {
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 4px;
+  background: linear-gradient(180deg, #8b4513, #a0522d);
+}
+
+.requestItemOutgoing .requestItemLeftBorder {
+  background: linear-gradient(180deg, #b8922d, #d4a017);
+}
+
+.requestItemInfo {
+  flex: 1;
+  margin-left: 4px;
+}
+
+.requestItemName {
+  margin: 0 0 6px 0;
+  font-size: 1.3rem;
+  font-weight: 700;
+  color: #f7f4ef;
+}
+
+.requestItemEmail {
+  margin: 0 0 4px 0;
+  font-size: 0.9rem;
+  color: #b8922d;
+}
+
+.requestItemScore {
+  margin: 0;
+  font-size: 1rem;
+  color: #d4a017;
+  font-weight: 600;
+}
+
+/* Action Buttons */
+.requestActions {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  flex-shrink: 0;
+  min-width: 120px;
+}
+
+.requestActionButton {
+  padding: 10px 20px;
+  border: 2px solid;
+  border-radius: 8px;
+  font-size: 0.95rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  box-shadow: 0 3px 8px rgba(0, 0, 0, 0.3);
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+  white-space: nowrap;
+}
+
+.requestActionButton:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.4);
+}
+
+.requestActionButton:active {
+  transform: translateY(0);
+}
+
+.requestActionButtonAccept {
+  background: linear-gradient(135deg, #8b4513, #a0522d);
+  color: white;
+  border-color: #654321;
+}
+
+.requestActionButtonAccept:hover {
+  background: linear-gradient(135deg, #a0522d, #cd853f);
+}
+
+.requestActionButtonReject {
+  background: linear-gradient(135deg, #dc3545, #c82333);
+  color: white;
+  border-color: #b21e2f;
+}
+
+.requestActionButtonReject:hover {
+  background: linear-gradient(135deg, #e74c3c, #c0392b);
+}
+
+/* Status Badge for Outgoing Requests */
+.requestStatusBadge {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 12px 20px;
+  background: linear-gradient(135deg, #2c1b10, #352214);
+  border: 2px solid #b8922d;
+  border-radius: 20px;
+  color: #b8922d;
+  font-size: 0.95rem;
+  font-weight: 700;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+  box-shadow: 0 3px 8px rgba(0, 0, 0, 0.3);
+  flex-shrink: 0;
+  min-width: 140px;
+  white-space: nowrap;
+}
+
+.requestStatusIcon {
+  margin-right: 8px;
+  font-size: 16px;
+}
+
+/* Адаптивность для модальных окон */
+@media (max-width: 768px) {
+  .modalContent {
+    width: min(95vw, 506px); /* Reduced by additional 10% for mobile */
+    padding: 20px;
+  }
+  
+  .modalTitle {
+    font-size: 1.5rem;
+  }
+  
+  .modalSubtitle {
+    font-size: 1rem;
+  }
+  
+  .modalIcon {
+    width: 40px;
+    height: 40px;
+  }
+  
+  .modalIconText {
+    font-size: 20px;
+  }
+  
+  .requestItem {
+    padding: 16px;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+  }
+  
+  .requestActions {
+    flex-direction: row;
+    width: 100%;
+    justify-content: space-between;
+    min-width: auto;
+  }
+  
+  .requestActionButton {
+    flex: 1;
+    text-align: center;
+    padding: 8px 12px;
+    font-size: 0.9rem;
+  }
+  
+  .requestStatusBadge {
+    width: 100%;
+    min-width: auto;
+    padding: 10px 16px;
+    font-size: 0.9rem;
   }
 }
