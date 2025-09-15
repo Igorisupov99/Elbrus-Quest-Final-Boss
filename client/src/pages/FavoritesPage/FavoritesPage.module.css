@@ -15,8 +15,31 @@
   margin: 0 auto;
   padding: 2rem;
   min-height: 100vh;
-  background: linear-gradient(135deg, #f4e1c1, #e6d2b5, #d8c3a5);
   font-family: 'Cinzel', serif;
+  position: relative;
+}
+
+.container::before {
+  content: '';
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: url('/fcbdb22c-619d-4a24-b5b5-784e11027e94.png') no-repeat center center;
+  background-size: cover;
+  z-index: -2;
+}
+
+.container::after {
+  content: '';
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(135deg, rgba(244, 225, 193, 0.7), rgba(230, 210, 181, 0.7), rgba(216, 195, 165, 0.7));
+  z-index: -1;
 }
 
 .header {
@@ -114,14 +137,15 @@
   color: var(--fantasy-text);
   background: linear-gradient(
     180deg,
-    var(--fantasy-surface),
-    var(--fantasy-surface-2)
+    rgba(245, 222, 179, 0.7),
+    rgba(255, 248, 220, 0.7)
   );
   border: 2px solid var(--fantasy-border);
   border-radius: 16px;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
   position: relative;
   overflow: hidden;
+  backdrop-filter: blur(5px);
 }
 
 .empty::before {
@@ -165,8 +189,8 @@
 .questionCard {
   background: linear-gradient(
     180deg,
-    var(--fantasy-surface),
-    var(--fantasy-surface-2)
+    rgba(245, 222, 179, 0.7),
+    rgba(255, 248, 220, 0.7)
   );
   color: var(--fantasy-text);
   border: 2px solid var(--fantasy-border);
@@ -176,6 +200,7 @@
   transition: all 0.2s ease-in-out;
   position: relative;
   overflow: hidden;
+  backdrop-filter: blur(5px);
 }
 
 .questionCard::before {
@@ -429,8 +454,8 @@
   justify-content: center;
   background: linear-gradient(
     180deg,
-    var(--fantasy-surface),
-    var(--fantasy-surface-2)
+    rgba(245, 222, 179, 0.8),
+    rgba(255, 248, 220, 0.8)
   );
   color: var(--fantasy-text);
   border: 2px solid var(--fantasy-border);
@@ -441,6 +466,7 @@
   box-shadow: 0 3px 6px rgba(0, 0, 0, 0.2);
   text-shadow: 0 1px 0 #f3e0c0;
   font-family: inherit;
+  backdrop-filter: blur(3px);
 }
 
 .pageNumber:hover {
