@@ -317,7 +317,7 @@ export function MainPage(): JSX.Element {
         {error && <p className={styles.error}>❌ Ошибка: {error}</p>}
 
         <ul className={styles.rooms}>
-          {/* Filter Button positioned above first room */}
+          {/* Filter Button positioned next to first room */}
           <div className={styles.filterContainer}>
             <button
               className={styles.filterButton}
@@ -327,7 +327,6 @@ export function MainPage(): JSX.Element {
               <FilterIcon />
             </button>
           </div>
-
           {/* Inline Filter Li Element */}
           {isFilterOpen && (
             <li
