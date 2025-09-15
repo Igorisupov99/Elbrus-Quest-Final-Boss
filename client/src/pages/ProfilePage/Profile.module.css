@@ -191,7 +191,7 @@
   object-fit: cover;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
   background: #ddd;
-  margin-top: 32px;
+  margin-top: 7px; /* Поднят еще на 15px вверх: 22px - 15px = 7px */
 }
 
 .editButton {
@@ -202,7 +202,11 @@
   font-weight: bold;
   font-size: 1.3rem;
   border-radius: 12px;
-  padding: 16px 32px;
+  padding: 8px 57px !important; /* Увеличена высота для размещения текста в одну линию */
+  width: auto !important;
+  min-width: 300px !important; /* Увеличена минимальная ширина на 50%: 200px * 1.5 = 300px */
+  white-space: nowrap !important; /* Текст в одну линию */
+  margin-top: 5px !important; /* Опущена вниз на 5px */
   cursor: pointer;
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3),
     inset 0 1px 0 rgba(255, 248, 230, 0.6),
@@ -211,7 +215,7 @@
   text-shadow: 0 1px 0 #f3e0c0, 1px 1px 2px rgba(0, 0, 0, 0.3);
   letter-spacing: 0.5px;
   display: block;
-  margin: 8px auto 20px auto;
+  margin: -1px auto 20px auto; /* Поднята еще на 4px вверх */
   max-width: 250px;
   min-height: 50px;
   text-align: center;
@@ -332,6 +336,7 @@
   margin: 0;
   font-weight: 500;
 }
+
 
 /* Блок 1.2 - Статистика */
 .statisticsBlock {
@@ -895,7 +900,7 @@
   .avatar {
     width: 300px;
     height: 150px;
-    margin-top: 24px;
+    margin-top: 0px; /* Поднят еще на 15px вверх: 14px - 15px = -1px, но минимум 0px */
   }
   
   .username {
@@ -928,7 +933,7 @@
   .avatar {
     width: 240px;
     height: 120px;
-    margin-top: 20px;
+    margin-top: 0px; /* Поднят еще на 15px вверх: 10px - 15px = -5px, но минимум 0px */
   }
   
   .username {
@@ -1113,35 +1118,6 @@
     font-weight: 600;
   }
 
-  .removeFriendButton {
-    padding: 8px;
-    background: #dc3545;
-    color: white;
-    border: 1px solid #c82333;
-    border-radius: 6px;
-    font-size: 1.2rem;
-    font-weight: 600;
-    cursor: pointer;
-    transition: all 0.2s ease;
-    flex-shrink: 0;
-    width: 40px;
-    height: 40px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    align-self: center;
-  }
-
-  .removeFriendButton:hover {
-    background: #c82333;
-    transform: translateY(-1px);
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
-  }
-
-  .removeFriendButton:active {
-    transform: translateY(0);
-    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
-  }
 
 
   /* Контент вкладок */
@@ -1542,6 +1518,10 @@
   box-shadow: 0 3px 8px rgba(0, 0, 0, 0.3);
   text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
   white-space: nowrap;
+  width: 130px !important; /* Фиксированная ширина 130px для обеих кнопок */
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .requestActionButton:hover {
@@ -1648,4 +1628,77 @@
     padding: 10px 16px;
     font-size: 0.9rem;
   }
+}
+
+/* Стили для кнопок в UserPage */
+.friendsButton {
+  appearance: none;
+  border: 2px solid #654321;
+  background: linear-gradient(135deg, #8b4513, #a0522d);
+  color: white;
+  border-radius: 8px;
+  padding: 9px 18px; /* Увеличено на 15%: 8px * 1.15 = 9.2px ≈ 9px, 16px * 1.15 = 18.4px ≈ 18px */
+  font-size: 1.04rem; /* Увеличено на 15%: 0.9rem * 1.15 = 1.035rem ≈ 1.04rem */
+  font-weight: bold;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+  text-shadow: 0 1px 0 rgba(0, 0, 0, 0.3);
+  font-family: inherit;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  min-width: 120px;
+  white-space: nowrap;
+  box-sizing: border-box; /* Учитывать padding и border в размерах */
+  height: auto; /* Автоматическая высота */
+  line-height: 1; /* Убрать встроенный line-height */
+}
+
+.friendsButton:hover {
+  background: linear-gradient(135deg, #a0522d, #cd853f);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+}
+
+.friendsButton:active {
+  transform: translateY(0);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+.removeFriendButton {
+  appearance: none;
+  border: 2px solid #b21e2f;
+  background: linear-gradient(135deg, #dc3545, #c82333);
+  color: white;
+  border-radius: 8px;
+  padding: 9px 18px !important; /* Увеличено на 15%: 8px * 1.15 = 9.2px ≈ 9px, 16px * 1.15 = 18.4px ≈ 18px */
+  font-size: 1.04rem; /* Увеличено на 15%: 0.9rem * 1.15 = 1.035rem ≈ 1.04rem */
+  font-weight: bold;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+  text-shadow: 0 1px 0 rgba(0, 0, 0, 0.3);
+  font-family: inherit;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  min-width: 120px;
+  white-space: nowrap;
+  box-sizing: border-box !important; /* Учитывать padding и border в размерах */
+  height: auto !important; /* Автоматическая высота */
+  line-height: 1 !important; /* Убрать встроенный line-height */
+}
+
+.removeFriendButton:hover {
+  background: linear-gradient(135deg, #e74c3c, #c0392b);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+}
+
+.removeFriendButton:active {
+  transform: translateY(0);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
 }

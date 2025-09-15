@@ -15,6 +15,7 @@ import {
   type Friendship, 
 } from "../../api/friendship/friendshipApi";
 import { getFriendsCountText } from "../../utils/declination";
+
 import { AchievementCard } from "../../components/Achievement/AchievementCard/AchievementCard";
 import { AchievementModal } from "../../components/Achievement/AchievementModal/AchievementModal";
 import { FavoriteQuestionModal } from "../../components/FavoriteQuestionModal/FavoriteQuestionModal";
@@ -23,17 +24,15 @@ import { SuccessModal } from "../../components/common/modals/SuccessModal/Succes
 import { ConfirmModal } from "../../components/common/modals/ConfirmModal/ConfirmModal";
 import type { Achievement } from "../../types/achievement";
 import type { FavoriteQuestion } from "../../types/favorite";
+import type { User } from "../../types/auth";
 import { useAppSelector } from "../../store/hooks";
 import styles from "../ProfilePage/Profile.module.css";
 
-interface User {
-  id: number;
-  username: string;
-  email: string;
-  role?: string;
-  score?: number;
+// Расширенный интерфейс User с дополнительными полями для UserPage
+interface ExtendedUser extends User {
   image_url?: string;
 }
+
 
 interface ApiResponse<T> {
   success: boolean;
@@ -115,6 +114,7 @@ export function UserPage() {
         const response = await api.get<ApiResponse<User>>(`/api/auth/user/id/${userId}`, {
           withCredentials: true,
         });
+
 
         if (!response.data.success) {
           throw new Error(response.data.message || "Ошибка при загрузке профиля");
@@ -533,10 +533,8 @@ export function UserPage() {
           <h3 className={styles.blockTitle}>👤 Профиль</h3>
           <div className={styles.profileInfoBlock}>
             <div className={styles.avatarSection}>
-              <UserAvatar
-                userId={user.id}
-                fallbackImageUrl={user.image_url || "/default-avatar.svg"}
-                size="large"
+              <img
+                src={(user as ExtendedUser).image_url || "/default-avatar.svg"}
                 alt="Аватар"
                 className={styles.avatar}
               />
@@ -548,7 +546,8 @@ export function UserPage() {
                   onClick={handleSendFriendRequest}
                   style={{
                     background: 'linear-gradient(180deg, #d4a017, #a97400)',
-                    borderColor: '#6b3e15'
+                    borderColor: '#6b3e15',
+                    marginTop: '10px' /* Опущена вниз на 10px */
                   }}
                 >
                   Добавить в друзья
@@ -557,37 +556,16 @@ export function UserPage() {
               
               {friendshipStatus === 'pending' && incomingRequest && (
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', alignItems: 'center' }}>
-                  <div style={{ 
-                    fontSize: '0.9rem', 
-                    color: '#8b4513', 
-                    fontWeight: '600',
-                    textAlign: 'center',
-                    marginBottom: '4px'
-                  }}>
-                    Входящая заявка на дружбу
-                  </div>
                   <div style={{ display: 'flex', gap: '8px' }}>
                     <button
-                      className={styles.editButton}
+                      className={`${styles.requestActionButton} ${styles.requestActionButtonAccept}`}
                       onClick={handleAcceptRequest}
-                      style={{
-                        background: 'linear-gradient(180deg, #d4a017, #a97400)',
-                        borderColor: '#6b3e15',
-                        padding: '8px 16px',
-                        fontSize: '0.9rem'
-                      }}
                     >
                       ✅ Принять
                     </button>
                     <button
-                      className={styles.editButton}
+                      className={`${styles.requestActionButton} ${styles.requestActionButtonReject}`}
                       onClick={handleRejectRequest}
-                      style={{
-                        background: 'linear-gradient(180deg, #dc3545, #c82333)',
-                        borderColor: '#b21e2f',
-                        padding: '8px 16px',
-                        fontSize: '0.9rem'
-                      }}
                     >
                       ❌ Отклонить
                     </button>
@@ -601,7 +579,11 @@ export function UserPage() {
                   style={{
                     background: 'linear-gradient(180deg, #d4a017, #a97400)',
                     borderColor: '#6b3e15',
-                    cursor: 'default'
+                    cursor: 'default',
+                    padding: '8px 57px', /* Увеличена высота для размещения текста в одну линию */
+                    minWidth: '300px', /* Увеличено еще на 50%: 200px * 1.5 = 300px */
+                    whiteSpace: 'nowrap', /* Текст в одну линию */
+                    marginTop: '8px' /* Опущена вниз на 8px */
                   }}
                 >
                   Заявка отправлена
@@ -614,7 +596,11 @@ export function UserPage() {
                   style={{
                     background: 'linear-gradient(180deg, #d4a017, #a97400)',
                     borderColor: '#6b3e15',
-                    cursor: 'default'
+                    cursor: 'default',
+                    padding: '8px 57px', /* Увеличена высота для размещения текста в одну линию */
+                    minWidth: '300px', /* Увеличено еще на 50%: 200px * 1.5 = 300px */
+                    whiteSpace: 'nowrap', /* Текст в одну линию */
+                    marginTop: '8px' /* Опущена вниз на 8px */
                   }}
                 >
                   Заявка отправлена
@@ -623,29 +609,14 @@ export function UserPage() {
               
               {friendshipStatus === 'accepted' && (
                 <div style={{ display: 'flex', flexDirection: 'row', gap: '12px', alignItems: 'center' }}>
-                  <div 
-                    className={styles.editButton}
-                    style={{
-                      background: 'linear-gradient(180deg, #d4a017, #a97400)',
-                      borderColor: '#6b3e15',
-                      cursor: 'default',
-                      padding: '8px 16px',
-                      fontSize: '0.9rem'
-                    }}
-                  >
+                  <div className={styles.friendsButton}>
                     ✓ В друзьях
                   </div>
                   <button
-                    className={styles.editButton}
+                    className={styles.removeFriendButton}
                     onClick={handleRemoveFriend}
-                    style={{
-                      background: 'linear-gradient(135deg, #dc3545, #c82333)',
-                      borderColor: '#b21e2f',
-                      padding: '8px 16px',
-                      fontSize: '0.9rem'
-                    }}
                   >
-                    🗑️ Удалить из друзей
+                    🗑️ Удалить
                   </button>
                 </div>
               )}

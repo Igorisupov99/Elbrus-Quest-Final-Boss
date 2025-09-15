@@ -6,6 +6,7 @@ export interface User {
   isActive: boolean;
   coins: number;
   currentAvatarId?: number;
+  image_url?: string;
 }
 
 export interface LoginCredentials {

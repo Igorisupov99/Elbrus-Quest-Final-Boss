@@ -15,6 +15,7 @@ import {
   type Friendship 
 } from "../../api/friendship/friendshipApi";
 import { getFriendsCountText } from "../../utils/declination";
+
 import { achievementApi } from "../../api/achievements/achievementApi";
 import { AchievementCard } from "../../components/Achievement/AchievementCard/AchievementCard";
 import { AchievementModal } from "../../components/Achievement/AchievementModal/AchievementModal";
@@ -28,16 +29,14 @@ import type { FavoriteQuestion } from "../../types/favorite";
 import { useAppDispatch, useAppSelector } from "../../store/hooks";
 import { fetchCurrentAvatar } from "../../store/avatarSlice";
 import { Link, useNavigate } from "react-router-dom";
+import type { User } from "../../types/auth";
 import styles from "./Profile.module.css";
 
-interface User {
-  id: number;
-  username: string;
-  email: string;
-  role?: string;
-  score?: number;
+// Расширенный интерфейс User с дополнительными полями для Profile
+interface ExtendedUser extends User {
   image_url?: string;
 }
+
 
 interface ApiResponse<T> {
   success: boolean;
@@ -128,6 +127,7 @@ export function Profile() {
         const response = await api.get<ApiResponse<User>>("/api/auth/profile", {
           withCredentials: true,
         });
+
 
         if (!response.data.success) {
           throw new Error(response.data.message || "Ошибка при загрузке профиля");
@@ -669,7 +669,7 @@ export function Profile() {
           </Link>
           
           <img
-            src={currentAvatar?.imageUrl || user.image_url || "/default-avatar.svg"}
+            src={currentAvatar?.imageUrl || (user as ExtendedUser).image_url || "/default-avatar.svg"}
             alt="Аватар"
             className={styles.avatar}
           />
@@ -1266,22 +1266,6 @@ export function Profile() {
                       onClick={(e) => {
                         e.stopPropagation();
                         handleRemoveFriend(friend.id, friend.username);
-                      }}
-                      style={{
-                        padding: '8px 16px',
-                        background: 'linear-gradient(135deg, #dc3545, #c82333)',
-                        color: 'white',
-                        border: '2px solid #b21e2f',
-                        borderRadius: '8px',
-                        fontSize: '0.9rem',
-                        fontWeight: '700',
-                        cursor: 'pointer',
-                        transition: 'all 0.2s ease',
-                        flexShrink: 0,
-                        boxShadow: '0 3px 8px rgba(220, 53, 69, 0.3)',
-                        textShadow: '0 1px 2px rgba(0, 0, 0, 0.3)',
-                        position: 'relative',
-                        overflow: 'hidden'
                       }}
                       onMouseEnter={(e: MouseEvent<HTMLButtonElement>) => {
                         e.currentTarget.style.background = 'linear-gradient(135deg, #e74c3c, #c0392b)';
