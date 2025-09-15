@@ -1,4 +1,4 @@
-/* ===== Success Modal Styling (matching MainPage modal style) ===== */
+/* ===== Confirm Modal Styling (matching MainPage modal style) ===== */
 .modalOverlay {
   position: fixed;
   inset: 0;
@@ -117,14 +117,39 @@
 .modalActions {
   display: flex;
   justify-content: center;
-  gap: 12px;
+  gap: 16px;
+}
+
+.cancelButton {
+  appearance: none;
+  border: 2px solid #4f311b;
+  background: #2a1b10;
+  color: #f7f4ef;
+  border-radius: 8px;
+  padding: 12px 24px;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease-in-out;
+  font-family: inherit;
+  box-shadow: 0 3px 6px rgba(0, 0, 0, 0.3);
+}
+
+.cancelButton:hover {
+  background: #352214;
+  border-color: #b8922d;
+  transform: translateY(-1px);
+  box-shadow: 0 5px 10px rgba(0, 0, 0, 0.4);
+}
+
+.cancelButton:active {
+  transform: translateY(1px);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
 }
 
 .confirmButton {
   appearance: none;
   border: 2px solid #4f311b;
-  background: linear-gradient(180deg, #b8922d, #8b6914);
-  color: #2a1b10;
   border-radius: 8px;
   padding: 12px 24px;
   font-size: 1rem;
@@ -136,10 +161,38 @@
   box-shadow: 0 3px 6px rgba(0, 0, 0, 0.3);
 }
 
+.confirmButton_warning {
+  background: linear-gradient(180deg, #b8922d, #8b6914);
+  color: #2a1b10;
+}
+
+.confirmButton_danger {
+  background: linear-gradient(180deg, #dc3545, #c82333);
+  color: #ffffff;
+  border-color: #b21e2f;
+}
+
+.confirmButton_info {
+  background: linear-gradient(180deg, #17a2b8, #138496);
+  color: #ffffff;
+  border-color: #117a8b;
+}
+
 .confirmButton:hover {
-  background: linear-gradient(180deg, #c8a235, #9d7a1a);
   transform: translateY(-1px);
   box-shadow: 0 5px 10px rgba(0, 0, 0, 0.4);
+}
+
+.confirmButton_warning:hover {
+  background: linear-gradient(180deg, #c8a235, #9d7a1a);
+}
+
+.confirmButton_danger:hover {
+  background: linear-gradient(180deg, #e74c3c, #c0392b);
+}
+
+.confirmButton_info:hover {
+  background: linear-gradient(180deg, #20c997, #17a2b8);
 }
 
 .confirmButton:active {
@@ -169,5 +222,15 @@
   
   .icon {
     font-size: 20px;
+  }
+  
+  .modalActions {
+    flex-direction: column;
+    gap: 12px;
+  }
+  
+  .cancelButton,
+  .confirmButton {
+    width: 100%;
   }
 }

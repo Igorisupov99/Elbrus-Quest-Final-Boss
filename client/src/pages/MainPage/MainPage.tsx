@@ -8,7 +8,7 @@ import MainPageChat from '../../components/MainPageChat/MainPageChat';
 import ModelPageCreateRoom from '../../components/ModelPageCreateRoom/ModelPageCreateRoom';
 import ModelPageRedirectLobby from '../../components/ModelPageRedirectLobby/ModelPageRedirectLobby';
 import ModelPageEnterPassword from '../../components/ModelPageEnterPassword/ModelPageEnterPassword';
-import SuccessModal from '../../components/common/modals/SuccessModal/SuccessModal';
+import { SuccessModal } from '../../components/common/modals/SuccessModal/SuccessModal';
 import EditRoomModal from '../../components/common/modals/EditRoomModal/EditRoomModal';
 import DeleteRoomModal from '../../components/common/modals/DeleteRoomModal/DeleteRoomModal';
 import { AchievementNotification } from '../../components/Achievement/AchievementNotification/AchievementNotification';
@@ -42,7 +42,7 @@ export function MainPage(): JSX.Element {
   // Success modal states
   const [isSuccessModalOpen, setIsSuccessModalOpen] = useState(false);
   const [successModalData, setSuccessModalData] = useState<{
-    type: 'edit' | 'delete';
+    type: 'success' | 'info' | 'warning';
     title: string;
     message: string;
   } | null>(null);
@@ -210,7 +210,7 @@ export function MainPage(): JSX.Element {
       );
       if (updateRoom.fulfilled.match(result)) {
         setSuccessModalData({
-          type: 'edit',
+          type: 'success',
           title: 'Комната успешно изменена',
           message: `Название комнаты изменено на "${newName}"`,
         });
@@ -236,7 +236,7 @@ export function MainPage(): JSX.Element {
       const result = await dispatch(removeRoom(deletingRoom.id));
       if (removeRoom.fulfilled.match(result)) {
         setSuccessModalData({
-          type: 'delete',
+          type: 'success',
           title: 'Комната успешно удалена',
           message: 'Комната была удалена из списка',
         });

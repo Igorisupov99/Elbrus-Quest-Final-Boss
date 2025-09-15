@@ -19,6 +19,8 @@ import { AchievementCard } from "../../components/Achievement/AchievementCard/Ac
 import { AchievementModal } from "../../components/Achievement/AchievementModal/AchievementModal";
 import { FavoriteQuestionModal } from "../../components/FavoriteQuestionModal/FavoriteQuestionModal";
 import { UserAvatar } from "../../components/common/UserAvatar";
+import { SuccessModal } from "../../components/common/modals/SuccessModal/SuccessModal";
+import { ConfirmModal } from "../../components/common/modals/ConfirmModal/ConfirmModal";
 import type { Achievement } from "../../types/achievement";
 import type { FavoriteQuestion } from "../../types/favorite";
 import { useAppSelector } from "../../store/hooks";
@@ -71,6 +73,24 @@ export function UserPage() {
   const [currentFavoriteIndex, setCurrentFavoriteIndex] = useState<number>(0);
   const [selectedQuestion, setSelectedQuestion] = useState<FavoriteQuestion | null>(null);
   const [isQuestionModalOpen, setIsQuestionModalOpen] = useState<boolean>(false);
+
+  // Для модальных окон уведомлений
+  const [isSuccessModalOpen, setIsSuccessModalOpen] = useState(false);
+  const [successModalData, setSuccessModalData] = useState<{
+    title: string;
+    message: string;
+    type?: 'success' | 'info' | 'warning';
+  } | null>(null);
+
+  // Для модального окна подтверждения
+  const [isConfirmModalOpen, setIsConfirmModalOpen] = useState(false);
+  const [confirmModalData, setConfirmModalData] = useState<{
+    title: string;
+    message: string;
+    onConfirm: () => void;
+    confirmText?: string;
+    type?: 'warning' | 'danger' | 'info';
+  } | null>(null);
 
 
   // Загрузка данных профиля пользователя
@@ -303,6 +323,34 @@ export function UserPage() {
     setSelectedQuestion(null);
   };
 
+  // Функции для модальных окон уведомлений
+  const showSuccessModal = (title: string, message: string, type: 'success' | 'info' | 'warning' = 'success') => {
+    setSuccessModalData({ title, message, type });
+    setIsSuccessModalOpen(true);
+  };
+
+  const closeSuccessModal = () => {
+    setIsSuccessModalOpen(false);
+    setSuccessModalData(null);
+  };
+
+  // Функции для модального окна подтверждения
+  const showConfirmModal = (
+    title: string, 
+    message: string, 
+    onConfirm: () => void, 
+    confirmText: string = 'Подтвердить',
+    type: 'warning' | 'danger' | 'info' = 'warning'
+  ) => {
+    setConfirmModalData({ title, message, onConfirm, confirmText, type });
+    setIsConfirmModalOpen(true);
+  };
+
+  const closeConfirmModal = () => {
+    setIsConfirmModalOpen(false);
+    setConfirmModalData(null);
+  };
+
   // Функции для карусели избранных вопросов
   const nextFavorites = () => {
     if (favoriteQuestions.length > 3) {
@@ -354,13 +402,13 @@ export function UserPage() {
       
       if (response.success) {
         setFriendshipStatus('pending');
-        alert(`Заявка на дружбу отправлена пользователю ${user.username}`);
+        showSuccessModal('Успешно!', `Заявка на дружбу отправлена пользователю ${user.username}`);
       } else {
-        alert(response.message || 'Ошибка при отправке заявки на дружбу');
+        showSuccessModal('Ошибка', response.message || 'Ошибка при отправке заявки на дружбу', 'warning');
       }
     } catch (error) {
       console.error('Ошибка при отправке заявки на дружбу:', error);
-      alert('Ошибка при отправке заявки на дружбу');
+      showSuccessModal('Ошибка', 'Ошибка при отправке заявки на дружбу', 'warning');
     }
   };
 
@@ -374,13 +422,13 @@ export function UserPage() {
       if (response.success) {
         setFriendshipStatus('accepted');
         setIncomingRequest(null);
-        alert(`Заявка на дружбу от ${user?.username} принята!`);
+        showSuccessModal('Успешно!', `Заявка на дружбу от ${user?.username} принята!`);
       } else {
-        alert(response.message || 'Ошибка при принятии заявки');
+        showSuccessModal('Ошибка', response.message || 'Ошибка при принятии заявки', 'warning');
       }
     } catch (error) {
       console.error('Ошибка при принятии заявки:', error);
-      alert('Ошибка при принятии заявки');
+      showSuccessModal('Ошибка', 'Ошибка при принятии заявки', 'warning');
     }
   };
 
@@ -394,13 +442,13 @@ export function UserPage() {
       if (response.success) {
         setFriendshipStatus('none');
         setIncomingRequest(null);
-        alert(`Заявка на дружбу от ${user?.username} отклонена`);
+        showSuccessModal('Успешно!', `Заявка на дружбу от ${user?.username} отклонена`);
       } else {
-        alert(response.message || 'Ошибка при отклонении заявки');
+        showSuccessModal('Ошибка', response.message || 'Ошибка при отклонении заявки', 'warning');
       }
     } catch (error) {
       console.error('Ошибка при отклонении заявки:', error);
-      alert('Ошибка при отклонении заявки');
+      showSuccessModal('Ошибка', 'Ошибка при отклонении заявки', 'warning');
     }
   };
 
@@ -408,25 +456,29 @@ export function UserPage() {
   const handleRemoveFriend = async () => {
     if (!user?.id) return;
 
-    if (!confirm(`Вы уверены, что хотите удалить ${user.username} из друзей?`)) {
-      return;
-    }
-
-    try {
-      const response = await removeFriend(user.id);
-      
-      if (response.success) {
-        setFriendshipStatus('none');
-        setIncomingRequest(null);
-        setOutgoingRequest(null);
-        alert(`${user.username} удален из друзей`);
-      } else {
-        alert(response.message || 'Ошибка при удалении из друзей');
-      }
-    } catch (error) {
-      console.error('Ошибка при удалении из друзей:', error);
-      alert('Ошибка при удалении из друзей');
-    }
+    showConfirmModal(
+      'Подтверждение удаления',
+      `Вы уверены, что хотите удалить ${user.username} из друзей?`,
+      async () => {
+        try {
+          const response = await removeFriend(user.id);
+          
+          if (response.success) {
+            setFriendshipStatus('none');
+            setIncomingRequest(null);
+            setOutgoingRequest(null);
+            showSuccessModal('Успешно!', `${user.username} удален из друзей`);
+          } else {
+            showSuccessModal('Ошибка', response.message || 'Ошибка при удалении из друзей', 'warning');
+          }
+        } catch (error) {
+          console.error('Ошибка при удалении из друзей:', error);
+          showSuccessModal('Ошибка', 'Ошибка при удалении из друзей', 'warning');
+        }
+      },
+      'Удалить',
+      'danger'
+    );
   };
 
   // Переход на страницу друга
@@ -946,6 +998,30 @@ export function UserPage() {
         isOpen={isQuestionModalOpen}
         onClose={handleCloseQuestionModal}
       />
+
+      {/* Модальное окно успешных операций */}
+      {successModalData && (
+        <SuccessModal
+          isOpen={isSuccessModalOpen}
+          onClose={closeSuccessModal}
+          title={successModalData.title}
+          message={successModalData.message}
+          type={successModalData.type}
+        />
+      )}
+
+      {/* Модальное окно подтверждения */}
+      {confirmModalData && (
+        <ConfirmModal
+          isOpen={isConfirmModalOpen}
+          onClose={closeConfirmModal}
+          onConfirm={confirmModalData.onConfirm}
+          title={confirmModalData.title}
+          message={confirmModalData.message}
+          confirmText={confirmModalData.confirmText}
+          type={confirmModalData.type}
+        />
+      )}
 
     </section>
   );

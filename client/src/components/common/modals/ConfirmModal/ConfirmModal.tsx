@@ -1,34 +1,45 @@
 import React from 'react';
-import styles from './SuccessModal.module.css';
+import styles from './ConfirmModal.module.css';
 
-interface SuccessModalProps {
+interface ConfirmModalProps {
   isOpen: boolean;
   onClose: () => void;
+  onConfirm: () => void;
   title: string;
   message: string;
-  type?: 'success' | 'info' | 'warning';
+  confirmText?: string;
+  cancelText?: string;
+  type?: 'warning' | 'danger' | 'info';
 }
 
-export const SuccessModal: React.FC<SuccessModalProps> = ({
+export const ConfirmModal: React.FC<ConfirmModalProps> = ({
   isOpen,
   onClose,
+  onConfirm,
   title,
   message,
-  type = 'success'
+  confirmText = 'Подтвердить',
+  cancelText = 'Отмена',
+  type = 'warning'
 }) => {
   if (!isOpen) return null;
 
   const getIcon = () => {
     switch (type) {
-      case 'success':
-        return '✅';
-      case 'info':
-        return 'ℹ️';
       case 'warning':
         return '⚠️';
+      case 'danger':
+        return '🗑️';
+      case 'info':
+        return 'ℹ️';
       default:
-        return '✅';
+        return '⚠️';
     }
+  };
+
+  const handleConfirm = () => {
+    onConfirm();
+    onClose();
   };
 
   return (
@@ -51,10 +62,16 @@ export const SuccessModal: React.FC<SuccessModalProps> = ({
         
         <div className={styles.modalActions}>
           <button 
-            className={styles.confirmButton} 
+            className={styles.cancelButton} 
             onClick={onClose}
           >
-            Понятно
+            {cancelText}
+          </button>
+          <button 
+            className={`${styles.confirmButton} ${styles[`confirmButton_${type}`]}`}
+            onClick={handleConfirm}
+          >
+            {confirmText}
           </button>
         </div>
       </div>
