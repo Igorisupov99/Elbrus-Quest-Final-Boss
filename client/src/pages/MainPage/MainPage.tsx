@@ -78,6 +78,16 @@ export function MainPage(): JSX.Element {
   };
 
   useEffect(() => {
+    // Hide body overflow when MainPage is mounted
+    document.body.style.overflow = 'hidden';
+
+    // Restore body overflow when MainPage is unmounted
+    return () => {
+      document.body.style.overflow = 'auto';
+    };
+  }, []);
+
+  useEffect(() => {
     // if no user in state, redirect to login
     if (!userId) {
       navigate('/login');
