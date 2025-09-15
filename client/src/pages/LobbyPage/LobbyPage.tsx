@@ -297,7 +297,11 @@ export function LobbyPage() {
       console.log('❌ [INACTIVE] Неправильный экзамен - показываем уведомление');
       
       // Находим название активного экзамена
-      const examName = activeExamId === 'exam2' ? 'Экзамен 2' : 'Экзамен';
+      let examName = 'Экзамен 0';
+      if (activeExamId === 'exam') examName = 'Экзамен 0';
+      else if (activeExamId === 'exam2') examName = 'Экзамен 1';
+      else if (activeExamId === 'exam3') examName = 'Экзамен 2';
+      else if (activeExamId === 'exam4') examName = 'Экзамен 3';
       
       setInactivePlayerNotification(`Активный экзамен: "${examName}"`);
       setTimeout(() => setInactivePlayerNotification(null), 3000);

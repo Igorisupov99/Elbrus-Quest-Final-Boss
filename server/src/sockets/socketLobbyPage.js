@@ -971,7 +971,7 @@ function initLobbySockets(nsp) {
           
           // Отправляем уведомление о провале экзамена
           nsp.to(roomKey).emit('lobby:examFailed', {
-            message: `❌ Экзамен провален! Экзамен был закрыт пользователем. Фаза ${state.examId === 'exam2' ? '2' : '1'} сброшена для повторного прохождения.`,
+            message: `❌ Экзамен провален! Экзамен был закрыт пользователем. Фаза ${state.examId === 'exam' ? '0' : state.examId === 'exam2' ? '1' : state.examId === 'exam3' ? '2' : '3'} сброшена для повторного прохождения.`,
             correctAnswers: state.correctAnswers,
             totalQuestions: state.totalQuestions,
             successRate: state.correctAnswers / state.totalQuestions,
@@ -1153,7 +1153,7 @@ function initLobbySockets(nsp) {
                 
                 // Отправляем уведомление о провале экзамена
                 nsp.to(roomKey).emit('lobby:examFailed', {
-                  message: `❌ Экзамен провален! Правильных ответов: ${state.correctAnswers}/${state.totalQuestions} (${(successRate * 100).toFixed(1)}%). Фаза ${state.examId === 'exam2' ? '2' : '1'} сброшена для повторного прохождения.`,
+                  message: `❌ Экзамен провален! Правильных ответов: ${state.correctAnswers}/${state.totalQuestions} (${(successRate * 100).toFixed(1)}%). Фаза ${state.examId === 'exam' ? '0' : state.examId === 'exam2' ? '1' : state.examId === 'exam3' ? '2' : '3'} сброшена для повторного прохождения.`,
                   correctAnswers: state.correctAnswers,
                   totalQuestions: state.totalQuestions,
                   successRate: successRate,
@@ -1327,7 +1327,7 @@ function initLobbySockets(nsp) {
               
               // Отправляем уведомление о провале экзамена
               nsp.to(roomKey).emit('lobby:examFailed', {
-                message: `❌ Экзамен провален! Правильных ответов: ${state.correctAnswers}/${state.totalQuestions} (${(successRate * 100).toFixed(1)}%). Фаза ${state.examId === 'exam2' ? '2' : '1'} сброшена для повторного прохождения.`,
+                message: `❌ Экзамен провален! Правильных ответов: ${state.correctAnswers}/${state.totalQuestions} (${(successRate * 100).toFixed(1)}%). Фаза ${state.examId === 'exam' ? '0' : state.examId === 'exam2' ? '1' : state.examId === 'exam3' ? '2' : '3'} сброшена для повторного прохождения.`,
                 correctAnswers: state.correctAnswers,
                 totalQuestions: state.totalQuestions,
                 successRate: successRate,
