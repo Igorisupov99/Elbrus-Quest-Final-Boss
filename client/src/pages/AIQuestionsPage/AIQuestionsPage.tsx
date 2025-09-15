@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
 import { aiApi } from '../../api/ai/aiApi';
 import type { AIQuestionResponse, AICheckAnswerResponse } from '../../api/ai/aiApi';
+import CodeRunner from '../../components/CodeRunner/CodeRunner';
+import ValidationTest from '../../components/ValidationTest/ValidationTest';
 import styles from './AIQuestionsPage.module.css';
 
 interface AIQuestion {
@@ -23,9 +25,6 @@ const TOPICS = [
   'TypeScript',
   'Node.js',
   'HTML/CSS',
-  'Python',
-  'Java',
-  'C++',
   'Алгоритмы',
   'Базы данных',
   'Git',
@@ -47,6 +46,27 @@ const AIQuestionsPage: React.FC = () => {
   const [isChecking, setIsChecking] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [questionHistory, setQuestionHistory] = useState<AIQuestion[]>([]);
+  const [selectedLanguage] = useState('javascript');
+  const [activeTab, setActiveTab] = useState<'questions' | 'codeRunner'>('questions');
+  
+  // CodeRunner состояния
+  const [codeRunnerCode, setCodeRunnerCode] = useState(`// Добро пожаловать в CodeRunner!
+// Здесь вы можете писать и выполнять JavaScript/TypeScript код
+
+console.log('Привет, мир!');
+
+// Пример функции
+function fibonacci(n) {
+  if (n <= 1) return n;
+  return fibonacci(n - 1) + fibonacci(n - 2);
+}
+
+// Вызов функции
+const result = fibonacci(10);
+console.log('10-е число Фибоначчи:', result);
+
+// Возвращаем результат
+result;`);
 
   // Генерация нового вопроса
   const handleGenerateQuestion = async () => {
@@ -134,6 +154,8 @@ const AIQuestionsPage: React.FC = () => {
     }
   };
 
+
+
   return (
     <div className={styles.container}>
       <div className={styles.header}>
@@ -141,52 +163,72 @@ const AIQuestionsPage: React.FC = () => {
           🤖 Вопросы от АИ
         </h1>
         <p className={styles.subtitle}>
-          Получайте уникальные вопросы, сгенерированные искусственным интеллектом
+          Получайте уникальные вопросы и решайте задачи в IDE
         </p>
       </div>
 
-      {/* Настройки генерации */}
-      <div className={styles.settings}>
-        <div className={styles.settingGroup}>
-          <label className={styles.settingLabel}>Тема:</label>
-          <select
-            value={selectedTopic}
-            onChange={(e) => setSelectedTopic(e.target.value)}
-            className={styles.settingSelect}
-            disabled={isGenerating}
-          >
-            {TOPICS.map(topic => (
-              <option key={topic} value={topic}>{topic}</option>
-            ))}
-          </select>
-        </div>
-
-        <div className={styles.settingGroup}>
-          <label className={styles.settingLabel}>Сложность:</label>
-          <div className={styles.difficultyButtons}>
-            {DIFFICULTY_LEVELS.map(level => (
-              <button
-                key={level.value}
-                className={`${styles.difficultyButton} ${
-                  selectedDifficulty === level.value ? styles.active : ''
-                }`}
-                onClick={() => setSelectedDifficulty(level.value as 'easy' | 'medium' | 'hard')}
-                disabled={isGenerating}
-              >
-                {level.emoji} {level.label}
-              </button>
-            ))}
-          </div>
-        </div>
-
+      {/* Вкладки */}
+      <div className={styles.tabs}>
         <button
-          className={styles.generateButton}
-          onClick={handleGenerateQuestion}
-          disabled={isGenerating}
+          className={`${styles.tab} ${activeTab === 'questions' ? styles.activeTab : ''}`}
+          onClick={() => setActiveTab('questions')}
         >
-          {isGenerating ? '⏳ Генерирую...' : '🎲 Сгенерировать вопрос'}
+          📝 Вопросы
+        </button>
+        <button
+          className={`${styles.tab} ${activeTab === 'codeRunner' ? styles.activeTab : ''}`}
+          onClick={() => setActiveTab('codeRunner')}
+        >
+          🚀 Code Runner
         </button>
       </div>
+
+      {/* Настройки генерации - только для вкладки вопросов */}
+      {activeTab === 'questions' && (
+        <div className={styles.settings}>
+          <div className={styles.settingGroup}>
+            <label className={styles.settingLabel}>Тема:</label>
+            <select
+              value={selectedTopic}
+              onChange={(e) => setSelectedTopic(e.target.value)}
+              className={styles.settingSelect}
+              disabled={isGenerating}
+            >
+              {TOPICS.map(topic => (
+                <option key={topic} value={topic}>{topic}</option>
+              ))}
+            </select>
+          </div>
+
+          <div className={styles.settingGroup}>
+            <label className={styles.settingLabel}>Сложность:</label>
+            <div className={styles.difficultyButtons}>
+              {DIFFICULTY_LEVELS.map(level => (
+                <button
+                  key={level.value}
+                  className={`${styles.difficultyButton} ${
+                    selectedDifficulty === level.value ? styles.active : ''
+                  }`}
+                  onClick={() => setSelectedDifficulty(level.value as 'easy' | 'medium' | 'hard')}
+                  disabled={isGenerating}
+                >
+                  {level.emoji} {level.label}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          <div className={styles.generateButtons}>
+            <button
+              className={styles.generateButton}
+              onClick={handleGenerateQuestion}
+              disabled={isGenerating}
+            >
+              {isGenerating ? '⏳ Генерирую...' : '🎲 Сгенерировать вопрос'}
+            </button>
+          </div>
+        </div>
+      )}
 
       {/* Ошибка */}
       {error && (
@@ -348,14 +390,41 @@ const AIQuestionsPage: React.FC = () => {
         </div>
       )}
 
+
+      {/* Code Runner */}
+      {activeTab === 'codeRunner' && (
+        <div className={styles.codeRunnerSection}>
+          <div className={styles.codeRunnerHeader}>
+            <h3 className={styles.codeRunnerTitle}>🚀 Code Runner</h3>
+            <p className={styles.codeRunnerDescription}>
+              Пишите и выполняйте JavaScript/TypeScript код в реальном времени. 
+              Используйте console.log() для вывода или просто возвращайте значения из функций.
+            </p>
+          </div>
+          
+          {/* Тест валидации */}
+          <ValidationTest />
+          
+          <div className={styles.codeRunnerContainer}>
+            <CodeRunner
+              initialCode={codeRunnerCode}
+              language={selectedLanguage as 'javascript' | 'typescript'}
+              height="500px"
+              onCodeChange={setCodeRunnerCode}
+            />
+          </div>
+        </div>
+      )}
+
       {/* Пустое состояние */}
-      {!currentQuestion && questionHistory.length === 0 && (
+      {!currentQuestion && questionHistory.length === 0 && activeTab === 'questions' && (
         <div className={styles.empty}>
           <div className={styles.emptyIcon}>🤖</div>
           <h3>Начните с генерации вопроса!</h3>
           <p>Выберите тему и сложность, затем нажмите "Сгенерировать вопрос"</p>
         </div>
       )}
+
     </div>
   );
 };
