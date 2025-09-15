@@ -32,10 +32,6 @@ import { Link, useNavigate } from "react-router-dom";
 import type { User } from "../../types/auth";
 import styles from "./Profile.module.css";
 
-// Расширенный интерфейс User с дополнительными полями для Profile
-interface ExtendedUser extends User {
-  image_url?: string;
-}
 
 
 interface ApiResponse<T> {
@@ -43,6 +39,23 @@ interface ApiResponse<T> {
   data: T;
   message?: string;
 }
+
+// Форматирование даты регистрации
+const formatRegistrationDate = (dateString?: string) => {
+  if (!dateString) return "Дата регистрации: неизвестна";
+  
+  try {
+    const date = new Date(dateString);
+    const formattedDate = date.toLocaleDateString('ru-RU', {
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric'
+    });
+    return `Дата регистрации: ${formattedDate}`;
+  } catch {
+    return "Дата регистрации: неизвестна";
+  }
+};
 
 export function Profile() {
   const navigate = useNavigate();
@@ -660,7 +673,7 @@ export function Profile() {
             className={styles.avatarShopLink}
             style={{
               position: 'absolute',
-              top: '40px',
+              top: '16px',
               right: '8px',
               zIndex: 10
             }}
@@ -669,7 +682,7 @@ export function Profile() {
           </Link>
           
           <img
-            src={currentAvatar?.imageUrl || (user as ExtendedUser).image_url || "/default-avatar.svg"}
+            src={currentAvatar?.imageUrl || (user?.image_url && user.image_url !== null ? user.image_url : "/default-avatar.svg")}
             alt="Аватар"
             className={styles.avatar}
           />
@@ -681,6 +694,7 @@ export function Profile() {
         <div className={styles.basicInfo}>
           <h2 className={styles.username}>{user.username}</h2>
           <p className={styles.userEmail}>📧 {user.email}</p>
+          <p className={styles.registrationDate}>{formatRegistrationDate(user.createdAt)}</p>
           <p className={styles.friendsCount}>{getFriendsCountText(friends.length)}</p>
         </div>
       </div>

@@ -314,6 +314,7 @@
   flex-direction: column;
   justify-content: center;
   gap: 16px;
+  margin-left: 30px;
 }
 
 .username {
@@ -334,6 +335,13 @@
   font-size: 1.3rem;
   color: #8b4513;
   margin: 0;
+  font-weight: 500;
+}
+
+.registrationDate {
+  font-size: 0.9rem;
+  color: #6b4e3d;
+  margin: 4px 0 8px 0;
   font-weight: 500;
 }
 
@@ -968,6 +976,7 @@
   
   .basicInfo {
     gap: 12px;
+    margin-left: 30px;
   }
   
   .username {
@@ -980,6 +989,10 @@
 
   .friendsCount {
     font-size: 1.1rem;
+  }
+
+  .registrationDate {
+    font-size: 0.8rem;
   }
 
   .avatarName {
@@ -1685,7 +1698,7 @@
   align-items: center;
   justify-content: center;
   gap: 6px;
-  min-width: 120px;
+  min-width: 68px; /* Уменьшено еще на 10%: 76px * 0.9 = 68.4px ≈ 68px */
   white-space: nowrap;
   box-sizing: border-box !important; /* Учитывать padding и border в размерах */
   height: auto !important; /* Автоматическая высота */

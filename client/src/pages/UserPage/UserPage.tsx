@@ -26,12 +26,10 @@ import type { Achievement } from "../../types/achievement";
 import type { FavoriteQuestion } from "../../types/favorite";
 import type { User } from "../../types/auth";
 import { useAppSelector } from "../../store/hooks";
+import { Link } from "react-router-dom";
+import { avatarApi } from "../../api/avatar/avatarApi";
 import styles from "../ProfilePage/Profile.module.css";
 
-// Расширенный интерфейс User с дополнительными полями для UserPage
-interface ExtendedUser extends User {
-  image_url?: string;
-}
 
 
 interface ApiResponse<T> {
@@ -40,14 +38,33 @@ interface ApiResponse<T> {
   message?: string;
 }
 
+// Форматирование даты регистрации
+const formatRegistrationDate = (dateString?: string) => {
+  if (!dateString) return "Дата регистрации: неизвестна";
+  
+  try {
+    const date = new Date(dateString);
+    const formattedDate = date.toLocaleDateString('ru-RU', {
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric'
+    });
+    return `Дата регистрации: ${formattedDate}`;
+  } catch {
+    return "Дата регистрации: неизвестна";
+  }
+};
+
 export function UserPage() {
   const { userId } = useParams<{ userId: string }>();
   const navigate = useNavigate();
   const currentUser = useAppSelector(state => state.auth.user);
   
+  
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
+  const [userAvatar, setUserAvatar] = useState<{ imageUrl: string } | null>(null);
 
   // Для друзей
   const [friends, setFriends] = useState<FriendUser[]>([]);
@@ -105,6 +122,19 @@ export function UserPage() {
       navigate('/profile');
       return;
     }
+
+    // Загружаем аватар пользователя
+    const loadUserAvatar = async () => {
+      try {
+        const avatar = await avatarApi.getUserAvatar(parseInt(userId));
+        setUserAvatar(avatar);
+      } catch (err) {
+        console.error('Ошибка загрузки аватара пользователя:', err);
+        setUserAvatar(null);
+      }
+    };
+    
+    loadUserAvatar();
 
     const loadUserProfile = async () => {
       try {
@@ -532,9 +562,22 @@ export function UserPage() {
           {/* Блок 1.1 - Основная информация */}
           <h3 className={styles.blockTitle}>👤 Профиль</h3>
           <div className={styles.profileInfoBlock}>
-            <div className={styles.avatarSection}>
+            <div className={styles.avatarSection} style={{ position: 'relative' }}>
+              <Link 
+                to="/avatar-shop" 
+                className={styles.avatarShopLink}
+                style={{
+                  position: 'absolute',
+                  top: '16px',
+                  right: '8px',
+                  zIndex: 10
+                }}
+              >
+                🛒
+              </Link>
+              
               <img
-                src={(user as ExtendedUser).image_url || "/default-avatar.svg"}
+                src={userAvatar?.imageUrl || (user?.image_url && user.image_url !== null ? user.image_url : "/default-avatar.svg")}
                 alt="Аватар"
                 className={styles.avatar}
               />
@@ -623,6 +666,7 @@ export function UserPage() {
             </div>
             <div className={styles.basicInfo}>
               <h2 className={styles.username}>{user.username}</h2>
+              <p className={styles.registrationDate}>{formatRegistrationDate(user.createdAt)}</p>
               <p className={styles.friendsCount}>{getFriendsCountText(friends.length)}</p>
             </div>
           </div>

@@ -7,6 +7,7 @@ export interface User {
   coins: number;
   currentAvatarId?: number;
   image_url?: string;
+  createdAt?: string;
 }
 
 export interface LoginCredentials {
