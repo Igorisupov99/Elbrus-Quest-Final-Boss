@@ -1,6 +1,9 @@
 import React, { useState } from 'react';
 import { aiApi } from '../../api/ai/aiApi';
+import { ideApi } from '../../api/ide/ideApi';
 import type { AIQuestionResponse, AICheckAnswerResponse } from '../../api/ai/aiApi';
+import type { IDETask, IDETaskValidation } from '../../types/ideTask';
+import IDE from '../../components/IDE/IDE';
 import styles from './AIQuestionsPage.module.css';
 
 interface AIQuestion {
@@ -23,13 +26,15 @@ const TOPICS = [
   'TypeScript',
   'Node.js',
   'HTML/CSS',
-  'Python',
-  'Java',
-  'C++',
   'Алгоритмы',
   'Базы данных',
   'Git',
   'Web-разработка'
+];
+
+const IDE_LANGUAGES = [
+  { value: 'javascript', label: 'JavaScript', emoji: '🟨' },
+  { value: 'typescript', label: 'TypeScript', emoji: '🔷' }
 ];
 
 const DIFFICULTY_LEVELS = [
@@ -47,6 +52,12 @@ const AIQuestionsPage: React.FC = () => {
   const [isChecking, setIsChecking] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [questionHistory, setQuestionHistory] = useState<AIQuestion[]>([]);
+  
+  // IDE состояния
+  const [currentIDETask, setCurrentIDETask] = useState<IDETask | null>(null);
+  const [selectedLanguage, setSelectedLanguage] = useState('javascript');
+  const [isGeneratingIDETask, setIsGeneratingIDETask] = useState(false);
+  const [activeTab, setActiveTab] = useState<'questions' | 'ide'>('questions');
 
   // Генерация нового вопроса
   const handleGenerateQuestion = async () => {
@@ -134,6 +145,54 @@ const AIQuestionsPage: React.FC = () => {
     }
   };
 
+  // Генерация новой IDE задачи
+  const handleGenerateIDETask = async () => {
+    try {
+      setIsGeneratingIDETask(true);
+      setError(null);
+      
+      // Сбрасываем текущую задачу перед генерацией новой
+      setCurrentIDETask(null);
+
+      const response = await ideApi.generateTask({
+        language: selectedLanguage,
+        difficulty: selectedDifficulty,
+        topic: selectedTopic
+      });
+
+      setCurrentIDETask(response.task);
+    } catch (err: any) {
+      console.error('Ошибка генерации IDE задачи:', err);
+      setError(err.message || 'Не удалось сгенерировать задачу');
+    } finally {
+      setIsGeneratingIDETask(false);
+    }
+  };
+
+  // Обработка завершения IDE задачи
+  const handleIDETaskComplete = (validation: IDETaskValidation) => {
+    if (currentIDETask) {
+      const updatedTask: IDETask = {
+        ...currentIDETask,
+        isCompleted: validation.isCorrect,
+        passedTests: validation.passedTests,
+        totalTests: validation.totalTests
+      };
+      setCurrentIDETask(updatedTask);
+    }
+  };
+
+  // Обработка изменения кода в IDE
+  const handleIDECodeChange = (code: string) => {
+    if (currentIDETask) {
+      setCurrentIDETask({
+        ...currentIDETask,
+        userCode: code
+      });
+    }
+  };
+
+
   return (
     <div className={styles.container}>
       <div className={styles.header}>
@@ -141,25 +200,43 @@ const AIQuestionsPage: React.FC = () => {
           🤖 Вопросы от АИ
         </h1>
         <p className={styles.subtitle}>
-          Получайте уникальные вопросы, сгенерированные искусственным интеллектом
+          Получайте уникальные вопросы и решайте задачи в IDE
         </p>
+      </div>
+
+      {/* Вкладки */}
+      <div className={styles.tabs}>
+        <button
+          className={`${styles.tab} ${activeTab === 'questions' ? styles.activeTab : ''}`}
+          onClick={() => setActiveTab('questions')}
+        >
+          📝 Вопросы
+        </button>
+        <button
+          className={`${styles.tab} ${activeTab === 'ide' ? styles.activeTab : ''}`}
+          onClick={() => setActiveTab('ide')}
+        >
+          💻 IDE Задачи
+        </button>
       </div>
 
       {/* Настройки генерации */}
       <div className={styles.settings}>
-        <div className={styles.settingGroup}>
-          <label className={styles.settingLabel}>Тема:</label>
-          <select
-            value={selectedTopic}
-            onChange={(e) => setSelectedTopic(e.target.value)}
-            className={styles.settingSelect}
-            disabled={isGenerating}
-          >
-            {TOPICS.map(topic => (
-              <option key={topic} value={topic}>{topic}</option>
-            ))}
-          </select>
-        </div>
+        {activeTab === 'questions' && (
+          <div className={styles.settingGroup}>
+            <label className={styles.settingLabel}>Тема:</label>
+            <select
+              value={selectedTopic}
+              onChange={(e) => setSelectedTopic(e.target.value)}
+              className={styles.settingSelect}
+              disabled={isGenerating || isGeneratingIDETask}
+            >
+              {TOPICS.map(topic => (
+                <option key={topic} value={topic}>{topic}</option>
+              ))}
+            </select>
+          </div>
+        )}
 
         <div className={styles.settingGroup}>
           <label className={styles.settingLabel}>Сложность:</label>
@@ -171,7 +248,7 @@ const AIQuestionsPage: React.FC = () => {
                   selectedDifficulty === level.value ? styles.active : ''
                 }`}
                 onClick={() => setSelectedDifficulty(level.value as 'easy' | 'medium' | 'hard')}
-                disabled={isGenerating}
+                disabled={isGenerating || isGeneratingIDETask}
               >
                 {level.emoji} {level.label}
               </button>
@@ -179,13 +256,45 @@ const AIQuestionsPage: React.FC = () => {
           </div>
         </div>
 
-        <button
-          className={styles.generateButton}
-          onClick={handleGenerateQuestion}
-          disabled={isGenerating}
-        >
-          {isGenerating ? '⏳ Генерирую...' : '🎲 Сгенерировать вопрос'}
-        </button>
+        {activeTab === 'ide' && (
+          <div className={styles.settingGroup}>
+            <label className={styles.settingLabel}>Язык программирования:</label>
+            <div className={styles.languageButtons}>
+              {IDE_LANGUAGES.map(lang => (
+                <button
+                  key={lang.value}
+                  className={`${styles.languageButton} ${
+                    selectedLanguage === lang.value ? styles.active : ''
+                  }`}
+                  onClick={() => setSelectedLanguage(lang.value)}
+                  disabled={isGenerating || isGeneratingIDETask}
+                >
+                  {lang.emoji} {lang.label}
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
+
+        <div className={styles.generateButtons}>
+          {activeTab === 'questions' ? (
+            <button
+              className={styles.generateButton}
+              onClick={handleGenerateQuestion}
+              disabled={isGenerating}
+            >
+              {isGenerating ? '⏳ Генерирую...' : '🎲 Сгенерировать вопрос'}
+            </button>
+          ) : (
+            <button
+              className={styles.generateButton}
+              onClick={handleGenerateIDETask}
+              disabled={isGeneratingIDETask}
+            >
+              {isGeneratingIDETask ? '⏳ Генерирую...' : '💻 Сгенерировать задачу'}
+            </button>
+          )}
+        </div>
       </div>
 
       {/* Ошибка */}
@@ -202,8 +311,17 @@ const AIQuestionsPage: React.FC = () => {
         </div>
       )}
 
+      {/* IDE Задача */}
+      {activeTab === 'ide' && currentIDETask && (
+        <IDE
+          task={currentIDETask}
+          onTaskComplete={handleIDETaskComplete}
+          onCodeChange={handleIDECodeChange}
+        />
+      )}
+
       {/* Текущий вопрос */}
-      {currentQuestion && (
+      {activeTab === 'questions' && currentQuestion && (
         <div className={styles.questionCard}>
           <div className={styles.questionHeader}>
             <div className={styles.questionMeta}>
@@ -349,11 +467,19 @@ const AIQuestionsPage: React.FC = () => {
       )}
 
       {/* Пустое состояние */}
-      {!currentQuestion && questionHistory.length === 0 && (
+      {activeTab === 'questions' && !currentQuestion && questionHistory.length === 0 && (
         <div className={styles.empty}>
           <div className={styles.emptyIcon}>🤖</div>
           <h3>Начните с генерации вопроса!</h3>
           <p>Выберите тему и сложность, затем нажмите "Сгенерировать вопрос"</p>
+        </div>
+      )}
+
+      {activeTab === 'ide' && !currentIDETask && (
+        <div className={styles.empty}>
+          <div className={styles.emptyIcon}>💻</div>
+          <h3>Начните с генерации задачи!</h3>
+          <p>Выберите язык программирования, тему и сложность, затем нажмите "Сгенерировать задачу"</p>
         </div>
       )}
     </div>

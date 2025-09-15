@@ -1,0 +1,519 @@
+:root {
+  --ide-bg: #1e1e1e;
+  --ide-surface: #2d2d30;
+  --ide-surface-2: #3c3c3c;
+  --ide-border: #464647;
+  --ide-text: #cccccc;
+  --ide-text-muted: #969696;
+  --ide-accent: #007acc;
+  --ide-accent-light: #0e639c;
+  --ide-success: #4caf50;
+  --ide-success-light: #e8f5e8;
+  --ide-error: #f44336;
+  --ide-error-light: #ffebee;
+  --ide-warning: #ff9800;
+  --ide-warning-light: #fff3e0;
+  --ide-code-bg: #1e1e1e;
+  --ide-code-text: #d4d4d4;
+  --ide-line-numbers: #858585;
+}
+
+.ideContainer {
+  background: var(--ide-bg);
+  border: 2px solid var(--ide-border);
+  border-radius: 12px;
+  overflow: hidden;
+  color: var(--ide-text);
+  font-family: 'Consolas', 'Monaco', 'Courier New', monospace;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+}
+
+/* Заголовок задачи */
+.taskHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  padding: 1.5rem;
+  background: var(--ide-surface);
+  border-bottom: 2px solid var(--ide-border);
+}
+
+.taskMeta {
+  flex: 1;
+}
+
+.taskTitle {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--ide-text);
+  margin: 0 0 1rem 0;
+  font-family: 'Cinzel', serif;
+}
+
+.taskBadges {
+  display: flex;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+}
+
+.languageBadge {
+  background: linear-gradient(135deg, var(--ide-accent), var(--ide-accent-light));
+  color: white;
+  padding: 0.25rem 0.75rem;
+  border-radius: 1rem;
+  font-size: 0.8rem;
+  font-weight: 600;
+  text-shadow: 0 1px 0 rgba(0, 0, 0, 0.2);
+}
+
+.difficultyBadge {
+  padding: 0.25rem 0.75rem;
+  border-radius: 1rem;
+  font-size: 0.8rem;
+  font-weight: 600;
+  text-shadow: 0 1px 0 rgba(0, 0, 0, 0.2);
+}
+
+.difficultyBadge.easy {
+  background: linear-gradient(135deg, var(--ide-success), #45a049);
+  color: white;
+}
+
+.difficultyBadge.medium {
+  background: linear-gradient(135deg, var(--ide-warning), #e68900);
+  color: white;
+}
+
+.difficultyBadge.hard {
+  background: linear-gradient(135deg, var(--ide-error), #d32f2f);
+  color: white;
+}
+
+.topicBadge {
+  background: var(--ide-surface-2);
+  color: var(--ide-text);
+  padding: 0.25rem 0.75rem;
+  border-radius: 1rem;
+  font-size: 0.8rem;
+  font-weight: 600;
+  border: 1px solid var(--ide-border);
+}
+
+.taskActions {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.resetButton {
+  background: var(--ide-surface-2);
+  border: 2px solid var(--ide-border);
+  color: var(--ide-text);
+  border-radius: 8px;
+  padding: 0.5rem;
+  cursor: pointer;
+  font-size: 1.2rem;
+  transition: all 0.2s ease-in-out;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.5rem;
+  height: 2.5rem;
+}
+
+.resetButton:hover {
+  background: var(--ide-accent);
+  border-color: var(--ide-accent);
+  color: white;
+  transform: scale(1.05);
+}
+
+/* Описание задачи */
+.taskDescription {
+  padding: 1.5rem;
+  background: var(--ide-surface);
+  border-bottom: 2px solid var(--ide-border);
+}
+
+.taskDescription p {
+  margin: 0 0 1rem 0;
+  line-height: 1.6;
+  color: var(--ide-text);
+  font-size: 1rem;
+}
+
+.expectedOutput {
+  background: var(--ide-code-bg);
+  border: 1px solid var(--ide-border);
+  border-radius: 8px;
+  padding: 1rem;
+  margin-top: 1rem;
+}
+
+.expectedOutput strong {
+  color: var(--ide-accent);
+  font-weight: 600;
+  display: block;
+  margin-bottom: 0.5rem;
+}
+
+.expectedOutput pre {
+  margin: 0;
+  color: var(--ide-code-text);
+  font-family: 'Consolas', 'Monaco', 'Courier New', monospace;
+  font-size: 0.9rem;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+/* Редактор кода */
+.codeEditor {
+  background: var(--ide-code-bg);
+  border-bottom: 2px solid var(--ide-border);
+}
+
+.editorHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1rem 1.5rem;
+  background: var(--ide-surface);
+  border-bottom: 1px solid var(--ide-border);
+}
+
+.editorTitle {
+  font-weight: 600;
+  color: var(--ide-text);
+  font-size: 1rem;
+}
+
+.editorActions {
+  display: flex;
+  gap: 0.75rem;
+}
+
+.hintButton,
+.solutionButton {
+  background: var(--ide-surface-2);
+  border: 2px solid var(--ide-border);
+  color: var(--ide-text);
+  border-radius: 6px;
+  padding: 0.5rem 1rem;
+  cursor: pointer;
+  font-size: 0.85rem;
+  font-weight: 600;
+  transition: all 0.2s ease-in-out;
+  font-family: inherit;
+}
+
+.hintButton:hover:not(:disabled) {
+  background: var(--ide-warning);
+  border-color: var(--ide-warning);
+  color: white;
+}
+
+.solutionButton:hover {
+  background: var(--ide-accent);
+  border-color: var(--ide-accent);
+  color: white;
+}
+
+.hintButton:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.codeTextarea {
+  width: 100%;
+  min-height: 300px;
+  background: var(--ide-code-bg);
+  color: var(--ide-code-text);
+  border: none;
+  padding: 1.5rem;
+  font-family: 'Consolas', 'Monaco', 'Courier New', monospace;
+  font-size: 14px;
+  line-height: 1.5;
+  resize: vertical;
+  outline: none;
+  tab-size: 2;
+}
+
+.codeTextarea::placeholder {
+  color: var(--ide-text-muted);
+}
+
+.editorFooter {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1rem 1.5rem;
+  background: var(--ide-surface);
+  border-top: 1px solid var(--ide-border);
+}
+
+.hotkeyHint {
+  color: var(--ide-text-muted);
+  font-size: 0.8rem;
+  font-style: italic;
+}
+
+.runButton {
+  background: linear-gradient(135deg, var(--ide-success), #45a049);
+  border: 2px solid var(--ide-success);
+  color: white;
+  border-radius: 8px;
+  padding: 0.75rem 1.5rem;
+  cursor: pointer;
+  font-size: 0.9rem;
+  font-weight: 600;
+  transition: all 0.2s ease-in-out;
+  font-family: inherit;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.runButton:hover:not(:disabled) {
+  background: linear-gradient(135deg, #66bb6a, #4caf50);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+}
+
+.runButton:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  transform: none;
+}
+
+/* Подсказка */
+.hintSection {
+  padding: 1.5rem;
+  background: var(--ide-warning-light);
+  border-bottom: 2px solid var(--ide-border);
+  animation: fadeIn 0.3s ease-in-out;
+}
+
+.hintSection h4 {
+  margin: 0 0 0.75rem 0;
+  color: var(--ide-warning);
+  font-size: 1rem;
+  font-weight: 600;
+}
+
+.hintSection p {
+  margin: 0;
+  color: var(--ide-text);
+  line-height: 1.5;
+}
+
+/* Решение */
+.solutionSection {
+  padding: 1.5rem;
+  background: var(--ide-surface);
+  border-bottom: 2px solid var(--ide-border);
+  animation: fadeIn 0.3s ease-in-out;
+}
+
+.solutionSection h4 {
+  margin: 0 0 1rem 0;
+  color: var(--ide-accent);
+  font-size: 1rem;
+  font-weight: 600;
+}
+
+.solutionCode {
+  background: var(--ide-code-bg);
+  border: 1px solid var(--ide-border);
+  border-radius: 8px;
+  padding: 1rem;
+  margin: 0;
+  color: var(--ide-code-text);
+  font-family: 'Consolas', 'Monaco', 'Courier New', monospace;
+  font-size: 0.9rem;
+  line-height: 1.5;
+  white-space: pre-wrap;
+  word-break: break-word;
+  overflow-x: auto;
+}
+
+/* Результаты валидации */
+.validationSection {
+  padding: 1.5rem;
+  animation: fadeInUp 0.3s ease-out;
+}
+
+.validationSection.success {
+  background: var(--ide-success-light);
+  border-top: 3px solid var(--ide-success);
+}
+
+.validationSection.error {
+  background: var(--ide-error-light);
+  border-top: 3px solid var(--ide-error);
+}
+
+.validationHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
+}
+
+.validationHeader h4 {
+  margin: 0;
+  font-size: 1.2rem;
+  font-weight: 700;
+}
+
+.testResults {
+  background: var(--ide-surface-2);
+  color: var(--ide-text);
+  padding: 0.5rem 1rem;
+  border-radius: 1rem;
+  font-size: 0.9rem;
+  font-weight: 600;
+  border: 1px solid var(--ide-border);
+}
+
+.errorMessage {
+  background: var(--ide-error);
+  color: white;
+  padding: 1rem;
+  border-radius: 8px;
+  margin-bottom: 1rem;
+  font-weight: 600;
+}
+
+.errorMessage strong {
+  display: block;
+  margin-bottom: 0.5rem;
+}
+
+.testDetails {
+  margin-top: 1rem;
+}
+
+.testDetails h5 {
+  margin: 0 0 1rem 0;
+  color: var(--ide-text);
+  font-size: 1rem;
+  font-weight: 600;
+}
+
+.testResult {
+  display: flex;
+  gap: 1rem;
+  padding: 1rem;
+  margin-bottom: 0.75rem;
+  border-radius: 8px;
+  border: 1px solid var(--ide-border);
+  background: var(--ide-surface);
+}
+
+.testResult.passed {
+  border-color: var(--ide-success);
+  background: var(--ide-success-light);
+}
+
+.testResult.failed {
+  border-color: var(--ide-error);
+  background: var(--ide-error-light);
+}
+
+.testIcon {
+  font-size: 1.2rem;
+  flex-shrink: 0;
+  margin-top: 0.25rem;
+}
+
+.testInfo {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.testDescription {
+  font-weight: 600;
+  color: var(--ide-text);
+  font-size: 0.9rem;
+}
+
+.testInput,
+.testExpected,
+.testActual,
+.testError {
+  font-size: 0.85rem;
+  line-height: 1.4;
+}
+
+.testInput strong,
+.testExpected strong,
+.testActual strong,
+.testError strong {
+  color: var(--ide-accent);
+  font-weight: 600;
+}
+
+.testError {
+  color: var(--ide-error);
+}
+
+/* Анимации */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .taskHeader {
+    flex-direction: column;
+    gap: 1rem;
+  }
+
+  .taskBadges {
+    justify-content: center;
+  }
+
+  .editorHeader {
+    flex-direction: column;
+    gap: 1rem;
+    align-items: stretch;
+  }
+
+  .editorActions {
+    justify-content: center;
+  }
+
+  .editorFooter {
+    flex-direction: column;
+    gap: 1rem;
+    align-items: stretch;
+  }
+
+  .validationHeader {
+    flex-direction: column;
+    gap: 0.5rem;
+    align-items: stretch;
+  }
+
+  .testResult {
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+}

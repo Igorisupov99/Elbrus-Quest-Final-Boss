@@ -48,6 +48,48 @@
   font-weight: 500;
 }
 
+/* Вкладки */
+.tabs {
+  display: flex;
+  gap: 0.5rem;
+  margin-bottom: 2rem;
+  justify-content: center;
+}
+
+.tab {
+  appearance: none;
+  border: 2px solid var(--fantasy-border);
+  background: var(--fantasy-surface-2);
+  color: var(--fantasy-text);
+  border-radius: 0.75rem;
+  padding: 1rem 2rem;
+  cursor: pointer;
+  font-size: 1rem;
+  font-weight: 600;
+  transition: all 0.2s ease-in-out;
+  font-family: inherit;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.tab:hover:not(.activeTab) {
+  background: var(--fantasy-gold);
+  color: #2c1810;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+}
+
+.activeTab {
+  background: linear-gradient(180deg, var(--fantasy-gold), var(--fantasy-gold-2));
+  color: #2c1810;
+  border-color: var(--fantasy-gold);
+  text-shadow: 0 1px 0 #f3e0c0;
+  transform: translateY(-2px);
+  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.3);
+}
+
 /* Настройки */
 .settings {
   background: linear-gradient(
@@ -186,6 +228,56 @@
   opacity: 0.7;
   cursor: not-allowed;
   transform: none;
+}
+
+/* Кнопки языков программирования */
+.languageButtons {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.languageButton {
+  appearance: none;
+  border: 2px solid var(--fantasy-border);
+  background: var(--fantasy-surface-2);
+  color: var(--fantasy-text);
+  border-radius: 0.5rem;
+  padding: 0.5rem 1rem;
+  cursor: pointer;
+  font-size: 0.875rem;
+  font-weight: 600;
+  transition: all 0.2s ease-in-out;
+  font-family: inherit;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.languageButton:hover:not(:disabled) {
+  background: var(--ai-blue);
+  color: white;
+  transform: translateY(-1px);
+  box-shadow: 0 3px 6px rgba(0, 0, 0, 0.2);
+}
+
+.languageButton.active {
+  background: linear-gradient(180deg, var(--ai-blue), #357abd);
+  color: white;
+  border-color: var(--ai-blue);
+  text-shadow: 0 1px 0 rgba(0, 0, 0, 0.2);
+}
+
+.languageButton:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* Контейнер для кнопок генерации */
+.generateButtons {
+  display: flex;
+  justify-content: center;
+  margin-top: 1rem;
 }
 
 /* Ошибка */
@@ -726,11 +818,25 @@
     font-size: 2rem;
   }
 
+  .tabs {
+    flex-direction: column;
+    gap: 0.75rem;
+  }
+
+  .tab {
+    padding: 0.75rem 1.5rem;
+    font-size: 0.9rem;
+  }
+
   .settings {
     padding: 1rem;
   }
 
   .difficultyButtons {
+    flex-direction: column;
+  }
+
+  .languageButtons {
     flex-direction: column;
   }
 

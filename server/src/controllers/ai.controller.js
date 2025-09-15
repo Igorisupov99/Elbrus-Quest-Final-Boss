@@ -106,6 +106,93 @@ class AIController {
       res.status(500).json({ error: 'Ошибка получения статистики' });
     }
   }
+
+  // Генерация IDE задачи через AI
+  async generateIDETask(req, res) {
+    try {
+      const { language, difficulty, topic } = req.body;
+      const userId = req.user.id;
+
+      console.log('Generate IDE Task request:', { language, difficulty, topic, userId });
+
+      if (!language || !difficulty || !topic) {
+        return res.status(400).json({ error: 'Язык, сложность и тема обязательны' });
+      }
+
+      const task = await messageManager.generateIDETask(language, difficulty, topic, userId);
+      
+      console.log('Generated task:', task);
+      res.json({ task });
+
+    } catch (error) {
+      console.error('AI IDE Task Generation Error:', error);
+      console.error('Error details:', {
+        message: error.message,
+        stack: error.stack
+      });
+      res.status(500).json({ error: 'Не удалось сгенерировать IDE задачу' });
+    }
+  }
+
+  // Получение подсказки для IDE задачи
+  async getIDEHint(req, res) {
+    try {
+      const { taskId, hintIndex, taskDescription, userCode } = req.body;
+      const userId = req.user.id;
+
+      if (!taskId || hintIndex === undefined) {
+        return res.status(400).json({ error: 'ID задачи и индекс подсказки обязательны' });
+      }
+
+      const hint = await messageManager.generateIDEHint(taskId, hintIndex, taskDescription, userCode, userId);
+      
+      res.json({ hint });
+
+    } catch (error) {
+      console.error('AI IDE Hint Error:', error);
+      res.status(500).json({ error: 'Не удалось получить подсказку' });
+    }
+  }
+
+  // Валидация кода IDE задачи через AI
+  async validateIDECode(req, res) {
+    try {
+      const { taskId, userCode, taskDescription, testCases } = req.body;
+      const userId = req.user.id;
+
+      if (!taskId || !userCode) {
+        return res.status(400).json({ error: 'ID задачи и код обязательны' });
+      }
+
+      const validation = await messageManager.validateIDECode(taskId, userCode, taskDescription, testCases, userId);
+      
+      res.json(validation);
+
+    } catch (error) {
+      console.error('AI IDE Validation Error:', error);
+      res.status(500).json({ error: 'Не удалось проверить код' });
+    }
+  }
+
+  // Получение решения IDE задачи
+  async getIDESolution(req, res) {
+    try {
+      const { taskId, taskDescription } = req.body;
+      const userId = req.user.id;
+
+      if (!taskId) {
+        return res.status(400).json({ error: 'ID задачи обязателен' });
+      }
+
+      const solution = await messageManager.generateIDESolution(taskId, taskDescription, userId);
+      
+      res.json({ solution });
+
+    } catch (error) {
+      console.error('AI IDE Solution Error:', error);
+      res.status(500).json({ error: 'Не удалось получить решение' });
+    }
+  }
 }
 
 module.exports = new AIController();
