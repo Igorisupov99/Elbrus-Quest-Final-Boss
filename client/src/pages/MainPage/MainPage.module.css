@@ -33,8 +33,12 @@
   display: flex;
   flex-direction: column;
   width: 100%;
-  height: calc(100vh - 40px - var(--taskbar-height)); /* Account for padding + Windows taskbar */
-  max-height: calc(100vh - 40px - var(--taskbar-height)); /* Дополнительная защита от выхода за границы */
+  height: calc(
+    100vh - 40px - var(--taskbar-height)
+  ); /* Account for padding + Windows taskbar */
+  max-height: calc(
+    100vh - 40px - var(--taskbar-height)
+  ); /* Дополнительная защита от выхода за границы */
   background: linear-gradient(
     145deg,
     rgba(248, 235, 215, 0.95),
@@ -67,8 +71,12 @@
   width: 340px;
   display: flex;
   flex-direction: column;
-  height: calc(100vh - 40px - var(--taskbar-height)); /* Account for padding + Windows taskbar */
-  max-height: calc(100vh - 40px - var(--taskbar-height)); /* Дополнительная защита от выхода за границы */
+  height: calc(
+    100vh - 40px - var(--taskbar-height)
+  ); /* Account for padding + Windows taskbar */
+  max-height: calc(
+    100vh - 40px - var(--taskbar-height)
+  ); /* Дополнительная защита от выхода за границы */
   background: linear-gradient(
     145deg,
     rgba(248, 235, 215, 0.95),
@@ -134,6 +142,29 @@
   width: 100%;
   max-width: 1200px;
   position: relative;
+  max-height: calc(100vh - 280px);
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding-right: 10px;
+}
+
+.rooms::-webkit-scrollbar {
+  width: 8px;
+}
+
+.rooms::-webkit-scrollbar-track {
+  background: rgba(139, 90, 43, 0.2);
+  border-radius: 4px;
+}
+
+.rooms::-webkit-scrollbar-thumb {
+  background: linear-gradient(180deg, #d4a017, #a97400);
+  border-radius: 4px;
+  border: 1px solid #8b5a2b;
+}
+
+.rooms::-webkit-scrollbar-thumb:hover {
+  background: linear-gradient(180deg, #f0c33b, #c48a00);
 }
 .roomRow {
   display: flex;
@@ -229,21 +260,21 @@
     var(--fantasy-gold-2)
   );
   color: #2c1810;
-  border-radius: 8px;
-  padding: 10px 14px;
-  font-size: 16px;
+  border-radius: 6px;
+  padding: 6px 8px;
+  font-size: 14px;
   font-weight: bold;
   cursor: pointer;
   transition: all 0.2s ease-in-out;
-  box-shadow: 0 3px 6px rgba(0, 0, 0, 0.2);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
   text-shadow: 0 1px 0 #f3e0c0;
-  min-width: 40px;
-  min-height: 40px;
+  min-width: 30px;
+  min-height: 30px;
 }
 .actions button:hover {
   background: linear-gradient(180deg, #f0c33b, #c48a00);
   transform: translateY(-1px);
-  box-shadow: 0 5px 10px rgba(0, 0, 0, 0.3);
+  box-shadow: 0 3px 6px rgba(0, 0, 0, 0.3);
 }
 .actions button:active {
   transform: translateY(1px);
@@ -269,8 +300,8 @@
   letter-spacing: 0.5px;
   display: block;
   margin: 20px auto;
-  max-width: 250px;
-  min-height: 50px;
+  /* max-width: 250px;
+  min-height: 50px; */
   text-align: center;
   position: relative;
 }
@@ -884,12 +915,16 @@
 /* Адаптивность для мобильных устройств */
 @media (max-width: 768px) {
   .mainContent {
-    height: calc(50vh - var(--taskbar-height)); /* Половина высоты экрана на мобильных с учетом панели задач */
+    height: calc(
+      50vh - var(--taskbar-height)
+    ); /* Половина высоты экрана на мобильных с учетом панели задач */
     max-height: calc(50vh - var(--taskbar-height));
   }
-  
+
   .chatSidebar {
-    height: calc(50vh - var(--taskbar-height)); /* Половина высоты экрана на мобильных с учетом панели задач */
+    height: calc(
+      50vh - var(--taskbar-height)
+    ); /* Половина высоты экрана на мобильных с учетом панели задач */
     max-height: calc(50vh - var(--taskbar-height));
     width: 100%;
     margin-top: 20px;
@@ -898,12 +933,16 @@
 
 @media (max-width: 480px) {
   .mainContent {
-    height: calc(40vh - var(--taskbar-height)); /* Меньше высота на очень маленьких экранах с учетом панели задач */
+    height: calc(
+      40vh - var(--taskbar-height)
+    ); /* Меньше высота на очень маленьких экранах с учетом панели задач */
     max-height: calc(40vh - var(--taskbar-height));
   }
-  
+
   .chatSidebar {
-    height: calc(40vh - var(--taskbar-height)); /* Меньше высота на очень маленьких экранах с учетом панели задач */
+    height: calc(
+      40vh - var(--taskbar-height)
+    ); /* Меньше высота на очень маленьких экранах с учетом панели задач */
     max-height: calc(40vh - var(--taskbar-height));
   }
 }
@@ -1013,7 +1052,7 @@
   display: flex;
   gap: 8px;
   margin-top: 10px;
-  align-items: center;
+  align-items: flex-end;
   box-sizing: border-box;
   overflow: hidden; /* Prevent children from overflowing */
 }
@@ -1021,15 +1060,22 @@
 .chatInput {
   flex: 1;
   min-width: 0; /* Allow input to shrink properly */
-  height: 40px;
+  min-height: 40px;
+  max-height: 120px;
+  height: auto;
   border-radius: 10px;
   border: 1px solid rgba(0, 0, 0, 0.2);
   background: #fffaf0;
   outline: none;
-  padding: 0 12px;
+  padding: 10px 12px;
   color: #5c3d2e;
   font-family: inherit;
+  font-size: inherit;
   box-sizing: border-box;
+  resize: none;
+  overflow-y: auto;
+  line-height: 1.4;
+  transition: height 0.15s ease;
 }
 
 .chatInput::placeholder {

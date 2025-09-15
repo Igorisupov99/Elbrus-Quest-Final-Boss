@@ -104,8 +104,6 @@ export default function MainPageChat() {
     setMessage('');
   };
 
-
-
   return (
     <div className={styles.chat}>
       <h3 className={styles.chatTitle}>
@@ -133,13 +131,20 @@ export default function MainPageChat() {
         ))}
       </div>
 
-
-
       <div className={styles.chatForm}>
-        <input
-          type="text"
+        <textarea
           value={message}
-          onChange={(e) => setMessage(e.target.value)}
+          onChange={(e) => {
+            setMessage(e.target.value);
+            // Auto-resize textarea
+            const textarea = e.target as HTMLTextAreaElement;
+            textarea.style.height = '40px'; // Reset to minimum height first
+            const newHeight = Math.max(
+              40,
+              Math.min(textarea.scrollHeight, 120)
+            );
+            textarea.style.height = newHeight + 'px';
+          }}
           placeholder={
             connecting
               ? 'Подключение…'
@@ -149,8 +154,9 @@ export default function MainPageChat() {
           }
           disabled={!connected}
           className={styles.chatInput}
+          rows={1}
           onKeyDown={(e) => {
-            if (e.key === 'Enter') {
+            if (e.key === 'Enter' && !e.shiftKey) {
               e.preventDefault();
               sendMessage();
             }

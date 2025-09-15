@@ -23,6 +23,7 @@ const createSchema = (existingRooms: { title: string }[]) =>
       .string()
       .required('Название комнаты обязательно')
       .min(5, 'Минимум 5 символов')
+      .max(30, 'Максимум 30 символов')
       .test(
         'unique-name',
         'Комната с таким названием уже существует',
@@ -116,6 +117,7 @@ export default function ModelPageCreateRoom({
               {...register('roomName')}
               className={styles.input}
               placeholder="Введите название комнаты"
+              maxLength={30}
               autoFocus
             />
             {errors.roomName && (

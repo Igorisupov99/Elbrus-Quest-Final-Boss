@@ -43,6 +43,11 @@ export default function EditRoomModal({
       return;
     }
 
+    if (trimmedName.length > 30) {
+      setError('Название должно содержать максимум 30 символов');
+      return;
+    }
+
     if (trimmedName === currentName) {
       setError('Название не изменилось');
       return;
@@ -97,13 +102,16 @@ export default function EditRoomModal({
               id="roomName"
               type="text"
               value={newName}
+              maxLength={30}
               onChange={(e) => {
                 setNewName(e.target.value);
                 setError('');
 
                 // Real-time validation
                 const trimmedValue = e.target.value.trim();
-                if (trimmedValue && trimmedValue !== currentName) {
+                if (trimmedValue.length > 30) {
+                  setError('Название должно содержать максимум 30 символов');
+                } else if (trimmedValue && trimmedValue !== currentName) {
                   const isDuplicate = existingRooms.some(
                     (room) =>
                       room.id !== currentRoomId &&
