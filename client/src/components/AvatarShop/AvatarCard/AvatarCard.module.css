@@ -1,16 +1,74 @@
 .card {
-  background: white;
-  border-radius: 12px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  background: linear-gradient(
+    180deg,
+    rgba(245, 222, 179, 0.8),
+    rgba(255, 248, 220, 0.8)
+  ) !important;
+  border-radius: 16px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
   overflow: hidden;
-  transition: all 0.3s ease;
-  border: 2px solid transparent;
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
   position: relative;
+  border: 2px solid #8b5a2b;
+  backdrop-filter: blur(5px);
+  font-family: 'Cinzel', serif;
+  transform-style: preserve-3d;
+}
+
+.card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 4px;
+  background: linear-gradient(
+    90deg,
+    #d4a017 0%,
+    #f0c33b 25%,
+    #d4a017 50%,
+    #a97400 75%,
+    #d4a017 100%
+  );
+  z-index: 1;
+  box-shadow: 0 2px 4px rgba(212, 160, 23, 0.3);
+}
+
+.card::after {
+  content: '';
+  position: absolute;
+  top: 4px;
+  left: 8px;
+  right: 8px;
+  height: 1px;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(255, 255, 255, 0.6),
+    transparent
+  );
+  z-index: 2;
 }
 
 .card:hover {
-  transform: translateY(-4px);
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+  transform: translateY(-8px) rotateX(5deg);
+  box-shadow: 
+    0 20px 40px rgba(0, 0, 0, 0.25),
+    0 0 0 1px rgba(212, 160, 23, 0.3),
+    inset 0 1px 0 rgba(255, 255, 255, 0.4);
+  border-color: #d4a017;
+}
+
+.card:hover::before {
+  background: linear-gradient(
+    90deg,
+    #f0c33b 0%,
+    #d4a017 25%,
+    #f0c33b 50%,
+    #d4a017 75%,
+    #f0c33b 100%
+  );
+  box-shadow: 0 3px 6px rgba(212, 160, 23, 0.4);
 }
 
 /* Редкость аватаров */
@@ -39,86 +97,359 @@
   width: 100%;
   height: 200px;
   overflow: hidden;
-  background: #f8fafc;
+  background: linear-gradient(135deg, #8b5a2b, #6b3e15);
+  border-radius: 0 0 12px 12px;
+  margin-top: 4px;
+  border: 1px solid rgba(212, 160, 23, 0.3);
+}
+
+.imageContainer::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(
+    45deg,
+    rgba(255, 255, 255, 0.1) 0%,
+    transparent 25%,
+    transparent 75%,
+    rgba(0, 0, 0, 0.05) 100%
+  );
+  z-index: 1;
+  pointer-events: none;
 }
 
 .avatarImage {
   width: 100%;
   height: 100%;
   object-fit: cover;
-  transition: transform 0.3s ease;
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  filter: brightness(1.05) contrast(1.1) saturate(1.1);
 }
 
 .card:hover .avatarImage {
-  transform: scale(1.05);
+  transform: scale(1.08) rotate(1deg);
+  filter: brightness(1.1) contrast(1.15) saturate(1.2);
 }
 
-.rarityBadge {
+.equippedBadge {
   position: absolute;
-  top: 8px;
-  right: 8px;
-  background: rgba(0, 0, 0, 0.8);
+  top: 12px;
+  right: 12px;
+  background: linear-gradient(135deg, #10b981, #059669);
   color: white;
-  padding: 4px 8px;
-  border-radius: 12px;
-  font-size: 12px;
-  font-weight: 600;
+  padding: 6px 12px;
+  border-radius: 16px;
+  font-size: 11px;
+  font-weight: 700;
+  z-index: 3;
+  box-shadow: 
+    0 4px 8px rgba(0, 0, 0, 0.3),
+    inset 0 1px 0 rgba(255, 255, 255, 0.2);
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+  font-family: 'Cinzel', serif;
   text-transform: uppercase;
   letter-spacing: 0.5px;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  animation: pulse 2s infinite;
+}
+
+.ownedBadge {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  background: linear-gradient(135deg, #6b7280, #4b5563);
+  color: white;
+  padding: 6px 12px;
+  border-radius: 16px;
+  font-size: 11px;
+  font-weight: 700;
+  z-index: 3;
+  box-shadow: 
+    0 4px 8px rgba(0, 0, 0, 0.3),
+    inset 0 1px 0 rgba(255, 255, 255, 0.2);
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+  font-family: 'Cinzel', serif;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+@keyframes pulse {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.05); }
 }
 
 .content {
-  padding: 16px;
+  padding: 20px;
+  background: transparent;
+  margin: 0;
+  border-radius: 0;
+  border: none;
+  backdrop-filter: none;
+  box-shadow: none;
 }
 
 .name {
-  font-size: 18px;
-  font-weight: 700;
-  color: #1f2937;
-  margin: 0 0 8px 0;
+  font-size: 20px;
+  font-weight: 800;
+  color: #4b2e05;
+  margin: 0 0 12px 0;
+  text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.1);
+  font-family: 'Cinzel', serif;
+  letter-spacing: 0.5px;
+  line-height: 1.2;
   text-align: center;
 }
 
 .description {
   font-size: 14px;
-  color: #6b7280;
-  margin: 0 0 12px 0;
+  color: #5c3b09;
+  margin: 0 0 16px 0;
+  line-height: 1.5;
+  font-family: 'Cinzel', serif;
+  font-weight: 500;
+  font-style: italic;
   text-align: center;
-  line-height: 1.4;
+  background: rgba(139, 90, 43, 0.1);
+  padding: 8px 12px;
+  border-radius: 8px;
+  border-left: 3px solid #d4a017;
+  text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.1);
+  border: 1px solid rgba(139, 90, 43, 0.2);
 }
 
-.priceContainer {
-  display: flex;
-  justify-content: center;
+.rarity {
   margin-bottom: 16px;
+  text-align: center;
+  background: rgba(139, 90, 43, 0.1);
+  padding: 8px;
+  border-radius: 8px;
+  border: 1px solid rgba(139, 90, 43, 0.2);
+}
+
+.rarityLabel {
+  display: inline-block;
+  padding: 6px 12px;
+  border-radius: 12px;
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  font-family: 'Cinzel', serif;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+  border: 1px solid rgba(212, 160, 23, 0.3);
+}
+
+.rarity-common .rarityLabel {
+  background: linear-gradient(135deg, rgba(160, 160, 160, 0.9), rgba(128, 128, 128, 1));
+  color: #f5f5f5;
+  backdrop-filter: blur(3px);
+  text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5);
+  border: 1px solid rgba(160, 160, 160, 0.5);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+.rarity-rare .rarityLabel {
+  background: linear-gradient(135deg, rgba(70, 130, 180, 0.9), rgba(30, 144, 255, 1));
+  color: #e6f3ff;
+  backdrop-filter: blur(3px);
+  text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5);
+  border: 1px solid rgba(70, 130, 180, 0.5);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+.rarity-epic .rarityLabel {
+  background: linear-gradient(135deg, rgba(138, 43, 226, 0.9), rgba(148, 0, 211, 1));
+  color: #f0e6ff;
+  backdrop-filter: blur(3px);
+  text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5);
+  border: 1px solid rgba(138, 43, 226, 0.5);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+.rarity-legendary .rarityLabel {
+  background: linear-gradient(135deg, rgba(255, 215, 0, 0.9), rgba(255, 165, 0, 1));
+  color: #2c1810;
+  backdrop-filter: blur(3px);
+  text-shadow: 1px 1px 2px rgba(255, 255, 255, 0.3);
+  border: 1px solid rgba(255, 215, 0, 0.5);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
 }
 
 .price {
-  font-size: 16px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+  padding: 12px 16px;
+  background: linear-gradient(
+    135deg,
+    rgba(0, 0, 0, 0.3),
+    rgba(139, 90, 43, 0.4)
+  );
+  border-radius: 12px;
+  backdrop-filter: blur(3px);
+  border: 2px solid rgba(212, 160, 23, 0.4);
+  box-shadow: inset 0 1px 0 rgba(212, 160, 23, 0.2);
+  position: relative;
+  overflow: hidden;
+}
+
+.price::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(255, 255, 255, 0.1),
+    transparent
+  );
+  transition: left 0.6s ease;
+}
+
+.card:hover .price::before {
+  left: 100%;
+}
+
+.priceLabel {
+  font-size: 13px;
+  color: #5c3b09;
+  font-family: 'Cinzel', serif;
   font-weight: 600;
-  color: #059669;
-  background: #ecfdf5;
-  padding: 6px 12px;
-  border-radius: 20px;
-  border: 1px solid #d1fae5;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.1);
+}
+
+.priceValue {
+  font-size: 18px;
+  font-weight: 800;
+  color: #4b2e05;
+  font-family: 'Cinzel', serif;
+  text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.1);
+  position: relative;
+}
+
+.priceValue::before {
+  content: '💰';
+  margin-right: 4px;
+  font-size: 14px;
+}
+
+.userScore {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+  padding: 12px 16px;
+  background: linear-gradient(
+    135deg,
+    rgba(0, 0, 0, 0.3),
+    rgba(212, 160, 23, 0.2)
+  );
+  border-radius: 12px;
+  backdrop-filter: blur(3px);
+  border: 2px solid rgba(212, 160, 23, 0.4);
+  box-shadow: inset 0 1px 0 rgba(212, 160, 23, 0.2);
+  position: relative;
+  overflow: hidden;
+}
+
+.userScore::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(255, 255, 255, 0.1),
+    transparent
+  );
+  transition: left 0.6s ease;
+}
+
+.card:hover .userScore::before {
+  left: 100%;
+}
+
+.scoreLabel {
+  font-size: 13px;
+  color: #5c3b09;
+  font-family: 'Cinzel', serif;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.1);
+}
+
+.scoreValue {
+  font-size: 18px;
+  font-weight: 800;
+  color: #4b2e05;
+  font-family: 'Cinzel', serif;
+  text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.1);
+  position: relative;
+}
+
+.scoreValue::before {
+  content: '⭐';
+  margin-right: 4px;
+  font-size: 14px;
 }
 
 .actions {
-  display: flex;
-  gap: 8px;
+  padding: 0 4px 4px;
+  margin-top: 8px;
 }
 
 .button {
-  flex: 1;
-  padding: 10px 16px;
-  border: none;
-  border-radius: 8px;
-  font-size: 14px;
-  font-weight: 600;
+  width: 100%;
+  padding: 14px 20px;
+  border: 2px solid;
+  border-radius: 12px;
+  font-size: 13px;
+  font-weight: 700;
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   text-transform: uppercase;
-  letter-spacing: 0.5px;
+  letter-spacing: 0.8px;
+  font-family: 'Cinzel', serif;
+  box-shadow: 
+    0 4px 8px rgba(0, 0, 0, 0.2),
+    inset 0 1px 0 rgba(255, 255, 255, 0.2);
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+  position: relative;
+  overflow: hidden;
+}
+
+.button::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(255, 255, 255, 0.2),
+    transparent
+  );
+  transition: left 0.5s ease;
+}
+
+.button:hover::before {
+  left: 100%;
 }
 
 .button:disabled {
@@ -127,33 +458,69 @@
 }
 
 .purchaseButton {
-  background: linear-gradient(135deg, #10b981 0%, #059669 100%);
-  color: white;
+  background: linear-gradient(135deg, #8fbc8f 0%, #6b8e6b 100%);
+  color: #2c1810;
+  border-color: #5a7a5a;
+  text-shadow: 0 1px 0 rgba(255, 255, 255, 0.3);
 }
 
 .purchaseButton:hover:not(:disabled) {
-  background: linear-gradient(135deg, #059669 0%, #047857 100%);
-  transform: translateY(-1px);
+  background: linear-gradient(135deg, #7cb37c 0%, #5a7a5a 100%);
+  transform: translateY(-2px) scale(1.02);
+  box-shadow: 
+    0 8px 16px rgba(0, 0, 0, 0.3),
+    0 0 0 1px rgba(143, 188, 143, 0.5);
+  color: #1a0f08;
+}
+
+.purchaseButton::after {
+  content: '🛒';
+  margin-left: 6px;
+  font-size: 12px;
 }
 
 .equipButton {
-  background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
-  color: white;
+  background: linear-gradient(135deg, #8fbc8f 0%, #6b8e6b 100%);
+  color: #2c1810;
+  border-color: #5a7a5a;
+  text-shadow: 0 1px 0 rgba(255, 255, 255, 0.3);
 }
 
 .equipButton:hover:not(:disabled) {
-  background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
-  transform: translateY(-1px);
+  background: linear-gradient(135deg, #7cb37c 0%, #5a7a5a 100%);
+  transform: translateY(-2px) scale(1.02);
+  box-shadow: 
+    0 8px 16px rgba(0, 0, 0, 0.3),
+    0 0 0 1px rgba(143, 188, 143, 0.5);
+  color: #1a0f08;
+}
+
+.equipButton::after {
+  content: '⚔️';
+  margin-left: 6px;
+  font-size: 12px;
 }
 
 .unequipButton {
-  background: linear-gradient(135deg, #6b7280 0%, #4b5563 100%);
-  color: white;
+  background: linear-gradient(135deg, #cd853f 0%, #a0522d 100%);
+  color: #2c1810;
+  border-color: #8b4513;
+  text-shadow: 0 1px 0 rgba(255, 255, 255, 0.3);
 }
 
 .unequipButton:hover:not(:disabled) {
-  background: linear-gradient(135deg, #4b5563 0%, #374151 100%);
-  transform: translateY(-1px);
+  background: linear-gradient(135deg, #d2691e 0%, #8b4513 100%);
+  transform: translateY(-2px) scale(1.02);
+  box-shadow: 
+    0 8px 16px rgba(0, 0, 0, 0.3),
+    0 0 0 1px rgba(205, 133, 63, 0.5);
+  color: #1a0f08;
+}
+
+.unequipButton::after {
+  content: '🗡️';
+  margin-left: 6px;
+  font-size: 12px;
 }
 
 .disabled {

@@ -124,47 +124,48 @@ const AvatarCardComponent: React.FC<AvatarCardProps> = ({
   };
 
   return (
-    <div className={`${styles.card} ${getRarityClass(avatar.rarity)}`}>
-      <div className={styles.imageContainer}>
+    <div className={`${styles.card} ${getRarityClass(avatar.rarity)}`} style={{ backgroundColor: 'transparent' }}>
+      <div className={styles.imageContainer} style={{ backgroundColor: 'transparent' }}>
         <img 
           src={avatar.imageUrl} 
           alt={avatar.name}
           className={styles.avatarImage}
+          style={{ backgroundColor: 'transparent' }}
         />
         {isEquipped && (
-          <div className={styles.equippedBadge}>
+          <div className={styles.equippedBadge} style={{ backgroundColor: 'transparent' }}>
             ✓ Надет
           </div>
         )}
         {isOwned && !isEquipped && (
-          <div className={styles.ownedBadge}>
+          <div className={styles.ownedBadge} style={{ backgroundColor: 'transparent' }}>
             ✓ Куплен
           </div>
         )}
       </div>
       
-      <div className={styles.content}>
-        <h3 className={styles.name}>{avatar.name}</h3>
-        <p className={styles.description}>{avatar.description}</p>
+      <div className={styles.content} style={{ backgroundColor: 'transparent' }}>
+        <h3 className={styles.name} style={{ backgroundColor: 'transparent' }}>{avatar.name}</h3>
+        <p className={styles.description} style={{ backgroundColor: 'transparent' }}>{avatar.description}</p>
         
-        <div className={styles.rarity}>
-          <span className={`${styles.rarityLabel} ${getRarityClass(avatar.rarity)}`}>
+        <div className={styles.rarity} style={{ backgroundColor: 'transparent' }}>
+          <span className={`${styles.rarityLabel} ${getRarityClass(avatar.rarity)}`} style={{ backgroundColor: 'transparent' }}>
             {getRarityLabel(avatar.rarity)}
           </span>
         </div>
         
-        <div className={styles.price}>
-          <span className={styles.priceLabel}>Цена:</span>
-          <span className={styles.priceValue}>{avatar.price} очков</span>
+        <div className={styles.price} style={{ backgroundColor: 'transparent' }}>
+          <span className={styles.priceLabel} style={{ backgroundColor: 'transparent' }}>Цена:</span>
+          <span className={styles.priceValue} style={{ backgroundColor: 'transparent' }}>{avatar.price} очков</span>
         </div>
         
-        <div className={styles.userScore}>
-          <span className={styles.scoreLabel}>Ваши очки:</span>
-          <span className={styles.scoreValue}>{userScore}</span>
+        <div className={styles.userScore} style={{ backgroundColor: 'transparent' }}>
+          <span className={styles.scoreLabel} style={{ backgroundColor: 'transparent' }}>Ваши очки:</span>
+          <span className={styles.scoreValue} style={{ backgroundColor: 'transparent' }}>{userScore}</span>
         </div>
       </div>
       
-      <div className={styles.actions}>
+      <div className={styles.actions} style={{ backgroundColor: 'transparent' }}>
         {renderButton()}
       </div>
     </div>
