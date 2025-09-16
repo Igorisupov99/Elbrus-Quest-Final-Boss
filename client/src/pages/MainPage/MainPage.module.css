@@ -13,8 +13,13 @@
 
 /* Main page container */
 .mainPage {
-  height: 100vh;
-  max-height: 100vh;
+  height: calc(100vh - 70px);
+  max-height: calc(100vh - 70px);
+  width: 100vw;
+  max-width: 100vw;
+  position: fixed;
+  top: 70px;
+  left: 0;
   background: linear-gradient(rgba(0, 0, 0, 0.3), rgba(0, 0, 0, 0.4)),
     url('/ChatGPT Image Sep 13, 2025, 03_54_08 PM copy.png');
   background-size: cover;
@@ -25,7 +30,6 @@
   display: flex;
   gap: 20px;
   box-sizing: border-box;
-  position: relative;
   overflow: hidden;
 }
 
@@ -35,12 +39,8 @@
   display: flex;
   flex-direction: column;
   width: 100%;
-  height: calc(
-    100vh - 40px - var(--taskbar-height)
-  ); /* Account for padding + Windows taskbar */
-  max-height: calc(
-    100vh - 40px - var(--taskbar-height)
-  ); /* Дополнительная защита от выхода за границы */
+  height: calc(100vh - 110px);
+  max-height: calc(100vh - 110px);
   background: linear-gradient(
     145deg,
     rgba(248, 235, 215, 0.95),
@@ -48,12 +48,13 @@
   );
   border: 3px solid #8b5a2b;
   border-radius: 15px;
-  padding: 25px;
+  padding: 15px;
   box-shadow: 0 6px 20px rgba(0, 0, 0, 0.4),
     inset 0 1px 0 rgba(255, 248, 230, 0.6),
     inset 0 -1px 0 rgba(139, 90, 43, 0.3);
   position: relative;
-  overflow: hidden; /* Предотвращаем выход содержимого за границы */
+  overflow: hidden;
+  box-sizing: border-box;
 }
 
 .mainContent::before {
@@ -73,12 +74,8 @@
   width: 420px;
   display: flex;
   flex-direction: column;
-  height: calc(
-    100vh - 40px - var(--taskbar-height)
-  ); /* Account for padding + Windows taskbar */
-  max-height: calc(
-    100vh - 40px - var(--taskbar-height)
-  ); /* Дополнительная защита от выхода за границы */
+  height: calc(100vh - 110px);
+  max-height: calc(100vh - 110px);
   background: linear-gradient(
     145deg,
     rgba(248, 235, 215, 0.95),
@@ -86,12 +83,13 @@
   );
   border: 3px solid #8b5a2b;
   border-radius: 15px;
-  padding: 20px;
+  padding: 15px;
   box-shadow: 0 6px 20px rgba(0, 0, 0, 0.4),
     inset 0 1px 0 rgba(255, 248, 230, 0.6),
     inset 0 -1px 0 rgba(139, 90, 43, 0.3);
   position: relative;
-  overflow: hidden; /* Предотвращаем выход содержимого за границы */
+  overflow: hidden;
+  box-sizing: border-box;
 }
 
 .chatSidebar::before {
@@ -111,7 +109,7 @@
   color: #4b2e05;
   font-weight: 700;
   font-size: 2.2rem;
-  margin: 0 0 30px 0;
+  margin: 0 0 15px 0;
   text-align: center;
   text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3), 1px 1px 2px rgba(0, 0, 0, 0.5);
   letter-spacing: 1px;
