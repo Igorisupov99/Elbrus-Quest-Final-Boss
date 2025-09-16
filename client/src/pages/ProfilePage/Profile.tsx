@@ -62,6 +62,7 @@ export function Profile() {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
+  const [isSaving, setIsSaving] = useState<boolean>(false);
 
   // Для модального окна настроек
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
@@ -576,7 +577,7 @@ export function Profile() {
     e.preventDefault();
     
     try {
-      setLoading(true);
+      setIsSaving(true);
       setError(null);
 
       // Отправляем данные на сервер для обновления профиля
@@ -619,7 +620,7 @@ export function Profile() {
       }
       setError(errorMessage);
     } finally {
-      setLoading(false);
+      setIsSaving(false);
     }
   };
 
@@ -1402,13 +1403,18 @@ export function Profile() {
               </div>
 
               <div className={styles.modalActions}>
-                <button type="submit" className={`${styles.button} ${styles.saveBtn}`}>
-                  Сохранить изменения
+                <button 
+                  type="submit" 
+                  className={`${styles.button} ${styles.saveBtn}`}
+                  disabled={isSaving}
+                >
+                  {isSaving ? 'Сохранение...' : 'Сохранить изменения'}
                 </button>
                 <button
                   type="button"
                   className={`${styles.button} ${styles.deleteBtn}`}
                   onClick={handleDelete}
+                  disabled={isSaving}
                 >
                   Удалить аккаунт
                 </button>
