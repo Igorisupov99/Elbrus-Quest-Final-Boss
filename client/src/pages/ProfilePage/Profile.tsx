@@ -668,16 +668,10 @@ export function Profile() {
       {/* Блок 1.1 - Основная информация */}
       <h3 className={styles.blockTitle}>👤 Профиль</h3>
       <div className={styles.profileInfoBlock}>
-        <div className={styles.avatarSection} style={{ position: 'relative' }}>
+        <div className={`${styles.avatarSection} ${styles.avatarSectionRelative}`}>
           <Link 
             to="/avatar-shop" 
-            className={styles.avatarShopLink}
-            style={{
-              position: 'absolute',
-              top: '16px',
-              right: '8px',
-              zIndex: 10
-            }}
+            className={`${styles.avatarShopLink} ${styles.avatarShopLinkPositioned}`}
           >
             🛒
           </Link>
@@ -867,84 +861,24 @@ export function Profile() {
             </div>
             
             {/* Более выразительная информация о количестве друзей с кнопками карусели */}
-            <div 
-              style={{
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'space-between',
-                padding: '12px 20px',
-                marginBottom: '20px',
-                background: 'linear-gradient(135deg, #d8a35d, #b0752d)',
-                color: '#2c1810',
-                borderRadius: '8px',
-                border: '2px solid #8b5a2b',
-                boxShadow: '0 3px 6px rgba(0, 0, 0, 0.15)',
-                fontWeight: '700',
-                fontSize: '1.1rem',
-                textShadow: '0 1px 0 #f3e0c0'
-              }}
-            >
+            <div className={styles.friendsCarouselNavigation}>
               {friends.length > 5 && (
                 <button 
                   onClick={prevFriends}
-                  style={{
-                    width: '32px',
-                    height: '32px',
-                    borderRadius: '50%',
-                    border: '2px solid #2c1810',
-                    background: 'rgba(44, 24, 16, 0.1)',
-                    color: '#2c1810',
-                    fontSize: '16px',
-                    fontWeight: 'bold',
-                    cursor: 'pointer',
-                    transition: 'all 0.2s ease',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center'
-                  }}
-                  onMouseEnter={(e: MouseEvent<HTMLButtonElement>) => {
-                    e.currentTarget.style.background = 'rgba(44, 24, 16, 0.2)';
-                    e.currentTarget.style.transform = 'scale(1.1)';
-                  }}
-                  onMouseLeave={(e: MouseEvent<HTMLButtonElement>) => {
-                    e.currentTarget.style.background = 'rgba(44, 24, 16, 0.1)';
-                    e.currentTarget.style.transform = 'scale(1)';
-                  }}
+                  className={styles.carouselNavigationButton}
                 >
                   ←
                 </button>
               )}
               
-              <div style={{ textAlign: 'center', flex: 1 }}>
+              <div className={styles.friendsCountCenter}>
                 👥 У вас {getFriendsCountText(friends.length)}
               </div>
               
               {friends.length > 5 && (
                 <button 
                   onClick={nextFriends}
-                  style={{
-                    width: '32px',
-                    height: '32px',
-                    borderRadius: '50%',
-                    border: '2px solid #2c1810',
-                    background: 'rgba(44, 24, 16, 0.1)',
-                    color: '#2c1810',
-                    fontSize: '16px',
-                    fontWeight: 'bold',
-                    cursor: 'pointer',
-                    transition: 'all 0.2s ease',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center'
-                  }}
-                  onMouseEnter={(e: MouseEvent<HTMLButtonElement>) => {
-                    e.currentTarget.style.background = 'rgba(44, 24, 16, 0.2)';
-                    e.currentTarget.style.transform = 'scale(1.1)';
-                  }}
-                  onMouseLeave={(e: MouseEvent<HTMLButtonElement>) => {
-                    e.currentTarget.style.background = 'rgba(44, 24, 16, 0.1)';
-                    e.currentTarget.style.transform = 'scale(1)';
-                  }}
+                  className={styles.carouselNavigationButton}
                 >
                   →
                 </button>
@@ -952,46 +886,18 @@ export function Profile() {
             </div>
 
             {/* Поиск друзей */}
-            <div 
-              style={{
-                padding: '10px',
-                marginBottom: '10px',
-                background: '#fffaf0',
-                borderRadius: '6px',
-                border: '2px solid #6b3e15',
-                boxShadow: '0 1px 6px rgba(0, 0, 0, 0.1)'
-              }}
-            >
-              <h4 
-                style={{
-                  margin: '0 0 8px 0',
-                  color: '#2c1810',
-                  fontSize: '0.95rem',
-                  fontWeight: '700',
-                  textAlign: 'center'
-                }}
-              >
+            <div className={styles.friendSearchSection}>
+              <h4 className={styles.friendSearchTitle}>
                 🔍 Найти друга
               </h4>
               
-              <div style={{ position: 'relative', marginBottom: '8px' }}>
+              <div className={styles.searchInputContainer}>
                 <input
                   type="text"
                   value={searchQuery}
                   onChange={handleSearchQueryChange}
                   placeholder="Введите логин пользователя..."
-                  style={{
-                    width: '100%',
-                    padding: '6px 10px',
-                    border: '2px solid #d8a35d',
-                    borderRadius: '5px',
-                    fontSize: '0.85rem',
-                    background: '#fff',
-                    color: '#2c1810',
-                    fontFamily: 'inherit',
-                    transition: 'border-color 0.2s ease',
-                    outline: 'none'
-                  }}
+                  className={styles.searchInput}
                   onFocus={(e: React.FocusEvent<HTMLInputElement>) => {
                     e.currentTarget.style.borderColor = '#b0752d';
                     e.currentTarget.style.boxShadow = '0 0 8px rgba(176, 117, 45, 0.3)';
@@ -1020,47 +926,15 @@ export function Profile() {
 
               {/* Результат поиска */}
               {searchError && (
-                <div 
-                  style={{
-                    padding: '6px',
-                    background: '#ffe6e6',
-                    border: '1px solid #ff9999',
-                    borderRadius: '4px',
-                    color: '#cc0000',
-                    fontSize: '0.8rem',
-                    textAlign: 'center'
-                  }}
-                >
+                <div className={styles.searchError}>
                   {searchError}
                 </div>
               )}
 
               {searchResult && (
                 <div 
-                  style={{
-                    padding: '8px',
-                    background: '#f0f8ff',
-                    border: '1px solid #87ceeb',
-                    borderRadius: '6px',
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: '6px',
-                    cursor: 'pointer',
-                    transition: 'all 0.2s ease'
-                  }}
+                  className={styles.searchResultSingle}
                   onClick={() => navigate(`/user/${searchResult.id}`)}
-                  onMouseEnter={(e) => {
-                    e.currentTarget.style.background = '#e6f3ff';
-                    e.currentTarget.style.borderColor = '#5dade2';
-                    e.currentTarget.style.transform = 'translateY(-1px)';
-                    e.currentTarget.style.boxShadow = '0 4px 8px rgba(0, 123, 255, 0.2)';
-                  }}
-                  onMouseLeave={(e) => {
-                    e.currentTarget.style.background = '#f0f8ff';
-                    e.currentTarget.style.borderColor = '#87ceeb';
-                    e.currentTarget.style.transform = 'translateY(0)';
-                    e.currentTarget.style.boxShadow = 'none';
-                  }}
                 >
                   <UserAvatar
                     userId={searchResult.id}
@@ -1068,35 +942,16 @@ export function Profile() {
                     size="small"
                     shape="square"
                     alt={`Аватар ${searchResult.username}`}
-                    style={{
-                      border: '1px solid #87ceeb',
-                      flexShrink: 0
-                    }}
+                    className={styles.searchResultAvatar}
                   />
                   
-                  <div style={{ flex: 1 }}>
-                    <h5 
-                      style={{
-                        margin: '0 0 1px 0',
-                        fontSize: '0.9rem',
-                        fontWeight: '700',
-                        color: '#2c1810',
-                        display: 'flex',
-                        alignItems: 'center',
-                        gap: '4px'
-                      }}
-                    >
+                  <div className={styles.searchResultInfo}>
+                    <h5 className={styles.searchResultName}>
                       {searchResult.username}
-                      <span style={{ fontSize: '0.7rem', color: '#666' }}>👆</span>
+                      <span className={styles.searchResultNameIcon}>👆</span>
                     </h5>
                     {searchResult.score !== undefined && (
-                      <p 
-                        style={{
-                          margin: '0',
-                          fontSize: '0.75rem',
-                          color: '#666'
-                        }}
-                      >
+                      <p className={styles.searchResultScore}>
                         Очки: {searchResult.score}
                       </p>
                     )}
@@ -1107,15 +962,7 @@ export function Profile() {
                     
                     if (searchResult.id === user?.id) {
                       return (
-                        <div 
-                          style={{
-                            padding: '4px 8px',
-                            background: '#e0e0e0',
-                            borderRadius: '4px',
-                            color: '#666',
-                            fontSize: '0.75rem'
-                          }}
-                        >
+                        <div className={styles.friendStatusSelf}>
                           Это вы
                         </div>
                       );
@@ -1123,17 +970,7 @@ export function Profile() {
                     
                     if (status === 'friend') {
                       return (
-                        <div 
-                          style={{
-                            padding: '4px 8px',
-                            background: '#d4edda',
-                            border: '1px solid #28a745',
-                            borderRadius: '4px',
-                            color: '#155724',
-                            fontSize: '0.75rem',
-                            fontWeight: '600'
-                          }}
-                        >
+                        <div className={styles.friendStatusFriend}>
                           ✅ Уже друг
                         </div>
                       );
@@ -1141,17 +978,7 @@ export function Profile() {
                     
                     if (status === 'pending_outgoing') {
                       return (
-                        <div 
-                          style={{
-                            padding: '4px 8px',
-                            background: '#fff3cd',
-                            border: '1px solid #ffc107',
-                            borderRadius: '4px',
-                            color: '#856404',
-                            fontSize: '0.75rem',
-                            fontWeight: '600'
-                          }}
-                        >
+                        <div className={styles.friendStatusPendingOutgoing}>
                           ⏳ Заявка отправлена
                         </div>
                       );
@@ -1159,17 +986,7 @@ export function Profile() {
                     
                     if (status === 'pending_incoming') {
                       return (
-                        <div 
-                          style={{
-                            padding: '4px 8px',
-                            background: '#cce5ff',
-                            border: '1px solid #007bff',
-                            borderRadius: '4px',
-                            color: '#004085',
-                            fontSize: '0.75rem',
-                            fontWeight: '600'
-                          }}
-                        >
+                        <div className={styles.friendStatusPendingIncoming}>
                           📨 Есть заявка от вас
                         </div>
                       );
@@ -1181,28 +998,7 @@ export function Profile() {
                           e.stopPropagation(); // Предотвращаем всплытие события
                           handleSendFriendRequest(searchResult.id, searchResult.username);
                         }}
-                        style={{
-                          padding: '6px 10px',
-                          background: 'linear-gradient(135deg, #28a745, #20c997)',
-                          color: 'white',
-                          border: '1px solid #1e7e34',
-                          borderRadius: '5px',
-                          fontSize: '0.8rem',
-                          fontWeight: '700',
-                          cursor: 'pointer',
-                          transition: 'all 0.2s ease',
-                          boxShadow: '0 2px 6px rgba(40, 167, 69, 0.3)'
-                        }}
-                        onMouseEnter={(e: MouseEvent<HTMLButtonElement>) => {
-                          e.currentTarget.style.background = 'linear-gradient(135deg, #218838, #17a2b8)';
-                          e.currentTarget.style.transform = 'translateY(-2px)';
-                          e.currentTarget.style.boxShadow = '0 5px 12px rgba(40, 167, 69, 0.4)';
-                        }}
-                        onMouseLeave={(e: MouseEvent<HTMLButtonElement>) => {
-                          e.currentTarget.style.background = 'linear-gradient(135deg, #28a745, #20c997)';
-                          e.currentTarget.style.transform = 'translateY(0)';
-                          e.currentTarget.style.boxShadow = '0 3px 8px rgba(40, 167, 69, 0.3)';
-                        }}
+                        className={styles.addFriendButton}
                       >
                         ➕ Добавить в друзья
                       </button>
@@ -1219,48 +1015,12 @@ export function Profile() {
                 getVisibleFriends().map((friend) => (
                   <div 
                     key={friend.id} 
-                    className={styles.friendCard}
+                    className={`${styles.friendCard} ${styles.friendCardClickable}`}
                     onClick={() => handleFriendClick(friend.id)}
-                    style={{
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'space-between',
-                      gap: '12px',
-                      padding: '18px',
-                      background: '#fffaf0',
-                      borderRadius: '12px',
-                      border: '3px solid #6b3e15',
-                      boxShadow: '0 4px 12px rgba(0, 0, 0, 0.15)',
-                      transition: 'all 0.2s ease-in-out',
-                      position: 'relative',
-                      overflow: 'hidden',
-                      cursor: 'pointer'
-                    }}
-                    onMouseEnter={(e) => {
-                      e.currentTarget.style.transform = 'translateY(-3px)';
-                      e.currentTarget.style.boxShadow = '0 6px 16px rgba(0, 0, 0, 0.2)';
-                      e.currentTarget.style.borderColor = '#8b5a2b';
-                      e.currentTarget.style.background = '#fff8dc';
-                    }}
-                    onMouseLeave={(e) => {
-                      e.currentTarget.style.transform = 'translateY(0)';
-                      e.currentTarget.style.boxShadow = '0 4px 12px rgba(0, 0, 0, 0.15)';
-                      e.currentTarget.style.borderColor = '#6b3e15';
-                      e.currentTarget.style.background = '#fffaf0';
-                    }}
                   >
                     {/* Декоративная полоска сверху */}
-                    <div
-                      style={{
-                        position: 'absolute',
-                        top: 0,
-                        left: 0,
-                        right: 0,
-                        height: '4px',
-                        background: 'linear-gradient(90deg, #d8a35d, #b0752d)'
-                      }}
-                    />
-                    <div style={{ display: 'flex', alignItems: 'flex-start', gap: '12px', flex: 1 }}>
+                    <div className={styles.friendCardTopStripe} />
+                    <div className={styles.friendCardContent}>
                       <UserAvatar
                         userId={friend.id}
                         fallbackImageUrl={friend.image_url || "/default-avatar.svg"}
@@ -1269,7 +1029,7 @@ export function Profile() {
                         alt={`Аватар ${friend.username}`}
                         className={styles.friendAvatar}
                       />
-                      <div style={{ display: 'flex', flexDirection: 'column', flex: 1 }}>
+                      <div className={styles.friendCardInfo}>
                         <h4 className={styles.friendName}>{friend.username}</h4>
                         <p className={styles.friendScore}>
                           🏆 {friend.score ?? 0} очков
@@ -1312,15 +1072,7 @@ export function Profile() {
             
             {/* Индикатор карусели друзей */}
             {friends.length > 0 && (
-              <div 
-                style={{
-                  textAlign: 'center',
-                  marginTop: '16px',
-                  fontSize: '0.9rem',
-                  color: '#8b7355',
-                  fontWeight: '500'
-                }}
-              >
+              <div className={styles.carouselIndicator}>
                 {friends.length > 5 ? 
                   `${currentFriendsIndex + 1}-${Math.min(currentFriendsIndex + 5, friends.length)} из ${friends.length}` : 
                   getFriendsCountText(friends.length)
@@ -1474,11 +1226,7 @@ export function Profile() {
                       size="medium"
                       shape="square"
                       alt={`Аватар ${request.user?.username}`}
-                      style={{
-                        border: '3px solid #8b4513',
-                        boxShadow: '0 4px 8px rgba(139, 69, 19, 0.2)',
-                        flexShrink: 0
-                      }}
+                      className={`${styles.modalAvatar} ${styles.incomingRequestAvatar}`}
                     />
                     
                     <div className={styles.requestItemInfo}>
@@ -1575,11 +1323,7 @@ export function Profile() {
                       size="medium"
                       shape="square"
                       alt={`Аватар ${request.friend?.username}`}
-                      style={{
-                        border: '3px solid #d2691e',
-                        boxShadow: '0 4px 8px rgba(210, 105, 30, 0.2)',
-                        flexShrink: 0
-                      }}
+                      className={`${styles.modalAvatar} ${styles.outgoingRequestAvatar}`}
                     />
                     
                     <div className={styles.requestItemInfo}>

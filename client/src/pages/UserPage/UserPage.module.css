@@ -1,0 +1,1274 @@
+/* Updated: Sep 16, 2025 21:02 - Background image 588cf4d3-776e-4acd-b0d0-737aee462c6f.png with transparency */
+:root {
+  --fantasy-bg: #d6b37a;
+  --fantasy-surface: #f5deb3;
+  --fantasy-surface-2: #fff8dc;
+  --fantasy-border: #8b5a2b;
+  --fantasy-text: #4b2e05;
+  --fantasy-muted: #5c3b09;
+  --fantasy-gold: #d4a017;
+  --fantasy-gold-2: #a97400;
+  --fantasy-accent: #6b3e15;
+}
+
+/* Основная секция профиля с фоновым изображением */
+.profileSection {
+  min-height: 100vh !important;
+  position: relative;
+  font-family: 'Cinzel', serif;
+  padding: 20px;
+  box-sizing: border-box;
+}
+
+/* Фоновое изображение через псевдоэлемент */
+.profileSection::before {
+  content: '';
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-image: url('/588cf4d3-776e-4acd-b0d0-737aee462c6f.png') !important;
+  background-size: cover !important;
+  background-position: center !important;
+  background-repeat: no-repeat !important;
+  z-index: -2;
+}
+
+/* Оверлей для прозрачности */
+.profileSection::after {
+  content: '';
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(rgba(0, 0, 0, 0.1), rgba(0, 0, 0, 0.2));
+  z-index: -1;
+}
+
+/* Все содержимое должно быть поверх фонового изображения, кроме модальных окон */
+.profileSection > *:not([class*="modalOverlay"]) {
+  position: relative;
+  z-index: 1;
+}
+
+.header {
+  color: #4b2e05;
+  font-weight: 700;
+  font-size: 2.2rem;
+  margin: 0 0 30px 0;
+  text-align: center;
+  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3), 1px 1px 2px rgba(0, 0, 0, 0.5);
+  letter-spacing: 1px;
+  position: relative;
+  text-transform: uppercase;
+}
+
+/* Основной контейнер с двумя блоками */
+.mainContainer {
+  display: flex;
+  gap: 24px;
+  max-width: 1440px;
+  margin: 0 auto;
+  min-height: 600px;
+}
+
+/* Левый блок (2/3 ширины) */
+.leftBlock {
+  flex: 2;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  background: linear-gradient(
+    145deg,
+    rgba(248, 235, 215, 0.85),
+    rgba(245, 222, 179, 0.8)
+  );
+  border: 3px solid #8b5a2b;
+  border-radius: 15px;
+  padding: 25px;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.4),
+    inset 0 1px 0 rgba(255, 248, 230, 0.6),
+    inset 0 -1px 0 rgba(139, 90, 43, 0.3);
+  position: relative;
+  overflow: hidden;
+}
+
+.leftBlock::before {
+  content: '';
+  position: absolute;
+  top: -3px;
+  left: -3px;
+  right: -3px;
+  bottom: -3px;
+  background: linear-gradient(45deg, #8b5a2b, #a67a4e, #8b5a2b);
+  border-radius: 15px;
+  z-index: -1;
+}
+
+/* Правый блок (1/3 ширины) */
+.rightBlock {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  background: linear-gradient(
+    145deg,
+    rgba(248, 235, 215, 0.85),
+    rgba(245, 222, 179, 0.8)
+  );
+  border: 3px solid #8b5a2b;
+  border-radius: 15px;
+  padding: 25px;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.4),
+    inset 0 1px 0 rgba(255, 248, 230, 0.6),
+    inset 0 -1px 0 rgba(139, 90, 43, 0.3);
+  position: relative;
+  overflow: hidden;
+}
+
+.rightBlock::before {
+  content: '';
+  position: absolute;
+  top: -3px;
+  left: -3px;
+  right: -3px;
+  bottom: -3px;
+  background: linear-gradient(45deg, #8b5a2b, #a67a4e, #8b5a2b);
+  border-radius: 15px;
+  z-index: -1;
+}
+
+/* Блок 1.1 - Основная информация профиля */
+.profileInfoBlock {
+  background: linear-gradient(145deg, rgba(248, 235, 215, 0.9) 0%, rgba(245, 222, 179, 0.85) 50%, rgba(240, 212, 152, 0.8) 100%);
+  color: #4b2e05;
+  border: 3px solid #8b5a2b;
+  border-radius: 12px;
+  padding: 32px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3),
+    inset 0 1px 0 rgba(255, 248, 230, 0.8),
+    inset 0 -1px 0 rgba(139, 90, 43, 0.2);
+  display: flex;
+  align-items: center;
+  gap: 32px;
+  height: 320px;
+  position: relative;
+  overflow: hidden;
+  transition: all 0.3s ease;
+  margin-bottom: 8px;
+}
+
+.profileInfoBlock::after {
+  content: '';
+  position: absolute;
+  top: 3px;
+  left: 3px;
+  right: 3px;
+  bottom: 3px;
+  border: 1px solid rgba(139, 90, 43, 0.3);
+  border-radius: 8px;
+  pointer-events: none;
+}
+
+.profileInfoBlock::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: linear-gradient(90deg, #d4a017, #f0c33b, #d4a017);
+  z-index: 1;
+}
+
+.profileInfoBlock:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.4),
+    inset 0 1px 0 rgba(255, 248, 230, 0.9),
+    inset 0 -1px 0 rgba(139, 90, 43, 0.3);
+  border-color: #a97400;
+  background: linear-gradient(145deg, #fff8dc 0%, #f5deb3 50%, #f0d498 100%);
+}
+
+.avatarSection {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+  flex-shrink: 0;
+}
+
+.avatar {
+  width: 400px;
+  height: 200px;
+  border-radius: 12px;
+  object-fit: cover;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+  background: #ddd;
+  margin-top: 7px;
+}
+
+.editButton {
+  appearance: none;
+  border: 3px solid #8b5a2b;
+  background: linear-gradient(145deg, #d4a017 0%, #f0c33b 50%, #a97400 100%);
+  color: #2c1810;
+  font-weight: bold;
+  font-size: 1.3rem;
+  border-radius: 12px;
+  padding: 8px 57px !important;
+  width: auto !important;
+  min-width: 300px !important;
+  white-space: nowrap !important;
+  margin-top: 5px !important;
+  cursor: pointer;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3),
+    inset 0 1px 0 rgba(255, 248, 230, 0.6),
+    inset 0 -1px 0 rgba(139, 90, 43, 0.3);
+  transition: all 0.3s ease;
+  text-shadow: 0 1px 0 #f3e0c0, 1px 1px 2px rgba(0, 0, 0, 0.3);
+  letter-spacing: 0.5px;
+  display: block;
+  margin: -1px auto 20px auto;
+  max-width: 250px;
+  min-height: 50px;
+  text-align: center;
+  position: relative;
+  font-family: inherit;
+}
+
+.editButton::after {
+  content: '';
+  position: absolute;
+  top: 3px;
+  left: 3px;
+  right: 3px;
+  bottom: 3px;
+  border: 1px solid rgba(139, 90, 43, 0.3);
+  border-radius: 8px;
+  pointer-events: none;
+}
+
+.editButton:hover {
+  background: linear-gradient(145deg, #f0c33b 0%, #ffd700 50%, #d4a017 100%);
+  transform: translateY(-3px);
+  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.4),
+    inset 0 1px 0 rgba(255, 248, 230, 0.8),
+    inset 0 -1px 0 rgba(139, 90, 43, 0.4);
+  border-color: #a97400;
+}
+
+.editButton:active {
+  transform: translateY(-1px);
+  box-shadow: 0 3px 6px rgba(0, 0, 0, 0.3),
+    inset 0 1px 0 rgba(255, 248, 230, 0.5),
+    inset 0 -1px 0 rgba(139, 90, 43, 0.2);
+}
+
+.avatarShopLink {
+  appearance: none;
+  border: 3px solid #8b5a2b;
+  background: linear-gradient(145deg, #d4a017 0%, #f0c33b 50%, #a97400 100%);
+  color: #2c1810;
+  font-weight: bold;
+  font-size: 1.5rem;
+  border-radius: 12px;
+  padding: 12px;
+  cursor: pointer;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3),
+    inset 0 1px 0 rgba(255, 248, 230, 0.6),
+    inset 0 -1px 0 rgba(139, 90, 43, 0.3);
+  transition: all 0.3s ease;
+  text-shadow: 0 1px 0 #f3e0c0, 1px 1px 2px rgba(0, 0, 0, 0.3);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  text-decoration: none;
+  font-family: inherit;
+  width: 50px;
+  height: 50px;
+  line-height: 1;
+}
+
+.avatarShopLink::after {
+  content: '';
+  position: absolute;
+  top: 3px;
+  left: 3px;
+  right: 3px;
+  bottom: 3px;
+  border: 1px solid rgba(139, 90, 43, 0.3);
+  border-radius: 8px;
+  pointer-events: none;
+}
+
+.avatarShopLink:hover {
+  background: linear-gradient(145deg, #f0c33b 0%, #ffd700 50%, #d4a017 100%);
+  transform: translateY(-3px);
+  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.4),
+    inset 0 1px 0 rgba(255, 248, 230, 0.8),
+    inset 0 -1px 0 rgba(139, 90, 43, 0.4);
+  border-color: #a97400;
+}
+
+.avatarShopLink:active {
+  transform: translateY(-1px);
+  box-shadow: 0 3px 6px rgba(0, 0, 0, 0.3),
+    inset 0 1px 0 rgba(255, 248, 230, 0.5),
+    inset 0 -1px 0 rgba(139, 90, 43, 0.2);
+}
+
+.basicInfo {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 16px;
+  margin-left: 30px;
+}
+
+.username {
+  font-size: 1.49rem;
+  font-weight: 700;
+  color: #2c1810;
+  margin: 0;
+}
+
+.userEmail {
+  font-size: 1.02rem;
+  color: #6b4e3d;
+  margin: 4px 0;
+  font-weight: 500;
+}
+
+.friendsCount {
+  font-size: 1.3rem;
+  color: #8b4513;
+  margin: 0;
+  font-weight: 500;
+}
+
+.registrationDate {
+  font-size: 0.9rem;
+  color: #6b4e3d;
+  margin: 4px 0 8px 0;
+  font-weight: 500;
+}
+
+/* Блок 1.2 - Статистика */
+.statisticsBlock {
+  background: linear-gradient(145deg, rgba(248, 235, 215, 0.9) 0%, rgba(245, 222, 179, 0.85) 50%, rgba(240, 212, 152, 0.8) 100%);
+  color: #4b2e05;
+  border: 3px solid #8b5a2b;
+  border-radius: 12px;
+  padding: 24px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3),
+    inset 0 1px 0 rgba(255, 248, 230, 0.8),
+    inset 0 -1px 0 rgba(139, 90, 43, 0.2);
+  position: relative;
+  overflow: hidden;
+  transition: all 0.3s ease;
+  flex: none;
+  height: fit-content;
+  margin-bottom: 8px;
+}
+
+.statisticsBlock::after {
+  content: '';
+  position: absolute;
+  top: 3px;
+  left: 3px;
+  right: 3px;
+  bottom: 3px;
+  border: 1px solid rgba(139, 90, 43, 0.3);
+  border-radius: 8px;
+  pointer-events: none;
+}
+
+.statisticsBlock::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: linear-gradient(90deg, #d4a017, #f0c33b, #d4a017);
+  z-index: 1;
+}
+
+.statisticsBlock:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.4),
+    inset 0 1px 0 rgba(255, 248, 230, 0.9),
+    inset 0 -1px 0 rgba(139, 90, 43, 0.3);
+  border-color: #a97400;
+  background: linear-gradient(145deg, #fff8dc 0%, #f5deb3 50%, #f0d498 100%);
+}
+
+.blockTitle {
+  color: #4b2e05;
+  font-weight: 700;
+  font-size: 1.54rem;
+  margin: 0 0 30px 0;
+  text-align: center;
+  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3), 1px 1px 2px rgba(0, 0, 0, 0.5);
+  letter-spacing: 1px;
+  position: relative;
+  text-transform: uppercase;
+}
+
+.statsGrid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 16px;
+}
+
+.statCard {
+  background: rgba(255, 250, 240, 0.9);
+  border-radius: 8px;
+  padding: 16px 12px;
+  text-align: center;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  transition: transform 0.2s ease;
+}
+
+.statCard:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+}
+
+.statValue {
+  font-size: 2rem;
+  font-weight: 700;
+  color: #d8a35d;
+  margin-bottom: 6px;
+}
+
+.statLabel {
+  font-size: 1.1rem;
+  color: #5c3d2e;
+  font-weight: 600;
+}
+
+/* Блок достижений */
+.achievementsBlock {
+  background: linear-gradient(145deg, rgba(248, 235, 215, 0.9) 0%, rgba(245, 222, 179, 0.85) 50%, rgba(240, 212, 152, 0.8) 100%);
+  color: #4b2e05;
+  border: 3px solid #8b5a2b;
+  border-radius: 12px;
+  padding: 32px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3),
+    inset 0 1px 0 rgba(255, 248, 230, 0.8),
+    inset 0 -1px 0 rgba(139, 90, 43, 0.2);
+  position: relative;
+  overflow: hidden;
+  transition: all 0.3s ease;
+  margin-bottom: 8px;
+}
+
+.achievementsBlock::after {
+  content: '';
+  position: absolute;
+  top: 3px;
+  left: 3px;
+  right: 3px;
+  bottom: 3px;
+  border: 1px solid rgba(139, 90, 43, 0.3);
+  border-radius: 8px;
+  pointer-events: none;
+}
+
+.achievementsBlock::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: linear-gradient(90deg, #d4a017, #f0c33b, #d4a017);
+  z-index: 1;
+}
+
+.achievementsBlock:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.4),
+    inset 0 1px 0 rgba(255, 248, 230, 0.9),
+    inset 0 -1px 0 rgba(139, 90, 43, 0.3);
+  border-color: #a97400;
+  background: linear-gradient(145deg, #fff8dc 0%, #f5deb3 50%, #f0d498 100%);
+}
+
+.achievementsHeader {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-bottom: 20px;
+  position: relative;
+}
+
+.carouselControls {
+  display: flex;
+  gap: 8px;
+  position: absolute;
+  right: 0;
+  top: 50%;
+  transform: translateY(-50%);
+}
+
+.carouselButton {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  border: 2px solid #6b3e15;
+  background: linear-gradient(180deg, #d8a35d, #b0752d);
+  color: #2c1810;
+  font-size: 18px;
+  font-weight: bold;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+.carouselButton:hover {
+  background: linear-gradient(180deg, #e8b76d, #c6853d);
+  transform: translateY(-1px);
+  box-shadow: 0 3px 6px rgba(0, 0, 0, 0.25);
+}
+
+.carouselButton:active {
+  transform: translateY(0);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.15);
+}
+
+.achievementsCarousel {
+  position: relative;
+  overflow: hidden;
+}
+
+.achievementsList {
+  display: flex;
+  gap: 16px;
+  justify-content: flex-start;
+  transition: transform 0.3s ease;
+  min-height: 200px;
+}
+
+.achievementWrapper {
+  flex: 0 0 calc(33.333% - 11px);
+  min-width: 0;
+}
+
+.profileAchievementCard {
+  height: 100%;
+  font-size: 0.9rem;
+}
+
+.achievementsIndicator {
+  text-align: center;
+  margin-top: 16px;
+  font-size: 0.9rem;
+  color: #8b7355;
+  font-weight: 500;
+}
+
+/* Блок 2 - Секции друзей и избранных вопросов */
+.friendsSection,
+.favoriteQuestionsSection {
+  background: linear-gradient(145deg, rgba(248, 235, 215, 0.9) 0%, rgba(245, 222, 179, 0.85) 50%, rgba(240, 212, 152, 0.8) 100%);
+  color: #4b2e05;
+  border: 3px solid #8b5a2b;
+  border-radius: 12px;
+  padding: 24px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3),
+    inset 0 1px 0 rgba(255, 248, 230, 0.8),
+    inset 0 -1px 0 rgba(139, 90, 43, 0.2);
+  position: relative;
+  overflow: hidden;
+  transition: all 0.3s ease;
+  margin-bottom: 8px;
+}
+
+.friendsSection::after,
+.favoriteQuestionsSection::after {
+  content: '';
+  position: absolute;
+  top: 3px;
+  left: 3px;
+  right: 3px;
+  bottom: 3px;
+  border: 1px solid rgba(139, 90, 43, 0.3);
+  border-radius: 8px;
+  pointer-events: none;
+}
+
+.friendsSection::before,
+.favoriteQuestionsSection::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: linear-gradient(90deg, #d4a017, #f0c33b, #d4a017);
+  z-index: 1;
+}
+
+.friendsSection:hover,
+.favoriteQuestionsSection:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.4),
+    inset 0 1px 0 rgba(255, 248, 230, 0.9),
+    inset 0 -1px 0 rgba(139, 90, 43, 0.3);
+  border-color: #a97400;
+  background: linear-gradient(145deg, #fff8dc 0%, #f5deb3 50%, #f0d498 100%);
+}
+
+/* Дополнительные стили для секции друзей */
+.friendsSection {
+  width: 100%;
+  max-width: 900px;
+  margin: 0;
+}
+
+.friendsList {
+  min-height: 120px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  margin-top: 8px;
+}
+
+.favoritesHeader {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-bottom: 20px;
+  position: relative;
+}
+
+.favoritesCarousel {
+  position: relative;
+  overflow: hidden;
+}
+
+.questionsList {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  min-height: 300px;
+  transition: transform 0.3s ease;
+}
+
+.questionCard {
+  background: rgba(255, 250, 240, 0.9);
+  border: 1px solid rgba(139, 69, 19, 0.2);
+  border-radius: 8px;
+  padding: 16px;
+  transition: all 0.2s ease;
+  cursor: pointer;
+}
+
+.questionCard:hover {
+  border-color: rgba(139, 69, 19, 0.4);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+  transform: translateY(-2px);
+  background: #fff8dc;
+}
+
+.questionHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+}
+
+.topicBadge {
+  background: linear-gradient(135deg, #d8a35d, #b0752d);
+  color: #2c1810;
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  text-shadow: 0 1px 0 #f3e0c0;
+}
+
+.phaseInfo {
+  background: rgba(139, 69, 19, 0.1);
+  color: #8b4513;
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 0.8rem;
+  font-weight: 500;
+}
+
+.questionContent {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.questionText {
+  margin: 0;
+  font-size: 0.9rem;
+  line-height: 1.4;
+  color: #5c3d2e;
+  font-weight: 500;
+}
+
+.questionMeta {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 0.8rem;
+  color: #8b7355;
+}
+
+.questionType {
+  font-weight: 600;
+}
+
+.addedDate {
+  font-style: italic;
+}
+
+.favoritesIndicator {
+  text-align: center;
+  margin-top: 16px;
+  font-size: 0.9rem;
+  color: #8b7355;
+  font-weight: 500;
+}
+
+.emptyMessage {
+  text-align: center;
+  padding: 40px 20px;
+  color: #8b4513;
+  font-size: 1rem;
+  font-weight: 500;
+  font-style: italic;
+}
+
+/* Состояния загрузки и ошибок */
+.loading,
+.error,
+.notFound {
+  padding: 20px;
+  text-align: center;
+  color: #5c3d2e;
+  font-weight: 600;
+}
+
+.error {
+  color: #d32f2f;
+  background: #ffebee;
+  border-radius: 8px;
+  margin-bottom: 16px;
+}
+
+/* Карточки друзей и заявок */
+.friendCard {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 18px;
+  background: rgba(255, 250, 240, 0.9);
+  border-radius: 12px;
+  border: 3px solid #6b3e15;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  transition: all 0.2s ease-in-out;
+  position: relative;
+  overflow: hidden;
+  cursor: pointer;
+}
+
+/* Добавляем декоративную полоску сверху */
+.friendCard::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 4px;
+  background: linear-gradient(90deg, #d8a35d, #b0752d);
+}
+
+.friendCard:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.2);
+  border-color: #8b5a2b;
+  background: #fff8dc;
+}
+
+.friendAvatar {
+  width: 75px;
+  height: 75px;
+  object-fit: cover;
+  background: #ddd;
+  flex-shrink: 0;
+  border: 3px solid #d8a35d;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+  transition: all 0.2s ease;
+}
+
+.friendCard:hover .friendAvatar {
+  border-color: #b0752d;
+  transform: scale(1.05);
+  box-shadow: 0 3px 12px rgba(0, 0, 0, 0.2);
+}
+
+.friendName {
+  margin: 0 0 4px 0;
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: #5c3d2e;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.friendScore {
+  margin: 4px 0 0 0;
+  font-size: 0.8rem;
+  color: #d8a35d;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+/* Стили для кнопок в UserPage */
+.friendsButton {
+  appearance: none;
+  border: 2px solid #654321;
+  background: linear-gradient(135deg, #8b4513, #a0522d);
+  color: white;
+  border-radius: 8px;
+  padding: 9px 18px;
+  font-size: 1.04rem;
+  font-weight: bold;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+  text-shadow: 0 1px 0 rgba(0, 0, 0, 0.3);
+  font-family: inherit;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  min-width: 120px;
+  white-space: nowrap;
+  box-sizing: border-box;
+  height: auto;
+  line-height: 1;
+}
+
+.friendsButton:hover {
+  background: linear-gradient(135deg, #a0522d, #cd853f);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+}
+
+.friendsButton:active {
+  transform: translateY(0);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+.removeFriendButton {
+  appearance: none;
+  border: 2px solid #b21e2f;
+  background: linear-gradient(135deg, #dc3545, #c82333);
+  color: white;
+  border-radius: 8px;
+  padding: 9px 18px !important;
+  font-size: 1.04rem;
+  font-weight: bold;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+  text-shadow: 0 1px 0 rgba(0, 0, 0, 0.3);
+  font-family: inherit;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  min-width: 68px;
+  white-space: nowrap;
+  box-sizing: border-box !important;
+  height: auto !important;
+  line-height: 1 !important;
+}
+
+.removeFriendButton:hover {
+  background: linear-gradient(135deg, #e74c3c, #c0392b);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+}
+
+.removeFriendButton:active {
+  transform: translateY(0);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+/* Request Action Buttons */
+.requestActionButton {
+  padding: 10px 20px;
+  border: 2px solid;
+  border-radius: 8px;
+  font-size: 0.95rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  box-shadow: 0 3px 8px rgba(0, 0, 0, 0.3);
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+  white-space: nowrap;
+  width: 130px !important;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.requestActionButton:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.4);
+}
+
+.requestActionButton:active {
+  transform: translateY(0);
+}
+
+.requestActionButtonAccept {
+  background: linear-gradient(135deg, #8b4513, #a0522d);
+  color: white;
+  border-color: #654321;
+}
+
+.requestActionButtonAccept:hover {
+  background: linear-gradient(135deg, #a0522d, #cd853f);
+}
+
+.requestActionButtonReject {
+  background: linear-gradient(135deg, #dc3545, #c82333);
+  color: white;
+  border-color: #b21e2f;
+}
+
+.requestActionButtonReject:hover {
+  background: linear-gradient(135deg, #e74c3c, #c0392b);
+}
+
+/* Адаптивность */
+@media (max-width: 1024px) {
+  .mainContainer {
+    flex-direction: column;
+    gap: 20px;
+  }
+  
+  .leftBlock,
+  .rightBlock {
+    flex: none;
+  }
+  
+  .profileInfoBlock {
+    flex-direction: column;
+    text-align: center;
+    height: auto;
+    padding: 24px;
+  }
+  
+  .avatarSection {
+    width: 100%;
+  }
+  
+  .avatar {
+    width: 300px;
+    height: 150px;
+    margin-top: 0px;
+  }
+  
+  .username {
+    font-size: 1.19rem;
+  }
+  
+  .statsGrid {
+    grid-template-columns: repeat(3, 1fr);
+    gap: 16px;
+  }
+}
+
+@media (max-width: 768px) {
+  .profileSection {
+    padding: 16px;
+    background-attachment: scroll;
+  }
+  
+  .header {
+    font-size: 1.5rem;
+    margin-bottom: 24px;
+  }
+  
+  .profileInfoBlock,
+  .statisticsBlock,
+  .friendsSection,
+  .favoriteQuestionsSection {
+    padding: 20px;
+  }
+  
+  .avatar {
+    width: 240px;
+    height: 120px;
+    margin-top: 0px;
+  }
+  
+  .username {
+    font-size: 1.07rem;
+  }
+  
+  .statsGrid {
+    grid-template-columns: 1fr;
+    gap: 12px;
+  }
+  
+  .statValue {
+    font-size: 2rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .profileInfoBlock {
+    gap: 16px;
+  }
+  
+  .avatar {
+    width: 200px;
+    height: 200px;
+    border-radius: 12px;
+    object-fit: cover;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+    background: #ddd;
+    border: 3px solid var(--fantasy-gold);
+    margin-top: 16px;
+  }
+  
+  .basicInfo {
+    gap: 12px;
+    margin-left: 30px;
+  }
+  
+  .username {
+    font-size: 0.89rem;
+  }
+  
+  .userEmail {
+    font-size: 0.85rem;
+  }
+
+  .friendsCount {
+    font-size: 1.1rem;
+  }
+
+  .registrationDate {
+    font-size: 0.8rem;
+  }
+  
+  .statValue {
+    font-size: 1.8rem;
+  }
+  
+  .emptyMessage {
+    padding: 30px 16px;
+    font-size: 0.9rem;
+  }
+}
+
+/* Дополнительные классы для замены инлайн стилей */
+
+/* Хедер с кнопкой назад */
+.userPageHeader {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 24px;
+}
+
+.backButton {
+  appearance: none;
+  padding: 8px 16px;
+  background: linear-gradient(180deg, #d4a017, #a97400);
+  color: #2c1810;
+  border: 2px solid #6b3e15;
+  border-radius: 8px;
+  font-size: 1rem;
+  font-weight: bold;
+  cursor: pointer;
+  transition: all 0.2s ease-in-out;
+  box-shadow: 0 3px 6px rgba(0, 0, 0, 0.2);
+  text-shadow: 0 1px 0 #f3e0c0;
+  font-family: inherit;
+}
+
+.backButton:hover {
+  background: linear-gradient(180deg, #f0c33b, #c48a00);
+  transform: translateY(-1px);
+  box-shadow: 0 5px 10px rgba(0, 0, 0, 0.3);
+}
+
+/* Позиционирование аватара */
+.avatarSectionRelative {
+  position: relative;
+}
+
+.avatarShopLinkPositioned {
+  position: absolute;
+  top: 16px;
+  right: 8px;
+  z-index: 10;
+}
+
+/* Кнопки действий с дружбой */
+.actionButtonGold {
+  background: linear-gradient(180deg, #d4a017, #a97400);
+  border-color: #6b3e15;
+}
+
+.actionButtonWithMargin {
+  margin-top: 10px;
+}
+
+.pendingRequestStatus {
+  background: linear-gradient(180deg, #d4a017, #a97400);
+  border-color: #6b3e15;
+  cursor: default;
+  padding: 8px 57px;
+  min-width: 300px;
+  white-space: nowrap;
+  margin-top: 8px;
+}
+
+/* Контейнеры для заявок и действий */
+.friendRequestContainer {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  align-items: center;
+}
+
+.friendRequestButtonsRow {
+  display: flex;
+  gap: 8px;
+}
+
+.friendStatusContainer {
+  display: flex;
+  flex-direction: row;
+  gap: 12px;
+  align-items: center;
+}
+
+/* Навигация друзей */
+.friendsCarouselNavigation {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 20px;
+  margin-bottom: 20px;
+  background: linear-gradient(180deg, #f5deb3, #fff8dc);
+  color: #4b2e05;
+  border-radius: 8px;
+  border: 2px solid #8b5a2b;
+  box-shadow: 0 3px 6px rgba(0, 0, 0, 0.15);
+  font-weight: 700;
+  font-size: 1.1rem;
+  text-shadow: 0 1px 0 #f3e0c0;
+}
+
+.friendsCountCenter {
+  text-align: center;
+  flex: 1;
+}
+
+.carouselNavigationButton {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  border: 2px solid #2c1810;
+  background: rgba(44, 24, 16, 0.1);
+  color: #2c1810;
+  font-size: 16px;
+  font-weight: bold;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.carouselNavigationButton:hover {
+  background: rgba(44, 24, 16, 0.2);
+  transform: scale(1.1);
+}
+
+/* Карточки друзей для UserPage */
+.friendCard {
+  background: linear-gradient(180deg, #f5deb3, #fff8dc);
+  border-radius: 12px;
+  border: 2px solid #8b5a2b;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  transition: all 0.2s ease-in-out;
+  position: relative;
+  overflow: hidden;
+}
+
+.friendCard:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.2);
+  border-color: #8b5a2b;
+  background: #fff8dc;
+}
+
+.friendCardClickable {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 18px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  position: relative;
+}
+
+.friendCardTopStripe {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 4px;
+  background: linear-gradient(90deg, #d4a017, #a97400);
+}
+
+.friendCardContent {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  flex: 1;
+}
+
+.friendCardInfo {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+}
+
+/* Индикатор карусели */
+.carouselIndicator {
+  text-align: center;
+  margin-top: 16px;
+  font-size: 0.9rem;
+  color: #8b7355;
+  font-weight: 500;
+}

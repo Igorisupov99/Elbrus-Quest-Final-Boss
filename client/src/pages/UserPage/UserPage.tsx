@@ -28,7 +28,7 @@ import type { User } from "../../types/auth";
 import { useAppSelector } from "../../store/hooks";
 import { Link } from "react-router-dom";
 import { avatarApi } from "../../api/avatar/avatarApi";
-import styles from "../ProfilePage/Profile.module.css";
+import styles from "./UserPage.module.css";
 
 
 
@@ -522,34 +522,10 @@ export function UserPage() {
 
   return (
     <section className={styles.profileSection}>
-      <div style={{ display: 'flex', alignItems: 'center', gap: '16px', marginBottom: '24px' }}>
+      <div className={styles.userPageHeader}>
         <button 
           onClick={() => navigate(-1)}
-          style={{
-            appearance: 'none',
-            padding: '8px 16px',
-            background: 'linear-gradient(180deg, #d4a017, #a97400)',
-            color: '#2c1810',
-            border: '2px solid #6b3e15',
-            borderRadius: '8px',
-            fontSize: '1rem',
-            fontWeight: 'bold',
-            cursor: 'pointer',
-            transition: 'all 0.2s ease-in-out',
-            boxShadow: '0 3px 6px rgba(0, 0, 0, 0.2)',
-            textShadow: '0 1px 0 #f3e0c0',
-            fontFamily: 'inherit'
-          }}
-          onMouseEnter={(e) => {
-            e.currentTarget.style.background = 'linear-gradient(180deg, #f0c33b, #c48a00)';
-            e.currentTarget.style.transform = 'translateY(-1px)';
-            e.currentTarget.style.boxShadow = '0 5px 10px rgba(0, 0, 0, 0.3)';
-          }}
-          onMouseLeave={(e) => {
-            e.currentTarget.style.background = 'linear-gradient(180deg, #d4a017, #a97400)';
-            e.currentTarget.style.transform = 'translateY(0)';
-            e.currentTarget.style.boxShadow = '0 3px 6px rgba(0, 0, 0, 0.2)';
-          }}
+          className={styles.backButton}
         >
           ← Назад
         </button>
@@ -562,16 +538,10 @@ export function UserPage() {
           {/* Блок 1.1 - Основная информация */}
           <h3 className={styles.blockTitle}>👤 Профиль</h3>
           <div className={styles.profileInfoBlock}>
-            <div className={styles.avatarSection} style={{ position: 'relative' }}>
+            <div className={`${styles.avatarSection} ${styles.avatarSectionRelative}`}>
               <Link 
                 to="/avatar-shop" 
-                className={styles.avatarShopLink}
-                style={{
-                  position: 'absolute',
-                  top: '16px',
-                  right: '8px',
-                  zIndex: 10
-                }}
+                className={`${styles.avatarShopLink} ${styles.avatarShopLinkPositioned}`}
               >
                 🛒
               </Link>
@@ -585,21 +555,16 @@ export function UserPage() {
               {/* Кнопки управления дружбой */}
               {friendshipStatus === 'none' && (
                 <button 
-                  className={styles.editButton}
+                  className={`${styles.editButton} ${styles.actionButtonGold} ${styles.actionButtonWithMargin}`}
                   onClick={handleSendFriendRequest}
-                  style={{
-                    background: 'linear-gradient(180deg, #d4a017, #a97400)',
-                    borderColor: '#6b3e15',
-                    marginTop: '10px' /* Опущена вниз на 10px */
-                  }}
                 >
                   Добавить в друзья
                 </button>
               )}
               
               {friendshipStatus === 'pending' && incomingRequest && (
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', alignItems: 'center' }}>
-                  <div style={{ display: 'flex', gap: '8px' }}>
+                <div className={styles.friendRequestContainer}>
+                  <div className={styles.friendRequestButtonsRow}>
                     <button
                       className={`${styles.requestActionButton} ${styles.requestActionButtonAccept}`}
                       onClick={handleAcceptRequest}
@@ -617,41 +582,19 @@ export function UserPage() {
               )}
               
               {friendshipStatus === 'pending' && !incomingRequest && outgoingRequest && (
-                <div 
-                  className={styles.editButton}
-                  style={{
-                    background: 'linear-gradient(180deg, #d4a017, #a97400)',
-                    borderColor: '#6b3e15',
-                    cursor: 'default',
-                    padding: '8px 57px', /* Увеличена высота для размещения текста в одну линию */
-                    minWidth: '300px', /* Увеличено еще на 50%: 200px * 1.5 = 300px */
-                    whiteSpace: 'nowrap', /* Текст в одну линию */
-                    marginTop: '8px' /* Опущена вниз на 8px */
-                  }}
-                >
+                <div className={`${styles.editButton} ${styles.pendingRequestStatus}`}>
                   Заявка отправлена
                 </div>
               )}
 
               {friendshipStatus === 'pending' && !incomingRequest && !outgoingRequest && (
-                <div 
-                  className={styles.editButton}
-                  style={{
-                    background: 'linear-gradient(180deg, #d4a017, #a97400)',
-                    borderColor: '#6b3e15',
-                    cursor: 'default',
-                    padding: '8px 57px', /* Увеличена высота для размещения текста в одну линию */
-                    minWidth: '300px', /* Увеличено еще на 50%: 200px * 1.5 = 300px */
-                    whiteSpace: 'nowrap', /* Текст в одну линию */
-                    marginTop: '8px' /* Опущена вниз на 8px */
-                  }}
-                >
+                <div className={`${styles.editButton} ${styles.pendingRequestStatus}`}>
                   Заявка отправлена
                 </div>
               )}
               
               {friendshipStatus === 'accepted' && (
-                <div style={{ display: 'flex', flexDirection: 'row', gap: '12px', alignItems: 'center' }}>
+                <div className={styles.friendStatusContainer}>
                   <div className={styles.friendsButton}>
                     ✓ В друзьях
                   </div>
@@ -823,84 +766,24 @@ export function UserPage() {
             ) : (
               <>
                 {/* Информация о количестве друзей с кнопками карусели */}
-                <div 
-                  style={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'space-between',
-                    padding: '12px 20px',
-                    marginBottom: '20px',
-                    background: 'linear-gradient(180deg, #f5deb3, #fff8dc)',
-                    color: '#4b2e05',
-                    borderRadius: '8px',
-                    border: '2px solid #8b5a2b',
-                    boxShadow: '0 3px 6px rgba(0, 0, 0, 0.15)',
-                    fontWeight: '700',
-                    fontSize: '1.1rem',
-                    textShadow: '0 1px 0 #f3e0c0'
-                  }}
-                >
+                <div className={styles.friendsCarouselNavigation}>
                   {friends.length > 5 && (
                     <button 
                       onClick={prevFriends}
-                      style={{
-                        width: '32px',
-                        height: '32px',
-                        borderRadius: '50%',
-                        border: '2px solid #2c1810',
-                        background: 'rgba(44, 24, 16, 0.1)',
-                        color: '#2c1810',
-                        fontSize: '16px',
-                        fontWeight: 'bold',
-                        cursor: 'pointer',
-                        transition: 'all 0.2s ease',
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center'
-                      }}
-                      onMouseEnter={(e) => {
-                        e.currentTarget.style.background = 'rgba(44, 24, 16, 0.2)';
-                        e.currentTarget.style.transform = 'scale(1.1)';
-                      }}
-                      onMouseLeave={(e) => {
-                        e.currentTarget.style.background = 'rgba(44, 24, 16, 0.1)';
-                        e.currentTarget.style.transform = 'scale(1)';
-                      }}
+                      className={styles.carouselNavigationButton}
                     >
                       ←
                     </button>
                   )}
                   
-                  <div style={{ textAlign: 'center', flex: 1 }}>
+                  <div className={styles.friendsCountCenter}>
                     👥 {getFriendsCountText(friends.length)}
                   </div>
                   
                   {friends.length > 5 && (
                     <button 
                       onClick={nextFriends}
-                      style={{
-                        width: '32px',
-                        height: '32px',
-                        borderRadius: '50%',
-                        border: '2px solid #2c1810',
-                        background: 'rgba(44, 24, 16, 0.1)',
-                        color: '#2c1810',
-                        fontSize: '16px',
-                        fontWeight: 'bold',
-                        cursor: 'pointer',
-                        transition: 'all 0.2s ease',
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center'
-                      }}
-                      onMouseEnter={(e) => {
-                        e.currentTarget.style.background = 'rgba(44, 24, 16, 0.2)';
-                        e.currentTarget.style.transform = 'scale(1.1)';
-                      }}
-                      onMouseLeave={(e) => {
-                        e.currentTarget.style.background = 'rgba(44, 24, 16, 0.1)';
-                        e.currentTarget.style.transform = 'scale(1)';
-                      }}
+                      className={styles.carouselNavigationButton}
                     >
                       →
                     </button>
@@ -914,48 +797,12 @@ export function UserPage() {
                     getVisibleFriends().map((friend) => (
                       <div 
                         key={friend.id} 
-                        className={styles.friendCard}
+                        className={`${styles.friendCard} ${styles.friendCardClickable}`}
                         onClick={() => handleFriendClick(friend.id)}
-                        style={{
-                          display: 'flex',
-                          alignItems: 'center',
-                          justifyContent: 'space-between',
-                          gap: '12px',
-                          padding: '18px',
-                          background: 'linear-gradient(180deg, #f5deb3, #fff8dc)',
-                          borderRadius: '12px',
-                          border: '2px solid #8b5a2b',
-                          boxShadow: '0 4px 12px rgba(0, 0, 0, 0.15)',
-                          transition: 'all 0.2s ease-in-out',
-                          position: 'relative',
-                          overflow: 'hidden',
-                          cursor: 'pointer'
-                        }}
-                        onMouseEnter={(e) => {
-                          e.currentTarget.style.transform = 'translateY(-3px)';
-                          e.currentTarget.style.boxShadow = '0 6px 16px rgba(0, 0, 0, 0.2)';
-                          e.currentTarget.style.borderColor = '#8b5a2b';
-                          e.currentTarget.style.background = '#fff8dc';
-                        }}
-                        onMouseLeave={(e) => {
-                          e.currentTarget.style.transform = 'translateY(0)';
-                          e.currentTarget.style.boxShadow = '0 4px 12px rgba(0, 0, 0, 0.15)';
-                          e.currentTarget.style.borderColor = '#6b3e15';
-                          e.currentTarget.style.background = 'linear-gradient(180deg, #f5deb3, #fff8dc)';
-                        }}
                       >
                         {/* Декоративная полоска сверху */}
-                        <div
-                          style={{
-                            position: 'absolute',
-                            top: 0,
-                            left: 0,
-                            right: 0,
-                            height: '4px',
-                            background: 'linear-gradient(90deg, #d4a017, #a97400)'
-                          }}
-                        />
-                        <div style={{ display: 'flex', alignItems: 'flex-start', gap: '12px', flex: 1 }}>
+                        <div className={styles.friendCardTopStripe} />
+                        <div className={styles.friendCardContent}>
                           <UserAvatar
                             userId={friend.id}
                             fallbackImageUrl={friend.image_url || "/default-avatar.svg"}
@@ -964,7 +811,7 @@ export function UserPage() {
                             alt={`Аватар ${friend.username}`}
                             className={styles.friendAvatar}
                           />
-                          <div style={{ display: 'flex', flexDirection: 'column', flex: 1 }}>
+                          <div className={styles.friendCardInfo}>
                             <h4 className={styles.friendName}>{friend.username}</h4>
                             <p className={styles.friendScore}>
                               🏆 {friend.score ?? 0} очков
@@ -978,15 +825,7 @@ export function UserPage() {
                 
                 {/* Индикатор карусели друзей */}
                 {friends.length > 0 && (
-                  <div 
-                    style={{
-                      textAlign: 'center',
-                      marginTop: '16px',
-                      fontSize: '0.9rem',
-                      color: '#8b7355',
-                      fontWeight: '500'
-                    }}
-                  >
+                  <div className={styles.carouselIndicator}>
                     {friends.length > 5 ? 
                       `${currentFriendsIndex + 1}-${Math.min(currentFriendsIndex + 5, friends.length)} из ${friends.length}` : 
                       getFriendsCountText(friends.length)
