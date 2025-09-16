@@ -67,6 +67,20 @@ console.log('10-е число Фибоначчи:', result);
 // Возвращаем результат
 result;`);
 
+  // Проверка, содержит ли вопрос требование написания кода
+  const containsCodeRequirement = (question: string): boolean => {
+    const codeKeywords = [
+      'напишите', 'написать', 'создайте', 'создать', 'реализуйте', 'реализовать',
+      'напиши', 'создай', 'реализуй', 'код', 'функцию', 'функция', 'программу',
+      'программа', 'скрипт', 'алгоритм', 'кодируйте', 'кодировать', 'программируйте',
+      'программировать', 'write', 'create', 'implement', 'code', 'function', 'program',
+      'script', 'algorithm', 'coding', 'programming'
+    ];
+    
+    const questionLower = question.toLowerCase();
+    return codeKeywords.some(keyword => questionLower.includes(keyword));
+  };
+
   // Генерация нового вопроса
   const handleGenerateQuestion = async () => {
     try {
@@ -75,10 +89,23 @@ result;`);
       setUserAnswer('');
       setCurrentQuestion(null);
 
-      const response: AIQuestionResponse = await aiApi.generateQuestion({
-        topic: selectedTopic,
-        difficulty: selectedDifficulty
-      });
+      let attempts = 0;
+      const maxAttempts = 3;
+      let response: AIQuestionResponse;
+
+      // Пытаемся получить теоретический вопрос (без кода)
+      do {
+        response = await aiApi.generateQuestion({
+          topic: selectedTopic,
+          difficulty: selectedDifficulty
+        });
+        attempts++;
+      } while (containsCodeRequirement(response.question) && attempts < maxAttempts);
+
+      // Если все попытки исчерпаны, показываем предупреждение
+      if (containsCodeRequirement(response.question)) {
+        console.warn('Получен вопрос с требованием кода, но попытки исчерпаны');
+      }
 
       const newQuestion: AIQuestion = {
         id: Date.now().toString(),
@@ -162,7 +189,7 @@ result;`);
           🤖 Вопросы от АИ
         </h1>
         <p className={styles.subtitle}>
-          Получайте уникальные вопросы и решайте задачи в IDE
+          Получайте теоретические вопросы по программированию и решайте практические задачи в IDE
         </p>
       </div>
 
@@ -226,11 +253,24 @@ result;`);
               {isGenerating ? '⏳ Генерирую...' : '🎲 Сгенерировать вопрос'}
             </button>
           </div>
+          
+          <div style={{ 
+            textAlign: 'center', 
+            marginTop: '1rem', 
+            padding: '0.75rem', 
+            background: 'rgba(212, 160, 23, 0.1)', 
+            border: '1px solid rgba(212, 160, 23, 0.3)', 
+            borderRadius: '0.5rem',
+            fontSize: '0.9rem',
+            color: 'var(--fantasy-text)'
+          }}>
+            💡 <strong>Теоретические вопросы:</strong> Вопросы фокусируются на понимании концепций, принципов и различий между технологиями, без требования написания кода
+          </div>
         </div>
       )}
 
-      {/* Ошибка */}
-      {error && (
+      {/* Ошибка - только на вкладке вопросов */}
+      {error && activeTab === 'questions' && (
         <div className={styles.error}>
           <span className={styles.errorIcon}>⚠️</span>
           <span>{error}</span>
@@ -243,8 +283,8 @@ result;`);
         </div>
       )}
 
-      {/* Текущий вопрос */}
-      {currentQuestion && (
+      {/* Текущий вопрос - только на вкладке вопросов */}
+      {currentQuestion && activeTab === 'questions' && (
         <div className={styles.questionCard}>
           <div className={styles.questionHeader}>
             <div className={styles.questionMeta}>
@@ -361,8 +401,8 @@ result;`);
         </div>
       )}
 
-      {/* История вопросов */}
-      {questionHistory.length > 0 && (
+      {/* История вопросов - только на вкладке вопросов */}
+      {questionHistory.length > 0 && activeTab === 'questions' && (
         <div className={styles.historySection}>
           <h3 className={styles.historyTitle}>📚 История вопросов</h3>
           <div className={styles.historyList}>
@@ -389,7 +429,6 @@ result;`);
         </div>
       )}
 
-
       {/* Code Runner */}
       {activeTab === 'codeRunner' && (
         <div className={styles.codeRunnerSection}>
@@ -405,7 +444,7 @@ result;`);
             <CodeRunner
               initialCode={codeRunnerCode}
               language={selectedLanguage as 'javascript' | 'typescript'}
-              height="500px"
+              height="100%"
               onCodeChange={setCodeRunnerCode}
             />
           </div>

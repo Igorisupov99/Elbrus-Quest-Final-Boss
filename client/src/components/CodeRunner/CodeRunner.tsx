@@ -125,10 +125,30 @@ const CodeRunner: React.FC<CodeRunnerProps> = ({
       timestamp: new Date()
     }]);
 
+    // Добавляем общую ошибку, если есть
+    if (validation.errorMessage) {
+      setOutput(prev => [...prev, {
+        type: 'error',
+        message: `🔍 Детали ошибки: ${validation.errorMessage}`,
+        timestamp: new Date()
+      }]);
+    }
+
     // Добавляем детали тестов
     if (validation.testResults && validation.testResults.length > 0) {
       validation.testResults.forEach((test, index) => {
-        const testMessage = `Тест ${index + 1}: ${test.passed ? '✅' : '❌'} ${test.testCase.description}`;
+        let testMessage = `Тест ${index + 1}: ${test.passed ? '✅' : '❌'} ${test.testCase.description}`;
+        
+        // Добавляем детали для неудачных тестов
+        if (!test.passed) {
+          if (test.errorMessage) {
+            testMessage += `\n   Ошибка: ${test.errorMessage}`;
+          } else if (test.actualOutput !== undefined) {
+            testMessage += `\n   Ожидалось: ${JSON.stringify(test.testCase.expectedOutput)}`;
+            testMessage += `\n   Получено: ${JSON.stringify(test.actualOutput)}`;
+          }
+        }
+        
         setOutput(prev => [...prev, {
           type: test.passed ? 'log' : 'error',
           message: testMessage,

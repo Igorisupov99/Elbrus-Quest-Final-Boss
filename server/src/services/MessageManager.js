@@ -93,8 +93,20 @@ class MessageManager {
 
   async generateQuestion(topic, difficulty = 'medium') {
     try {
-      const prompt = `Создай вопрос по теме "${topic}" уровня ${difficulty} для образовательной игры по программированию.
-      
+      const prompt = `Создай теоретический вопрос по теме "${topic}" уровня ${difficulty} для образовательной игры по программированию.
+
+ВАЖНО: 
+- Вопрос должен быть ТЕОРЕТИЧЕСКИМ, без требования написания кода
+- Фокус на понимании концепций, принципов, определений
+- Избегай вопросов типа "напишите функцию", "создайте код", "реализуйте"
+- Вместо этого задавай вопросы о том, как что-то работает, что означает, в чем разница
+
+Примеры хороших вопросов:
+- "Что такое замыкание в JavaScript?"
+- "В чем разница между let и var?"
+- "Как работает event loop в Node.js?"
+- "Что такое REST API?"
+
 Формат ответа:
 ВОПРОС: [текст вопроса]
 ОТВЕТ: [правильный ответ]
@@ -157,316 +169,354 @@ class MessageManager {
     this.totalTokens = 0;
   }
 
-  // Генерация тестовых случаев на основе описания задачи
+  // Улучшенная генерация тестовых случаев на основе описания задачи
   generateTestCasesFromDescription(description, language, userCode = '') {
     const lowerDesc = description.toLowerCase();
     
     // Анализируем код пользователя, чтобы понять количество параметров
-    let paramCount = 0;
-    if (userCode) {
-      const functionMatches = userCode.match(/function\s+(\w+)\s*\([^)]*\)/g) || 
-                             userCode.match(/(?:const|let|var)\s+(\w+)\s*=\s*\([^)]*\)/g);
-      if (functionMatches && functionMatches.length > 0) {
-        const params = functionMatches[0].match(/\(([^)]*)\)/)[1].trim();
-        paramCount = params ? params.split(',').length : 0;
-      }
-    }
+    const functionInfo = this.findFunctionInCode(userCode);
+    const paramCount = functionInfo ? functionInfo.paramCount : 0;
     
     // Для задач с числами
     if (lowerDesc.includes('максимальн') || lowerDesc.includes('максимум') || lowerDesc.includes('наибольш')) {
-      // Проверяем, работает ли с массивом или отдельными аргументами
-      if (lowerDesc.includes('массив') || lowerDesc.includes('array') || lowerDesc.includes('элемент')) {
-        return [
-          { input: [1, 2, 3], expectedOutput: 3, description: 'Максимум из массива [1, 2, 3]' },
-          { input: [10, 5, 8], expectedOutput: 10, description: 'Максимум из массива [10, 5, 8]' },
-          { input: [-1, -5, -3], expectedOutput: -1, description: 'Максимум из массива отрицательных чисел' },
-          { input: [0, 0, 0], expectedOutput: 0, description: 'Максимум из массива нулей' }
-        ];
-      } else {
-        return [
-          { input: [1, 2, 3], expectedOutput: 3, description: 'Максимум из 1, 2, 3' },
-          { input: [10, 5, 8], expectedOutput: 10, description: 'Максимум из 10, 5, 8' },
-          { input: [-1, -5, -3], expectedOutput: -1, description: 'Максимум из отрицательных чисел' },
-          { input: [0, 0, 0], expectedOutput: 0, description: 'Максимум из нулей' }
-        ];
-      }
+      return this.generateMaxMinTestCases('max', paramCount);
     }
     
     if (lowerDesc.includes('минимальн') || lowerDesc.includes('минимум') || lowerDesc.includes('наименьш')) {
-      return [
-        { input: [1, 2, 3], expectedOutput: 1, description: 'Минимум из 1, 2, 3' },
-        { input: [10, 5, 8], expectedOutput: 5, description: 'Минимум из 10, 5, 8' },
-        { input: [-1, -5, -3], expectedOutput: -5, description: 'Минимум из отрицательных чисел' }
-      ];
+      return this.generateMaxMinTestCases('min', paramCount);
     }
     
     if (lowerDesc.includes('сумм') || lowerDesc.includes('сложить')) {
-      // Проверяем, работает ли с массивом или отдельными аргументами
-      if (lowerDesc.includes('массив') || lowerDesc.includes('array') || lowerDesc.includes('элемент') || paramCount === 1) {
-        return [
-          { input: [1, 2, 3], expectedOutput: 6, description: 'Сумма массива [1, 2, 3]' },
-          { input: [10, 20, 30], expectedOutput: 60, description: 'Сумма массива [10, 20, 30]' },
-          { input: [-1, 1, 0], expectedOutput: 0, description: 'Сумма массива [-1, 1, 0]' }
-        ];
-      } else if (paramCount === 2) {
-        return [
-          { input: [5, 3], expectedOutput: 8, description: 'Сумма 5 + 3' },
-          { input: [10, 20], expectedOutput: 30, description: 'Сумма 10 + 20' },
-          { input: [-5, 5], expectedOutput: 0, description: 'Сумма -5 + 5' }
-        ];
-      } else if (paramCount === 3) {
-        return [
-          { input: [1, 2, 3], expectedOutput: 6, description: 'Сумма 1 + 2 + 3' },
-          { input: [10, 20, 30], expectedOutput: 60, description: 'Сумма 10 + 20 + 30' },
-          { input: [-1, 1, 0], expectedOutput: 0, description: 'Сумма -1 + 1 + 0' }
-        ];
-      } else {
-        return [
-          { input: [5, 3], expectedOutput: 8, description: 'Сумма 5 + 3' },
-          { input: [10, 20], expectedOutput: 30, description: 'Сумма 10 + 20' },
-          { input: [-5, 5], expectedOutput: 0, description: 'Сумма -5 + 5' }
-        ];
-      }
+      return this.generateSumTestCases(paramCount);
     }
     
     if (lowerDesc.includes('факториал')) {
-      return [
-        { input: 5, expectedOutput: 120, description: 'Факториал 5' },
-        { input: 3, expectedOutput: 6, description: 'Факториал 3' },
-        { input: 0, expectedOutput: 1, description: 'Факториал 0' }
-      ];
+      return this.generateFactorialTestCases();
     }
     
     if (lowerDesc.includes('фибоначчи')) {
-      return [
-        { input: 5, expectedOutput: 5, description: '5-е число Фибоначчи' },
-        { input: 8, expectedOutput: 21, description: '8-е число Фибоначчи' },
-        { input: 1, expectedOutput: 1, description: '1-е число Фибоначчи' }
-      ];
+      return this.generateFibonacciTestCases();
     }
     
     if (lowerDesc.includes('прост') || lowerDesc.includes('prime')) {
-      return [
-        { input: 7, expectedOutput: true, description: '7 - простое число' },
-        { input: 4, expectedOutput: false, description: '4 - не простое число' },
-        { input: 2, expectedOutput: true, description: '2 - простое число' }
-      ];
+      return this.generatePrimeTestCases();
     }
     
     if (lowerDesc.includes('палиндром')) {
-      return [
-        { input: 'racecar', expectedOutput: true, description: 'racecar - палиндром' },
-        { input: 'hello', expectedOutput: false, description: 'hello - не палиндром' },
-        { input: 'level', expectedOutput: true, description: 'level - палиндром' }
-      ];
+      return this.generatePalindromeTestCases();
     }
     
     if (lowerDesc.includes('сортировк') || lowerDesc.includes('sort')) {
-      return [
-        { input: [3, 1, 4, 1, 5], expectedOutput: [1, 1, 3, 4, 5], description: 'Сортировка [3, 1, 4, 1, 5]' },
-        { input: [5, 2, 8, 1], expectedOutput: [1, 2, 5, 8], description: 'Сортировка [5, 2, 8, 1]' },
-        { input: [1], expectedOutput: [1], description: 'Сортировка одного элемента' }
-      ];
+      return this.generateSortTestCases();
     }
     
-    // Для функций с колбэками (filter, map, reduce и т.д.)
     if (lowerDesc.includes('фильтр') || lowerDesc.includes('filter') || 
         lowerDesc.includes('отфильтровать') || lowerDesc.includes('предикат')) {
-      return [
-        { 
-          input: [[1, 2, 3, 4, 5], (x) => x > 2], 
-          expectedOutput: [3, 4, 5], 
-          description: 'Фильтрация чисел больше 2' 
-        },
-        { 
-          input: [[10, 20, 30, 40], (x) => x < 25], 
-          expectedOutput: [10, 20], 
-          description: 'Фильтрация чисел меньше 25' 
-        },
-        { 
-          input: [[1, 3, 5, 7, 9], (x) => x % 2 === 0], 
-          expectedOutput: [], 
-          description: 'Фильтрация четных чисел из нечетных' 
-        }
-      ];
+      return this.generateFilterTestCases();
     }
     
-    // Для функций поиска уникальных элементов
     if (lowerDesc.includes('уникальн') || lowerDesc.includes('unique') || 
         lowerDesc.includes('неповторяющ') || lowerDesc.includes('distinct') ||
         lowerDesc.includes('дубликат') || lowerDesc.includes('duplicate')) {
-      return [
-        { input: [1, 2, 3, 2, 1, 4], expectedOutput: [3, 4], description: 'Уникальные элементы из [1, 2, 3, 2, 1, 4]' },
-        { input: [1, 2, 3, 4, 5], expectedOutput: [1, 2, 3, 4, 5], description: 'Все элементы уникальны' },
-        { input: [1, 1, 1, 1], expectedOutput: [], description: 'Все элементы одинаковые' },
-        { input: [], expectedOutput: [], description: 'Пустой массив' }
-      ];
+      return this.generateUniqueTestCases();
     }
     
-    // Для функций работы со строками
     if (lowerDesc.includes('строк') || lowerDesc.includes('string') || 
         lowerDesc.includes('текст') || lowerDesc.includes('символ') ||
         lowerDesc.includes('букв') || lowerDesc.includes('слово')) {
-      return [
-        { input: 'hello', expectedOutput: 'HELLO', description: 'Преобразование в верхний регистр' },
-        { input: 'WORLD', expectedOutput: 'world', description: 'Преобразование в нижний регистр' },
-        { input: 'test', expectedOutput: 4, description: 'Длина строки' },
-        { input: '', expectedOutput: 0, description: 'Пустая строка' }
-      ];
+      return this.generateStringTestCases();
     }
     
-    // Для функций проверки четности/нечетности
     if (lowerDesc.includes('четн') || lowerDesc.includes('нечетн') || 
         lowerDesc.includes('even') || lowerDesc.includes('odd') ||
         lowerDesc.includes('делится') || lowerDesc.includes('кратн')) {
-      return [
-        { input: 4, expectedOutput: true, description: '4 - четное число' },
-        { input: 7, expectedOutput: false, description: '7 - нечетное число' },
-        { input: 0, expectedOutput: true, description: '0 - четное число' },
-        { input: -2, expectedOutput: true, description: '-2 - четное число' }
-      ];
+      return this.generateEvenOddTestCases();
     }
     
-    // Для функций работы с объектами
     if (lowerDesc.includes('объект') || lowerDesc.includes('object') || 
         lowerDesc.includes('ключ') || lowerDesc.includes('значение') ||
         lowerDesc.includes('свойств') || lowerDesc.includes('property')) {
-      return [
-        { input: {a: 1, b: 2, c: 3}, expectedOutput: ['a', 'b', 'c'], description: 'Ключи объекта' },
-        { input: {x: 10, y: 20}, expectedOutput: [10, 20], description: 'Значения объекта' },
-        { input: {}, expectedOutput: [], description: 'Пустой объект' }
-      ];
-    }
-    
-    // Для функций поиска максимального/минимального элемента
-    if (lowerDesc.includes('максимальн') || lowerDesc.includes('максимум') || 
-        lowerDesc.includes('наибольш') || lowerDesc.includes('max')) {
-      return [
-        { input: [1, 2, 3, 2, 1], expectedOutput: 3, description: 'Максимум из [1, 2, 3, 2, 1]' },
-        { input: [10, 5, 8, 15, 3], expectedOutput: 15, description: 'Максимум из [10, 5, 8, 15, 3]' },
-        { input: [-1, -5, -3], expectedOutput: -1, description: 'Максимум из отрицательных чисел' },
-        { input: [42], expectedOutput: 42, description: 'Максимум из одного элемента' }
-      ];
-    }
-    
-    if (lowerDesc.includes('минимальн') || lowerDesc.includes('минимум') || 
-        lowerDesc.includes('наименьш') || lowerDesc.includes('min')) {
-      return [
-        { input: [1, 2, 3, 2, 1], expectedOutput: 1, description: 'Минимум из [1, 2, 3, 2, 1]' },
-        { input: [10, 5, 8, 15, 3], expectedOutput: 3, description: 'Минимум из [10, 5, 8, 15, 3]' },
-        { input: [-1, -5, -3], expectedOutput: -5, description: 'Минимум из отрицательных чисел' },
-        { input: [42], expectedOutput: 42, description: 'Минимум из одного элемента' }
-      ];
-    }
-    
-    // Для функций подсчета элементов
-    if (lowerDesc.includes('подсчет') || lowerDesc.includes('количество') || 
-        lowerDesc.includes('count') || lowerDesc.includes('размер') ||
-        lowerDesc.includes('длина') || lowerDesc.includes('length')) {
-      return [
-        { input: [1, 2, 3, 4, 5], expectedOutput: 5, description: 'Количество элементов в массиве' },
-        { input: [], expectedOutput: 0, description: 'Пустой массив' },
-        { input: 'hello', expectedOutput: 5, description: 'Длина строки' },
-        { input: '', expectedOutput: 0, description: 'Пустая строка' }
-      ];
-    }
-    
-    // Для функций проверки на пустоту
-    if (lowerDesc.includes('пуст') || lowerDesc.includes('empty') || 
-        lowerDesc.includes('провер') || lowerDesc.includes('check')) {
-      return [
-        { input: [], expectedOutput: true, description: 'Пустой массив' },
-        { input: [1, 2, 3], expectedOutput: false, description: 'Непустой массив' },
-        { input: '', expectedOutput: true, description: 'Пустая строка' },
-        { input: 'hello', expectedOutput: false, description: 'Непустая строка' }
-      ];
-    }
-    
-    // Для функций реверса
-    if (lowerDesc.includes('обратн') || lowerDesc.includes('reverse') || 
-        lowerDesc.includes('переверн') || lowerDesc.includes('разверн')) {
-      return [
-        { input: [1, 2, 3, 4], expectedOutput: [4, 3, 2, 1], description: 'Реверс массива [1, 2, 3, 4]' },
-        { input: 'hello', expectedOutput: 'olleh', description: 'Реверс строки hello' },
-        { input: [], expectedOutput: [], description: 'Реверс пустого массива' },
-        { input: '', expectedOutput: '', description: 'Реверс пустой строки' }
-      ];
+      return this.generateObjectTestCases();
     }
     
     if (lowerDesc.includes('карта') || lowerDesc.includes('map') || 
         lowerDesc.includes('преобразовать') || lowerDesc.includes('трансформировать')) {
-      return [
-        { 
-          input: [[1, 2, 3, 4], (x) => x * 2], 
-          expectedOutput: [2, 4, 6, 8], 
-          description: 'Умножение каждого элемента на 2' 
-        },
-        { 
-          input: [[1, 2, 3], (x) => x * x], 
-          expectedOutput: [1, 4, 9], 
-          description: 'Возведение в квадрат' 
-        }
-      ];
+      return this.generateMapTestCases();
     }
     
     if (lowerDesc.includes('редукц') || lowerDesc.includes('reduce') || 
         lowerDesc.includes('свертк') || lowerDesc.includes('аккумулятор')) {
-      return [
-        { 
-          input: [[1, 2, 3, 4], (acc, x) => acc + x, 0], 
-          expectedOutput: 10, 
-          description: 'Сумма элементов массива' 
-        },
-        { 
-          input: [[1, 2, 3, 4], (acc, x) => acc * x, 1], 
-          expectedOutput: 24, 
-          description: 'Произведение элементов массива' 
-        }
-      ];
+      return this.generateReduceTestCases();
     }
     
-    // Для функций с двумя параметрами (не колбэки)
-    if (paramCount === 2) {
+    if (lowerDesc.includes('обратн') || lowerDesc.includes('reverse') || 
+        lowerDesc.includes('переверн') || lowerDesc.includes('разверн')) {
+      return this.generateReverseTestCases();
+    }
+    
+    if (lowerDesc.includes('подсчет') || lowerDesc.includes('количество') || 
+        lowerDesc.includes('count') || lowerDesc.includes('размер') ||
+        lowerDesc.includes('длина') || lowerDesc.includes('length')) {
+      return this.generateCountTestCases();
+    }
+    
+    if (lowerDesc.includes('пуст') || lowerDesc.includes('empty') || 
+        lowerDesc.includes('провер') || lowerDesc.includes('check')) {
+      return this.generateEmptyTestCases();
+    }
+    
+    // Дефолтные тестовые случаи на основе количества параметров
+    return this.generateDefaultTestCases(paramCount);
+  }
+
+  // Генерация тестов для поиска максимума/минимума
+  generateMaxMinTestCases(type, paramCount) {
+    const testCases = [
+      { input: [1, 2, 3], expectedOutput: type === 'max' ? 3 : 1, description: `${type === 'max' ? 'Максимум' : 'Минимум'} из [1, 2, 3]` },
+      { input: [10, 5, 8], expectedOutput: type === 'max' ? 10 : 5, description: `${type === 'max' ? 'Максимум' : 'Минимум'} из [10, 5, 8]` },
+      { input: [-1, -5, -3], expectedOutput: type === 'max' ? -1 : -5, description: `${type === 'max' ? 'Максимум' : 'Минимум'} из отрицательных чисел` },
+      { input: [0, 0, 0], expectedOutput: 0, description: `${type === 'max' ? 'Максимум' : 'Минимум'} из нулей` }
+    ];
+    
+    // Если функция принимает несколько параметров, добавляем тесты с отдельными аргументами
+    if (paramCount > 1) {
+      testCases.push(
+        { input: [1, 2, 3], expectedOutput: type === 'max' ? 3 : 1, description: `${type === 'max' ? 'Максимум' : 'Минимум'} из 1, 2, 3` },
+        { input: [10, 5, 8], expectedOutput: type === 'max' ? 10 : 5, description: `${type === 'max' ? 'Максимум' : 'Минимум'} из 10, 5, 8` }
+      );
+    }
+    
+    return testCases;
+  }
+
+  // Генерация тестов для суммирования
+  generateSumTestCases(paramCount) {
+    if (paramCount === 1) {
+      return [
+        { input: [1, 2, 3], expectedOutput: 6, description: 'Сумма массива [1, 2, 3]' },
+        { input: [10, 20, 30], expectedOutput: 60, description: 'Сумма массива [10, 20, 30]' },
+        { input: [-1, 1, 0], expectedOutput: 0, description: 'Сумма массива [-1, 1, 0]' },
+        { input: [], expectedOutput: 0, description: 'Сумма пустого массива' }
+      ];
+    } else if (paramCount === 2) {
+      return [
+        { input: [5, 3], expectedOutput: 8, description: 'Сумма 5 + 3' },
+        { input: [10, 20], expectedOutput: 30, description: 'Сумма 10 + 20' },
+        { input: [-5, 5], expectedOutput: 0, description: 'Сумма -5 + 5' }
+      ];
+    } else if (paramCount === 3) {
+      return [
+        { input: [1, 2, 3], expectedOutput: 6, description: 'Сумма 1 + 2 + 3' },
+        { input: [10, 20, 30], expectedOutput: 60, description: 'Сумма 10 + 20 + 30' },
+        { input: [-1, 1, 0], expectedOutput: 0, description: 'Сумма -1 + 1 + 0' }
+      ];
+    } else {
+      return [
+        { input: [5, 3], expectedOutput: 8, description: 'Сумма 5 + 3' },
+        { input: [10, 20], expectedOutput: 30, description: 'Сумма 10 + 20' },
+        { input: [-5, 5], expectedOutput: 0, description: 'Сумма -5 + 5' }
+      ];
+    }
+  }
+
+  // Генерация тестов для факториала
+  generateFactorialTestCases() {
+    return [
+      { input: 5, expectedOutput: 120, description: 'Факториал 5' },
+      { input: 3, expectedOutput: 6, description: 'Факториал 3' },
+      { input: 0, expectedOutput: 1, description: 'Факториал 0' },
+      { input: 1, expectedOutput: 1, description: 'Факториал 1' }
+    ];
+  }
+
+  // Генерация тестов для чисел Фибоначчи
+  generateFibonacciTestCases() {
+    return [
+      { input: 5, expectedOutput: 5, description: '5-е число Фибоначчи' },
+      { input: 8, expectedOutput: 21, description: '8-е число Фибоначчи' },
+      { input: 1, expectedOutput: 1, description: '1-е число Фибоначчи' },
+      { input: 2, expectedOutput: 1, description: '2-е число Фибоначчи' }
+    ];
+  }
+
+  // Генерация тестов для простых чисел
+  generatePrimeTestCases() {
+    return [
+      { input: 7, expectedOutput: true, description: '7 - простое число' },
+      { input: 4, expectedOutput: false, description: '4 - не простое число' },
+      { input: 2, expectedOutput: true, description: '2 - простое число' },
+      { input: 1, expectedOutput: false, description: '1 - не простое число' }
+    ];
+  }
+
+  // Генерация тестов для палиндромов
+  generatePalindromeTestCases() {
+    return [
+      { input: 'racecar', expectedOutput: true, description: 'racecar - палиндром' },
+      { input: 'hello', expectedOutput: false, description: 'hello - не палиндром' },
+      { input: 'level', expectedOutput: true, description: 'level - палиндром' },
+      { input: 'a', expectedOutput: true, description: 'a - палиндром' }
+    ];
+  }
+
+  // Генерация тестов для сортировки
+  generateSortTestCases() {
+    return [
+      { input: [3, 1, 4, 1, 5], expectedOutput: [1, 1, 3, 4, 5], description: 'Сортировка [3, 1, 4, 1, 5]' },
+      { input: [5, 2, 8, 1], expectedOutput: [1, 2, 5, 8], description: 'Сортировка [5, 2, 8, 1]' },
+      { input: [1], expectedOutput: [1], description: 'Сортировка одного элемента' },
+      { input: [], expectedOutput: [], description: 'Сортировка пустого массива' }
+    ];
+  }
+
+  // Генерация тестов для фильтрации
+  generateFilterTestCases() {
+    return [
+      { 
+        input: [[1, 2, 3, 4, 5], (x) => x > 2], 
+        expectedOutput: [3, 4, 5], 
+        description: 'Фильтрация чисел больше 2' 
+      },
+      { 
+        input: [[10, 20, 30, 40], (x) => x < 25], 
+        expectedOutput: [10, 20], 
+        description: 'Фильтрация чисел меньше 25' 
+      },
+      { 
+        input: [[1, 3, 5, 7, 9], (x) => x % 2 === 0], 
+        expectedOutput: [], 
+        description: 'Фильтрация четных чисел из нечетных' 
+      }
+    ];
+  }
+
+  // Генерация тестов для уникальных элементов
+  generateUniqueTestCases() {
+    return [
+      { input: [1, 2, 3, 2, 1, 4], expectedOutput: [3, 4], description: 'Уникальные элементы из [1, 2, 3, 2, 1, 4]' },
+      { input: [1, 2, 3, 4, 5], expectedOutput: [1, 2, 3, 4, 5], description: 'Все элементы уникальны' },
+      { input: [1, 1, 1, 1], expectedOutput: [], description: 'Все элементы одинаковые' },
+      { input: [], expectedOutput: [], description: 'Пустой массив' }
+    ];
+  }
+
+  // Генерация тестов для строк
+  generateStringTestCases() {
+    return [
+      { input: 'hello', expectedOutput: 'HELLO', description: 'Преобразование в верхний регистр' },
+      { input: 'WORLD', expectedOutput: 'world', description: 'Преобразование в нижний регистр' },
+      { input: 'test', expectedOutput: 4, description: 'Длина строки' },
+      { input: '', expectedOutput: 0, description: 'Пустая строка' }
+    ];
+  }
+
+  // Генерация тестов для четности/нечетности
+  generateEvenOddTestCases() {
+    return [
+      { input: 4, expectedOutput: true, description: '4 - четное число' },
+      { input: 7, expectedOutput: false, description: '7 - нечетное число' },
+      { input: 0, expectedOutput: true, description: '0 - четное число' },
+      { input: -2, expectedOutput: true, description: '-2 - четное число' }
+    ];
+  }
+
+  // Генерация тестов для объектов
+  generateObjectTestCases() {
+    return [
+      { input: {a: 1, b: 2, c: 3}, expectedOutput: ['a', 'b', 'c'], description: 'Ключи объекта' },
+      { input: {x: 10, y: 20}, expectedOutput: [10, 20], description: 'Значения объекта' },
+      { input: {}, expectedOutput: [], description: 'Пустой объект' }
+    ];
+  }
+
+  // Генерация тестов для map
+  generateMapTestCases() {
+    return [
+      { 
+        input: [[1, 2, 3, 4], (x) => x * 2], 
+        expectedOutput: [2, 4, 6, 8], 
+        description: 'Умножение каждого элемента на 2' 
+      },
+      { 
+        input: [[1, 2, 3], (x) => x * x], 
+        expectedOutput: [1, 4, 9], 
+        description: 'Возведение в квадрат' 
+      }
+    ];
+  }
+
+  // Генерация тестов для reduce
+  generateReduceTestCases() {
+    return [
+      { 
+        input: [[1, 2, 3, 4], (acc, x) => acc + x, 0], 
+        expectedOutput: 10, 
+        description: 'Сумма элементов массива' 
+      },
+      { 
+        input: [[1, 2, 3, 4], (acc, x) => acc * x, 1], 
+        expectedOutput: 24, 
+        description: 'Произведение элементов массива' 
+      }
+    ];
+  }
+
+  // Генерация тестов для реверса
+  generateReverseTestCases() {
+    return [
+      { input: [1, 2, 3, 4], expectedOutput: [4, 3, 2, 1], description: 'Реверс массива [1, 2, 3, 4]' },
+      { input: 'hello', expectedOutput: 'olleh', description: 'Реверс строки hello' },
+      { input: [], expectedOutput: [], description: 'Реверс пустого массива' },
+      { input: '', expectedOutput: '', description: 'Реверс пустой строки' }
+    ];
+  }
+
+  // Генерация тестов для подсчета
+  generateCountTestCases() {
+    return [
+      { input: [1, 2, 3, 4, 5], expectedOutput: 5, description: 'Количество элементов в массиве' },
+      { input: [], expectedOutput: 0, description: 'Пустой массив' },
+      { input: 'hello', expectedOutput: 5, description: 'Длина строки' },
+      { input: '', expectedOutput: 0, description: 'Пустая строка' }
+    ];
+  }
+
+  // Генерация тестов для проверки пустоты
+  generateEmptyTestCases() {
+    return [
+      { input: [], expectedOutput: true, description: 'Пустой массив' },
+      { input: [1, 2, 3], expectedOutput: false, description: 'Непустой массив' },
+      { input: '', expectedOutput: true, description: 'Пустая строка' },
+      { input: 'hello', expectedOutput: false, description: 'Непустая строка' }
+    ];
+  }
+
+  // Генерация дефолтных тестовых случаев
+  generateDefaultTestCases(paramCount) {
+    if (paramCount === 1) {
+      return [
+        { input: [1, 2, 3], expectedOutput: [1, 2, 3], description: 'Массив [1, 2, 3]' },
+        { input: [5, 10, 15], expectedOutput: [5, 10, 15], description: 'Массив [5, 10, 15]' },
+        { input: [], expectedOutput: [], description: 'Пустой массив' }
+      ];
+    } else if (paramCount === 2) {
       return [
         { input: [5, 3], expectedOutput: 8, description: 'Тест с двумя параметрами' },
         { input: [10, 20], expectedOutput: 30, description: 'Второй тест с двумя параметрами' },
         { input: [1, 1], expectedOutput: 2, description: 'Третий тест с двумя параметрами' }
       ];
-    }
-    
-    // Для функций с тремя параметрами
-    if (paramCount === 3) {
+    } else if (paramCount === 3) {
       return [
         { input: [1, 2, 3], expectedOutput: 6, description: 'Тест с тремя параметрами' },
         { input: [5, 5, 5], expectedOutput: 15, description: 'Второй тест с тремя параметрами' }
       ];
+    } else {
+      return [
+        { input: 5, expectedOutput: 5, description: 'Числовой тест' },
+        { input: 'hello', expectedOutput: 'hello', description: 'Строковый тест' },
+        { input: true, expectedOutput: true, description: 'Булевый тест' }
+      ];
     }
-    
-    // Дефолтные тестовые случаи для неизвестных функций
-    // Пробуем разные типы данных, чтобы быть более гибкими
-    return [
-      // Тесты с массивами
-      { input: [1, 2, 3, 2, 1], expectedOutput: [3], description: 'Массив с дубликатами' },
-      { input: [1, 2, 3], expectedOutput: [1, 2, 3], description: 'Массив без дубликатов' },
-      { input: [], expectedOutput: [], description: 'Пустой массив' },
-      
-      // Тесты с числами
-      { input: 5, expectedOutput: 5, description: 'Числовой тест' },
-      { input: 0, expectedOutput: 0, description: 'Нулевое значение' },
-      { input: -5, expectedOutput: -5, description: 'Отрицательное число' },
-      
-      // Тесты со строками
-      { input: 'hello', expectedOutput: 'hello', description: 'Строковый тест' },
-      { input: '', expectedOutput: '', description: 'Пустая строка' },
-      
-      // Тесты с булевыми значениями
-      { input: true, expectedOutput: true, description: 'Булевый тест true' },
-      { input: false, expectedOutput: false, description: 'Булевый тест false' },
-      
-      // Тесты с объектами
-      { input: {a: 1, b: 2}, expectedOutput: {a: 1, b: 2}, description: 'Объектный тест' },
-      { input: {}, expectedOutput: {}, description: 'Пустой объект' }
-    ];
   }
 
   // Вспомогательный метод для сравнения чисел
@@ -695,13 +745,35 @@ class MessageManager {
       console.log('Код пользователя:', userCode);
       console.log('Тестовые случаи:', JSON.stringify(testCases, null, 2));
       
+      // Валидация входных данных
+      if (!userCode || !userCode.trim()) {
+        return {
+          isCorrect: false,
+          passedTests: 0,
+          totalTests: testCases.length,
+          testResults: [],
+          errorMessage: 'Код не может быть пустым'
+        };
+      }
+
+      if (!testCases || testCases.length === 0) {
+        return {
+          isCorrect: false,
+          passedTests: 0,
+          totalTests: 0,
+          testResults: [],
+          errorMessage: 'Нет тестовых случаев для проверки'
+        };
+      }
+      
       // Выполняем код и проверяем результаты
       const results = await this.executeUserCode(userCode, testCases);
       
       console.log('Результаты валидации:', results);
       console.log('=== КОНЕЦ ВАЛИДАЦИИ КОДА ===');
       
-      return {
+      // Детальная обработка результатов
+      const validationResult = {
         isCorrect: results.passedTests === results.totalTests,
         passedTests: results.passedTests,
         totalTests: results.totalTests,
@@ -709,14 +781,52 @@ class MessageManager {
         errorMessage: results.errorMessage
       };
 
+      // Добавляем дополнительную информацию об ошибках
+      if (!validationResult.isCorrect && results.testResults) {
+        const failedTests = results.testResults.filter(test => !test.passed);
+        if (failedTests.length > 0) {
+          const errorDetails = failedTests.map(test => {
+            if (test.errorMessage) {
+              return `Тест "${test.testCase.description}": ${test.errorMessage}`;
+            } else {
+              return `Тест "${test.testCase.description}": ожидалось ${JSON.stringify(test.expectedOutput)}, получено ${JSON.stringify(test.actualOutput)}`;
+            }
+          }).join('; ');
+          
+          validationResult.errorMessage = validationResult.errorMessage 
+            ? `${validationResult.errorMessage}. Детали: ${errorDetails}`
+            : errorDetails;
+        }
+      }
+      
+      return validationResult;
+
     } catch (error) {
       console.error('IDE Code Validation Error:', error);
+      
+      // Детальная обработка ошибок
+      let errorMessage = 'Неизвестная ошибка валидации';
+      
+      if (error.message) {
+        if (error.message.includes('timeout')) {
+          errorMessage = 'Превышено время выполнения кода (5 секунд)';
+        } else if (error.message.includes('SyntaxError')) {
+          errorMessage = 'Синтаксическая ошибка в коде';
+        } else if (error.message.includes('ReferenceError')) {
+          errorMessage = 'Ошибка ссылки на несуществующую переменную или функцию';
+        } else if (error.message.includes('TypeError')) {
+          errorMessage = 'Ошибка типа данных';
+        } else {
+          errorMessage = `Ошибка выполнения: ${error.message}`;
+        }
+      }
+      
       return {
         isCorrect: false,
         passedTests: 0,
         totalTests: testCases.length,
         testResults: [],
-        errorMessage: error.message || 'Ошибка выполнения кода'
+        errorMessage: errorMessage
       };
     }
   }
@@ -736,32 +846,10 @@ class MessageManager {
       vm.createContext(context);
       vm.runInContext(userCode, context, { timeout: 5000 });
 
-      // Ищем функции в коде (поддерживаем разные форматы)
-      let functionName = null;
+      // Упрощенный поиск функций
+      const functionInfo = this.findFunctionInCode(userCode);
       
-      // Обычные функции: function name()
-      const functionMatches = userCode.match(/function\s+(\w+)\s*\(/g);
-      if (functionMatches && functionMatches.length > 0) {
-        functionName = functionMatches[0].match(/function\s+(\w+)\s*\(/)[1];
-      }
-      
-      // Стрелочные функции: const name = () => или let name = () =>
-      if (!functionName) {
-        const arrowMatches = userCode.match(/(?:const|let|var)\s+(\w+)\s*=\s*\([^)]*\)\s*=>/g);
-        if (arrowMatches && arrowMatches.length > 0) {
-          functionName = arrowMatches[0].match(/(?:const|let|var)\s+(\w+)\s*=\s*\([^)]*\)\s*=>/)[1];
-        }
-      }
-      
-      // Функциональные выражения: const name = function()
-      if (!functionName) {
-        const exprMatches = userCode.match(/(?:const|let|var)\s+(\w+)\s*=\s*function/g);
-        if (exprMatches && exprMatches.length > 0) {
-          functionName = exprMatches[0].match(/(?:const|let|var)\s+(\w+)\s*=\s*function/)[1];
-        }
-      }
-      
-      if (!functionName) {
+      if (!functionInfo) {
         return {
           passedTests: 0,
           totalTests: testCases.length,
@@ -769,6 +857,8 @@ class MessageManager {
           errorMessage: 'Функция не найдена в коде. Поддерживаются: function name(), const name = () =>, const name = function()'
         };
       }
+      
+      const { functionName, paramCount } = functionInfo;
       
       // Проверяем, что функция существует в контексте
       if (typeof context[functionName] !== 'function') {
@@ -786,89 +876,14 @@ class MessageManager {
 
       for (const testCase of testCases) {
         try {
-          // Выполняем функцию с тестовыми данными
-          let result;
-          
-          // Анализируем сигнатуру функции, чтобы понять, как передавать аргументы
-          const functionCode = userCode.match(new RegExp(`function\\s+${functionName}\\s*\\([^)]*\\)`)) || 
-                              userCode.match(new RegExp(`(?:const|let|var)\\s+${functionName}\\s*=\\s*\\([^)]*\\)`));
-          
-          if (functionCode) {
-            const params = functionCode[0].match(/\(([^)]*)\)/)[1].trim();
-            const paramCount = params ? params.split(',').length : 0;
-            
-            console.log(`Функция ${functionName} принимает ${paramCount} параметров: ${params}`);
-            
-            // Если функция принимает один параметр и вход - массив, передаем массив как есть
-            if (paramCount === 1 && Array.isArray(testCase.input)) {
-              result = context[functionName](testCase.input);
-            }
-            // Если функция принимает несколько параметров и вход - массив, используем spread
-            else if (paramCount > 1 && Array.isArray(testCase.input)) {
-              result = context[functionName](...testCase.input);
-            }
-            // Иначе передаем как есть
-            else {
-              result = context[functionName](testCase.input);
-            }
-          } else {
-            // Fallback: если не можем определить сигнатуру, пробуем разные варианты
-            if (Array.isArray(testCase.input)) {
-              try {
-                // Сначала пробуем передать массив как есть (для функций с одним параметром)
-                result = context[functionName](testCase.input);
-              } catch (e) {
-                try {
-                  // Если не получилось, пробуем spread (для функций с несколькими параметрами)
-                  result = context[functionName](...testCase.input);
-                } catch (e2) {
-                  try {
-                    // Если и это не сработало, пробуем передать каждый элемент массива отдельно
-                    if (testCase.input.length === 1) {
-                      result = context[functionName](testCase.input[0]);
-                    } else if (testCase.input.length === 2) {
-                      result = context[functionName](testCase.input[0], testCase.input[1]);
-                    } else if (testCase.input.length === 3) {
-                      result = context[functionName](testCase.input[0], testCase.input[1], testCase.input[2]);
-                    } else {
-                      throw e2; // Перебрасываем последнюю ошибку
-                    }
-                  } catch (e3) {
-                    // Последняя попытка - передать как объект с индексами
-                    try {
-                      result = context[functionName]({...testCase.input});
-                    } catch (e4) {
-                      throw e2; // Перебрасываем исходную ошибку
-                    }
-                  }
-                }
-              }
-            } else {
-              try {
-                result = context[functionName](testCase.input);
-              } catch (e) {
-                // Если не получилось с одним параметром, пробуем обернуть в массив
-                try {
-                  result = context[functionName]([testCase.input]);
-                } catch (e2) {
-                  // Если и это не сработало, пробуем передать как объект
-                  try {
-                    result = context[functionName]({value: testCase.input});
-                  } catch (e3) {
-                    throw e; // Перебрасываем исходную ошибку
-                  }
-                }
-              }
-            }
-          }
-          
+          const result = this.executeFunctionWithArgs(context[functionName], testCase.input, paramCount);
           const expected = testCase.expectedOutput;
           
           // Логируем для отладки
           console.log(`Тест: вход=${JSON.stringify(testCase.input)}, ожидалось=${JSON.stringify(expected)}, получено=${JSON.stringify(result)}`);
           
-          // Улучшенное сравнение результатов
-          const passed = this.compareResults(result, expected);
+          // Упрощенное сравнение результатов
+          const passed = this.simpleCompareResults(result, expected);
           
           console.log(`Результат сравнения: ${passed ? 'ПРОШЕЛ' : 'НЕ ПРОШЕЛ'}`);
           
@@ -910,9 +925,119 @@ class MessageManager {
         passedTests: 0,
         totalTests: testCases.length,
         testResults: [],
-        errorMessage: error.message
+        errorMessage: `Ошибка выполнения кода: ${error.message}`
       };
     }
+  }
+
+  // Упрощенный поиск функции в коде
+  findFunctionInCode(userCode) {
+    // Обычные функции: function name()
+    const functionMatch = userCode.match(/function\s+(\w+)\s*\(([^)]*)\)/);
+    if (functionMatch) {
+      const paramCount = functionMatch[2].trim() ? functionMatch[2].split(',').length : 0;
+      return { functionName: functionMatch[1], paramCount };
+    }
+    
+    // Стрелочные функции: const name = () => или let name = () =>
+    const arrowMatch = userCode.match(/(?:const|let|var)\s+(\w+)\s*=\s*\(([^)]*)\)\s*=>/);
+    if (arrowMatch) {
+      const paramCount = arrowMatch[2].trim() ? arrowMatch[2].split(',').length : 0;
+      return { functionName: arrowMatch[1], paramCount };
+    }
+    
+    // Функциональные выражения: const name = function()
+    const exprMatch = userCode.match(/(?:const|let|var)\s+(\w+)\s*=\s*function\s*\(([^)]*)\)/);
+    if (exprMatch) {
+      const paramCount = exprMatch[2].trim() ? exprMatch[2].split(',').length : 0;
+      return { functionName: exprMatch[1], paramCount };
+    }
+    
+    return null;
+  }
+
+  // Упрощенное выполнение функции с аргументами
+  executeFunctionWithArgs(func, input, paramCount) {
+    // Если функция принимает один параметр и вход - массив, передаем массив как есть
+    if (paramCount === 1 && Array.isArray(input)) {
+      return func(input);
+    }
+    // Если функция принимает несколько параметров и вход - массив, используем spread
+    else if (paramCount > 1 && Array.isArray(input)) {
+      return func(...input);
+    }
+    // Иначе передаем как есть
+    else {
+      return func(input);
+    }
+  }
+
+  // Упрощенное сравнение результатов
+  simpleCompareResults(actual, expected) {
+    // Строгое сравнение для примитивов
+    if (actual === expected) {
+      return true;
+    }
+
+    // Проверка на null и undefined
+    if (actual === null && expected === null) return true;
+    if (actual === undefined && expected === undefined) return true;
+    if (actual === null || expected === null) return false;
+    if (actual === undefined || expected === undefined) return false;
+
+    // Приведение типов для чисел и строк
+    if (typeof actual === 'number' && typeof expected === 'string') {
+      const expectedAsNumber = Number(expected);
+      return !isNaN(expectedAsNumber) && actual === expectedAsNumber;
+    }
+    
+    if (typeof actual === 'string' && typeof expected === 'number') {
+      const actualAsNumber = Number(actual);
+      return !isNaN(actualAsNumber) && actualAsNumber === expected;
+    }
+
+    // Приведение булевых значений
+    if (typeof actual === 'boolean' && typeof expected === 'string') {
+      return actual === (expected.toLowerCase() === 'true');
+    }
+    
+    if (typeof actual === 'string' && typeof expected === 'boolean') {
+      return (actual.toLowerCase() === 'true') === expected;
+    }
+
+    // Для массивов
+    if (Array.isArray(actual) && Array.isArray(expected)) {
+      if (actual.length !== expected.length) return false;
+      return actual.every((item, index) => this.simpleCompareResults(item, expected[index]));
+    }
+
+    // Для объектов
+    if (typeof actual === 'object' && actual !== null && typeof expected === 'object' && expected !== null) {
+      const actualKeys = Object.keys(actual);
+      const expectedKeys = Object.keys(expected);
+      
+      if (actualKeys.length !== expectedKeys.length) return false;
+      
+      return actualKeys.every(key => 
+        expectedKeys.includes(key) && 
+        this.simpleCompareResults(actual[key], expected[key])
+      );
+    }
+
+    // Для чисел (учитываем NaN и Infinity)
+    if (typeof actual === 'number' && typeof expected === 'number') {
+      if (isNaN(actual) && isNaN(expected)) return true;
+      if (actual === Infinity && expected === Infinity) return true;
+      if (actual === -Infinity && expected === -Infinity) return true;
+      return Math.abs(actual - expected) < Number.EPSILON;
+    }
+
+    // Для строк - нормализуем пробелы
+    if (typeof actual === 'string' && typeof expected === 'string') {
+      return actual.trim() === expected.trim();
+    }
+
+    return false;
   }
 
   // Получение решения задачи
