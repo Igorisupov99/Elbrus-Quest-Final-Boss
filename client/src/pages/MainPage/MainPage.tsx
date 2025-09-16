@@ -324,7 +324,14 @@ export function MainPage(): JSX.Element {
   return (
     <div className={styles.mainPage}>
       <div className={styles.mainContent}>
-        <h2 className={styles.pageTitle}>🏰 Доступные комнаты</h2>
+        <h2 className={styles.pageTitle}>
+          <img
+            src="/ChatGPT Image Sep 16, 2025, 09_09_32 PM.png"
+            alt="Castle"
+            className={styles.castleIcon}
+          />
+          Доступные комнаты
+        </h2>
         {loading && <p className={styles.loading}>⚔️ Загрузка комнат...</p>}
         {error && <p className={styles.error}>❌ Ошибка: {error}</p>}
 
