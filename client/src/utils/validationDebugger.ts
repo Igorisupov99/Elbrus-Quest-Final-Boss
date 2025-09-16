@@ -66,10 +66,10 @@ export const validateTestCases = (testCases: any[]): string[] => {
   }
 
   testCases.forEach((testCase, index) => {
-    if (!testCase.input) {
+    if (testCase.input === undefined || testCase.input === null) {
       errors.push(`Тест ${index + 1}: отсутствует input`);
     }
-    if (!testCase.expectedOutput) {
+    if (testCase.expectedOutput === undefined || testCase.expectedOutput === null) {
       errors.push(`Тест ${index + 1}: отсутствует expectedOutput`);
     }
     if (!testCase.description) {

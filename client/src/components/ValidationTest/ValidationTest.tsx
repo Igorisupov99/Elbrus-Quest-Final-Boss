@@ -8,7 +8,7 @@ const ValidationTest: React.FC = () => {
   const [result, setResult] = useState<IDETaskValidation | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [debugInfo, setDebugInfo] = useState<any>(null);
-  const [testType, setTestType] = useState<'return' | 'console' | 'both'>('return');
+  const [testType, setTestType] = useState<'return' | 'console' | 'both' | 'unique' | 'string' | 'boolean' | 'object' | 'universal'>('return');
 
   const testValidation = async () => {
     try {
@@ -60,24 +60,210 @@ result;
           `;
           taskDescription = 'Напишите функцию для вычисления n-го числа Фибоначчи. И верните результат, и выведите в консоль.';
           break;
+        case 'unique':
+          userCode = `
+function findUnique(arr) {
+  // Создаем пустой массив для хранения уникальных элементов
+  let uniqueArray = [];
+
+  // Проходим по каждому элементу исходного массива
+  for (let i = 0; i < arr.length; i++) {
+    // Проверяем, сколько раз текущий элемент встречается в массиве
+    if (arr.filter(item => item === arr[i]).length === 1) {
+      // Если элемент встречается только один раз, добавляем его в массив уникальных элементов
+      uniqueArray.push(arr[i]);
+    }
+  }
+
+  // Возвращаем массив уникальных элементов
+  return uniqueArray;
+}
+
+// Возвращаем результат
+findUnique([1, 2, 3, 2, 1, 4]);
+          `;
+          taskDescription = 'Напишите функцию findUnique, которая принимает массив и возвращает массив уникальных элементов (элементов, которые встречаются только один раз).';
+          break;
+        case 'string':
+          userCode = `
+function toUpperCase(str) {
+  return str.toUpperCase();
+}
+
+// Возвращаем результат
+toUpperCase('hello');
+          `;
+          taskDescription = 'Напишите функцию toUpperCase, которая принимает строку и возвращает ее в верхнем регистре.';
+          break;
+        case 'boolean':
+          userCode = `
+function isEven(num) {
+  return num % 2 === 0;
+}
+
+// Возвращаем результат
+isEven(4);
+          `;
+          taskDescription = 'Напишите функцию isEven, которая принимает число и возвращает true, если число четное, и false, если нечетное.';
+          break;
+        case 'object':
+          userCode = `
+function getKeys(obj) {
+  return Object.keys(obj);
+}
+
+// Возвращаем результат
+getKeys({a: 1, b: 2, c: 3});
+          `;
+          taskDescription = 'Напишите функцию getKeys, которая принимает объект и возвращает массив его ключей.';
+          break;
+        case 'universal':
+          userCode = `
+function processData(input) {
+  // Универсальная функция, которая обрабатывает разные типы данных
+  if (Array.isArray(input)) {
+    return input.length;
+  } else if (typeof input === 'string') {
+    return input.length;
+  } else if (typeof input === 'number') {
+    return input * 2;
+  } else if (typeof input === 'boolean') {
+    return !input;
+  } else if (typeof input === 'object' && input !== null) {
+    return Object.keys(input).length;
+  }
+  return input;
+}
+
+// Возвращаем результат
+processData([1, 2, 3]);
+          `;
+          taskDescription = 'Напишите универсальную функцию processData, которая обрабатывает разные типы данных: для массивов возвращает длину, для строк - длину, для чисел - удвоенное значение, для булевых - инвертированное значение, для объектов - количество ключей.';
+          break;
+      }
+
+      let testCases = [];
+      
+      if (testType === 'unique') {
+        testCases = [
+          {
+            input: [1, 2, 3, 2, 1, 4],
+            expectedOutput: [3, 4],
+            description: 'Уникальные элементы из [1, 2, 3, 2, 1, 4]'
+          },
+          {
+            input: [1, 2, 3, 4, 5],
+            expectedOutput: [1, 2, 3, 4, 5],
+            description: 'Все элементы уникальны'
+          },
+          {
+            input: [1, 1, 1, 1],
+            expectedOutput: [],
+            description: 'Все элементы одинаковые'
+          }
+        ];
+      } else if (testType === 'string') {
+        testCases = [
+          {
+            input: 'hello',
+            expectedOutput: 'HELLO',
+            description: 'Преобразование hello в верхний регистр'
+          },
+          {
+            input: 'world',
+            expectedOutput: 'WORLD',
+            description: 'Преобразование world в верхний регистр'
+          },
+          {
+            input: '',
+            expectedOutput: '',
+            description: 'Пустая строка'
+          }
+        ];
+      } else if (testType === 'boolean') {
+        testCases = [
+          {
+            input: 4,
+            expectedOutput: true,
+            description: '4 - четное число'
+          },
+          {
+            input: 7,
+            expectedOutput: false,
+            description: '7 - нечетное число'
+          },
+          {
+            input: 0,
+            expectedOutput: true,
+            description: '0 - четное число'
+          }
+        ];
+      } else if (testType === 'object') {
+        testCases = [
+          {
+            input: {a: 1, b: 2, c: 3},
+            expectedOutput: ['a', 'b', 'c'],
+            description: 'Ключи объекта {a: 1, b: 2, c: 3}'
+          },
+          {
+            input: {x: 10, y: 20},
+            expectedOutput: ['x', 'y'],
+            description: 'Ключи объекта {x: 10, y: 20}'
+          },
+          {
+            input: {},
+            expectedOutput: [],
+            description: 'Пустой объект'
+          }
+        ];
+      } else if (testType === 'universal') {
+        testCases = [
+          {
+            input: [1, 2, 3],
+            expectedOutput: 3,
+            description: 'Массив [1, 2, 3] - длина 3'
+          },
+          {
+            input: 'hello',
+            expectedOutput: 5,
+            description: 'Строка hello - длина 5'
+          },
+          {
+            input: 5,
+            expectedOutput: 10,
+            description: 'Число 5 - удвоенное значение 10'
+          },
+          {
+            input: true,
+            expectedOutput: false,
+            description: 'Булево true - инвертированное false'
+          },
+          {
+            input: {a: 1, b: 2},
+            expectedOutput: 2,
+            description: 'Объект {a: 1, b: 2} - количество ключей 2'
+          }
+        ];
+      } else {
+        testCases = [
+          {
+            input: 5,
+            expectedOutput: 5,
+            description: 'fibonacci(5) должно возвращать 5'
+          },
+          {
+            input: 10,
+            expectedOutput: 55,
+            description: 'fibonacci(10) должно возвращать 55'
+          }
+        ];
       }
 
       const testData = {
         taskId: 'test-task-123',
         userCode,
         taskDescription,
-        testCases: [
-          {
-            input: '5',
-            expectedOutput: '5',
-            description: 'fibonacci(5) должно возвращать 5'
-          },
-          {
-            input: '10',
-            expectedOutput: '55',
-            description: 'fibonacci(10) должно возвращать 55'
-          }
-        ]
+        testCases
       };
 
       // Валидация входных данных
@@ -125,7 +311,7 @@ result;
             name="testType"
             value="return"
             checked={testType === 'return'}
-            onChange={(e) => setTestType(e.target.value as 'return' | 'console' | 'both')}
+            onChange={(e) => setTestType(e.target.value as 'return' | 'console' | 'both' | 'unique' | 'string' | 'boolean' | 'object' | 'universal')}
           />
           Только возврат значения
         </label>
@@ -135,7 +321,7 @@ result;
             name="testType"
             value="console"
             checked={testType === 'console'}
-            onChange={(e) => setTestType(e.target.value as 'return' | 'console' | 'both')}
+            onChange={(e) => setTestType(e.target.value as 'return' | 'console' | 'both' | 'unique' | 'string' | 'boolean' | 'object' | 'universal')}
           />
           Только console.log
         </label>
@@ -145,9 +331,59 @@ result;
             name="testType"
             value="both"
             checked={testType === 'both'}
-            onChange={(e) => setTestType(e.target.value as 'return' | 'console' | 'both')}
+            onChange={(e) => setTestType(e.target.value as 'return' | 'console' | 'both' | 'unique' | 'string' | 'boolean' | 'object' | 'universal')}
           />
           И возврат, и console.log
+        </label>
+        <label className={styles.optionLabel}>
+          <input
+            type="radio"
+            name="testType"
+            value="unique"
+            checked={testType === 'unique'}
+            onChange={(e) => setTestType(e.target.value as 'return' | 'console' | 'both' | 'unique' | 'string' | 'boolean' | 'object' | 'universal')}
+          />
+          Функция findUnique (массивы)
+        </label>
+        <label className={styles.optionLabel}>
+          <input
+            type="radio"
+            name="testType"
+            value="string"
+            checked={testType === 'string'}
+            onChange={(e) => setTestType(e.target.value as 'return' | 'console' | 'both' | 'unique' | 'string' | 'boolean' | 'object' | 'universal')}
+          />
+          Строковые функции
+        </label>
+        <label className={styles.optionLabel}>
+          <input
+            type="radio"
+            name="testType"
+            value="boolean"
+            checked={testType === 'boolean'}
+            onChange={(e) => setTestType(e.target.value as 'return' | 'console' | 'both' | 'unique' | 'string' | 'boolean' | 'object' | 'universal')}
+          />
+          Булевы функции
+        </label>
+        <label className={styles.optionLabel}>
+          <input
+            type="radio"
+            name="testType"
+            value="object"
+            checked={testType === 'object'}
+            onChange={(e) => setTestType(e.target.value as 'return' | 'console' | 'both' | 'unique' | 'string' | 'boolean' | 'object' | 'universal')}
+          />
+          Функции с объектами
+        </label>
+        <label className={styles.optionLabel}>
+          <input
+            type="radio"
+            name="testType"
+            value="universal"
+            checked={testType === 'universal'}
+            onChange={(e) => setTestType(e.target.value as 'return' | 'console' | 'both' | 'unique' | 'string' | 'boolean' | 'object' | 'universal')}
+          />
+          Универсальные функции
         </label>
       </div>
       

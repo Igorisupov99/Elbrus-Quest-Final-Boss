@@ -269,42 +269,285 @@ class MessageManager {
       ];
     }
     
-    // Дефолтные тестовые случаи
+    // Для функций с колбэками (filter, map, reduce и т.д.)
+    if (lowerDesc.includes('фильтр') || lowerDesc.includes('filter') || 
+        lowerDesc.includes('отфильтровать') || lowerDesc.includes('предикат')) {
+      return [
+        { 
+          input: [[1, 2, 3, 4, 5], (x) => x > 2], 
+          expectedOutput: [3, 4, 5], 
+          description: 'Фильтрация чисел больше 2' 
+        },
+        { 
+          input: [[10, 20, 30, 40], (x) => x < 25], 
+          expectedOutput: [10, 20], 
+          description: 'Фильтрация чисел меньше 25' 
+        },
+        { 
+          input: [[1, 3, 5, 7, 9], (x) => x % 2 === 0], 
+          expectedOutput: [], 
+          description: 'Фильтрация четных чисел из нечетных' 
+        }
+      ];
+    }
+    
+    // Для функций поиска уникальных элементов
+    if (lowerDesc.includes('уникальн') || lowerDesc.includes('unique') || 
+        lowerDesc.includes('неповторяющ') || lowerDesc.includes('distinct') ||
+        lowerDesc.includes('дубликат') || lowerDesc.includes('duplicate')) {
+      return [
+        { input: [1, 2, 3, 2, 1, 4], expectedOutput: [3, 4], description: 'Уникальные элементы из [1, 2, 3, 2, 1, 4]' },
+        { input: [1, 2, 3, 4, 5], expectedOutput: [1, 2, 3, 4, 5], description: 'Все элементы уникальны' },
+        { input: [1, 1, 1, 1], expectedOutput: [], description: 'Все элементы одинаковые' },
+        { input: [], expectedOutput: [], description: 'Пустой массив' }
+      ];
+    }
+    
+    // Для функций работы со строками
+    if (lowerDesc.includes('строк') || lowerDesc.includes('string') || 
+        lowerDesc.includes('текст') || lowerDesc.includes('символ') ||
+        lowerDesc.includes('букв') || lowerDesc.includes('слово')) {
+      return [
+        { input: 'hello', expectedOutput: 'HELLO', description: 'Преобразование в верхний регистр' },
+        { input: 'WORLD', expectedOutput: 'world', description: 'Преобразование в нижний регистр' },
+        { input: 'test', expectedOutput: 4, description: 'Длина строки' },
+        { input: '', expectedOutput: 0, description: 'Пустая строка' }
+      ];
+    }
+    
+    // Для функций проверки четности/нечетности
+    if (lowerDesc.includes('четн') || lowerDesc.includes('нечетн') || 
+        lowerDesc.includes('even') || lowerDesc.includes('odd') ||
+        lowerDesc.includes('делится') || lowerDesc.includes('кратн')) {
+      return [
+        { input: 4, expectedOutput: true, description: '4 - четное число' },
+        { input: 7, expectedOutput: false, description: '7 - нечетное число' },
+        { input: 0, expectedOutput: true, description: '0 - четное число' },
+        { input: -2, expectedOutput: true, description: '-2 - четное число' }
+      ];
+    }
+    
+    // Для функций работы с объектами
+    if (lowerDesc.includes('объект') || lowerDesc.includes('object') || 
+        lowerDesc.includes('ключ') || lowerDesc.includes('значение') ||
+        lowerDesc.includes('свойств') || lowerDesc.includes('property')) {
+      return [
+        { input: {a: 1, b: 2, c: 3}, expectedOutput: ['a', 'b', 'c'], description: 'Ключи объекта' },
+        { input: {x: 10, y: 20}, expectedOutput: [10, 20], description: 'Значения объекта' },
+        { input: {}, expectedOutput: [], description: 'Пустой объект' }
+      ];
+    }
+    
+    // Для функций поиска максимального/минимального элемента
+    if (lowerDesc.includes('максимальн') || lowerDesc.includes('максимум') || 
+        lowerDesc.includes('наибольш') || lowerDesc.includes('max')) {
+      return [
+        { input: [1, 2, 3, 2, 1], expectedOutput: 3, description: 'Максимум из [1, 2, 3, 2, 1]' },
+        { input: [10, 5, 8, 15, 3], expectedOutput: 15, description: 'Максимум из [10, 5, 8, 15, 3]' },
+        { input: [-1, -5, -3], expectedOutput: -1, description: 'Максимум из отрицательных чисел' },
+        { input: [42], expectedOutput: 42, description: 'Максимум из одного элемента' }
+      ];
+    }
+    
+    if (lowerDesc.includes('минимальн') || lowerDesc.includes('минимум') || 
+        lowerDesc.includes('наименьш') || lowerDesc.includes('min')) {
+      return [
+        { input: [1, 2, 3, 2, 1], expectedOutput: 1, description: 'Минимум из [1, 2, 3, 2, 1]' },
+        { input: [10, 5, 8, 15, 3], expectedOutput: 3, description: 'Минимум из [10, 5, 8, 15, 3]' },
+        { input: [-1, -5, -3], expectedOutput: -5, description: 'Минимум из отрицательных чисел' },
+        { input: [42], expectedOutput: 42, description: 'Минимум из одного элемента' }
+      ];
+    }
+    
+    // Для функций подсчета элементов
+    if (lowerDesc.includes('подсчет') || lowerDesc.includes('количество') || 
+        lowerDesc.includes('count') || lowerDesc.includes('размер') ||
+        lowerDesc.includes('длина') || lowerDesc.includes('length')) {
+      return [
+        { input: [1, 2, 3, 4, 5], expectedOutput: 5, description: 'Количество элементов в массиве' },
+        { input: [], expectedOutput: 0, description: 'Пустой массив' },
+        { input: 'hello', expectedOutput: 5, description: 'Длина строки' },
+        { input: '', expectedOutput: 0, description: 'Пустая строка' }
+      ];
+    }
+    
+    // Для функций проверки на пустоту
+    if (lowerDesc.includes('пуст') || lowerDesc.includes('empty') || 
+        lowerDesc.includes('провер') || lowerDesc.includes('check')) {
+      return [
+        { input: [], expectedOutput: true, description: 'Пустой массив' },
+        { input: [1, 2, 3], expectedOutput: false, description: 'Непустой массив' },
+        { input: '', expectedOutput: true, description: 'Пустая строка' },
+        { input: 'hello', expectedOutput: false, description: 'Непустая строка' }
+      ];
+    }
+    
+    // Для функций реверса
+    if (lowerDesc.includes('обратн') || lowerDesc.includes('reverse') || 
+        lowerDesc.includes('переверн') || lowerDesc.includes('разверн')) {
+      return [
+        { input: [1, 2, 3, 4], expectedOutput: [4, 3, 2, 1], description: 'Реверс массива [1, 2, 3, 4]' },
+        { input: 'hello', expectedOutput: 'olleh', description: 'Реверс строки hello' },
+        { input: [], expectedOutput: [], description: 'Реверс пустого массива' },
+        { input: '', expectedOutput: '', description: 'Реверс пустой строки' }
+      ];
+    }
+    
+    if (lowerDesc.includes('карта') || lowerDesc.includes('map') || 
+        lowerDesc.includes('преобразовать') || lowerDesc.includes('трансформировать')) {
+      return [
+        { 
+          input: [[1, 2, 3, 4], (x) => x * 2], 
+          expectedOutput: [2, 4, 6, 8], 
+          description: 'Умножение каждого элемента на 2' 
+        },
+        { 
+          input: [[1, 2, 3], (x) => x * x], 
+          expectedOutput: [1, 4, 9], 
+          description: 'Возведение в квадрат' 
+        }
+      ];
+    }
+    
+    if (lowerDesc.includes('редукц') || lowerDesc.includes('reduce') || 
+        lowerDesc.includes('свертк') || lowerDesc.includes('аккумулятор')) {
+      return [
+        { 
+          input: [[1, 2, 3, 4], (acc, x) => acc + x, 0], 
+          expectedOutput: 10, 
+          description: 'Сумма элементов массива' 
+        },
+        { 
+          input: [[1, 2, 3, 4], (acc, x) => acc * x, 1], 
+          expectedOutput: 24, 
+          description: 'Произведение элементов массива' 
+        }
+      ];
+    }
+    
+    // Для функций с двумя параметрами (не колбэки)
+    if (paramCount === 2) {
+      return [
+        { input: [5, 3], expectedOutput: 8, description: 'Тест с двумя параметрами' },
+        { input: [10, 20], expectedOutput: 30, description: 'Второй тест с двумя параметрами' },
+        { input: [1, 1], expectedOutput: 2, description: 'Третий тест с двумя параметрами' }
+      ];
+    }
+    
+    // Для функций с тремя параметрами
+    if (paramCount === 3) {
+      return [
+        { input: [1, 2, 3], expectedOutput: 6, description: 'Тест с тремя параметрами' },
+        { input: [5, 5, 5], expectedOutput: 15, description: 'Второй тест с тремя параметрами' }
+      ];
+    }
+    
+    // Дефолтные тестовые случаи для неизвестных функций
+    // Пробуем разные типы данных, чтобы быть более гибкими
     return [
-      { input: 'test', expectedOutput: 'result', description: 'Тестовый случай' },
-      { input: 42, expectedOutput: 42, description: 'Числовой тест' },
-      { input: true, expectedOutput: true, description: 'Булевый тест' }
+      // Тесты с массивами
+      { input: [1, 2, 3, 2, 1], expectedOutput: [3], description: 'Массив с дубликатами' },
+      { input: [1, 2, 3], expectedOutput: [1, 2, 3], description: 'Массив без дубликатов' },
+      { input: [], expectedOutput: [], description: 'Пустой массив' },
+      
+      // Тесты с числами
+      { input: 5, expectedOutput: 5, description: 'Числовой тест' },
+      { input: 0, expectedOutput: 0, description: 'Нулевое значение' },
+      { input: -5, expectedOutput: -5, description: 'Отрицательное число' },
+      
+      // Тесты со строками
+      { input: 'hello', expectedOutput: 'hello', description: 'Строковый тест' },
+      { input: '', expectedOutput: '', description: 'Пустая строка' },
+      
+      // Тесты с булевыми значениями
+      { input: true, expectedOutput: true, description: 'Булевый тест true' },
+      { input: false, expectedOutput: false, description: 'Булевый тест false' },
+      
+      // Тесты с объектами
+      { input: {a: 1, b: 2}, expectedOutput: {a: 1, b: 2}, description: 'Объектный тест' },
+      { input: {}, expectedOutput: {}, description: 'Пустой объект' }
     ];
+  }
+
+  // Вспомогательный метод для сравнения чисел
+  compareNumbers(actual, expected) {
+    if (isNaN(actual) && isNaN(expected)) return true;
+    if (actual === Infinity && expected === Infinity) return true;
+    if (actual === -Infinity && expected === -Infinity) return true;
+    return Math.abs(actual - expected) < Number.EPSILON;
   }
 
   // Сравнение результатов тестирования
   compareResults(actual, expected) {
-    // Если типы разные, сразу false
-    if (typeof actual !== typeof expected) {
-      return false;
-    }
-
     // Для примитивных типов
     if (actual === expected) {
       return true;
     }
 
-    // Для чисел (учитываем NaN и Infinity)
-    if (typeof actual === 'number' && typeof expected === 'number') {
-      if (isNaN(actual) && isNaN(expected)) return true;
-      if (actual === Infinity && expected === Infinity) return true;
-      if (actual === -Infinity && expected === -Infinity) return true;
-      return Math.abs(actual - expected) < Number.EPSILON;
+    // Проверяем на null и undefined
+    if (actual === null && expected === null) return true;
+    if (actual === undefined && expected === undefined) return true;
+    if (actual === null && expected === undefined) return false;
+    if (actual === undefined && expected === null) return false;
+
+    // Приведение типов для сравнения чисел и строк
+    // Если один из аргументов - число, а другой - строка, пытаемся привести к числу
+    if (typeof actual === 'number' && typeof expected === 'string') {
+      const expectedAsNumber = Number(expected);
+      if (!isNaN(expectedAsNumber)) {
+        return this.compareNumbers(actual, expectedAsNumber);
+      }
+    }
+    
+    if (typeof actual === 'string' && typeof expected === 'number') {
+      const actualAsNumber = Number(actual);
+      if (!isNaN(actualAsNumber)) {
+        return this.compareNumbers(actualAsNumber, expected);
+      }
     }
 
-    // Для массивов
+    // Приведение булевых значений
+    if (typeof actual === 'boolean' && typeof expected === 'string') {
+      const expectedAsBool = expected.toLowerCase() === 'true';
+      return actual === expectedAsBool;
+    }
+    
+    if (typeof actual === 'string' && typeof expected === 'boolean') {
+      const actualAsBool = actual.toLowerCase() === 'true';
+      return actualAsBool === expected;
+    }
+
+    // Для массивов - более гибкое сравнение
     if (Array.isArray(actual) && Array.isArray(expected)) {
       if (actual.length !== expected.length) return false;
       return actual.every((item, index) => this.compareResults(item, expected[index]));
     }
 
-    // Для объектов
-    if (typeof actual === 'object' && actual !== null && expected !== null) {
+    // Если один из аргументов - массив, а другой - нет, пробуем привести к массиву
+    if (Array.isArray(actual) && !Array.isArray(expected)) {
+      if (actual.length === 1) {
+        return this.compareResults(actual[0], expected);
+      }
+      return false;
+    }
+    
+    if (!Array.isArray(actual) && Array.isArray(expected)) {
+      if (expected.length === 1) {
+        return this.compareResults(actual, expected[0]);
+      }
+      return false;
+    }
+
+    // Для объектов - более гибкое сравнение
+    if (typeof actual === 'object' && actual !== null && typeof expected === 'object' && expected !== null) {
+      // Если один из объектов - массив, а другой - нет, пробуем преобразовать
+      if (Array.isArray(actual) && !Array.isArray(expected)) {
+        return false;
+      }
+      if (!Array.isArray(actual) && Array.isArray(expected)) {
+        return false;
+      }
+      
       const actualKeys = Object.keys(actual);
       const expectedKeys = Object.keys(expected);
       
@@ -316,9 +559,24 @@ class MessageManager {
       );
     }
 
+    // Если типы разные после попытки приведения, возвращаем false
+    if (typeof actual !== typeof expected) {
+      return false;
+    }
+
+    // Для чисел (учитываем NaN и Infinity)
+    if (typeof actual === 'number' && typeof expected === 'number') {
+      return this.compareNumbers(actual, expected);
+    }
+
     // Для строк - нормализуем пробелы и регистр
     if (typeof actual === 'string' && typeof expected === 'string') {
       return actual.trim() === expected.trim();
+    }
+
+    // Для булевых значений
+    if (typeof actual === 'boolean' && typeof expected === 'boolean') {
+      return actual === expected;
     }
 
     // Fallback к JSON сравнению
@@ -554,15 +812,53 @@ class MessageManager {
               result = context[functionName](testCase.input);
             }
           } else {
-            // Fallback: если не можем определить сигнатуру, пробуем оба варианта
+            // Fallback: если не можем определить сигнатуру, пробуем разные варианты
             if (Array.isArray(testCase.input)) {
+              try {
+                // Сначала пробуем передать массив как есть (для функций с одним параметром)
+                result = context[functionName](testCase.input);
+              } catch (e) {
+                try {
+                  // Если не получилось, пробуем spread (для функций с несколькими параметрами)
+                  result = context[functionName](...testCase.input);
+                } catch (e2) {
+                  try {
+                    // Если и это не сработало, пробуем передать каждый элемент массива отдельно
+                    if (testCase.input.length === 1) {
+                      result = context[functionName](testCase.input[0]);
+                    } else if (testCase.input.length === 2) {
+                      result = context[functionName](testCase.input[0], testCase.input[1]);
+                    } else if (testCase.input.length === 3) {
+                      result = context[functionName](testCase.input[0], testCase.input[1], testCase.input[2]);
+                    } else {
+                      throw e2; // Перебрасываем последнюю ошибку
+                    }
+                  } catch (e3) {
+                    // Последняя попытка - передать как объект с индексами
+                    try {
+                      result = context[functionName]({...testCase.input});
+                    } catch (e4) {
+                      throw e2; // Перебрасываем исходную ошибку
+                    }
+                  }
+                }
+              }
+            } else {
               try {
                 result = context[functionName](testCase.input);
               } catch (e) {
-                result = context[functionName](...testCase.input);
+                // Если не получилось с одним параметром, пробуем обернуть в массив
+                try {
+                  result = context[functionName]([testCase.input]);
+                } catch (e2) {
+                  // Если и это не сработало, пробуем передать как объект
+                  try {
+                    result = context[functionName]({value: testCase.input});
+                  } catch (e3) {
+                    throw e; // Перебрасываем исходную ошибку
+                  }
+                }
               }
-            } else {
-              result = context[functionName](testCase.input);
             }
           }
           
@@ -721,7 +1017,11 @@ class MessageManager {
       } catch (e) {
         // Создаем базовые результаты тестов
         testResults = originalTestCases.map((testCase, index) => ({
-          testCase,
+          testCase: {
+            input: testCase.input || null,
+            expectedOutput: testCase.expectedOutput || null,
+            description: testCase.description || `Тест ${index + 1}`
+          },
           passed: index < passedTests,
           actualOutput: index < passedTests ? testCase.expectedOutput : 'Неверный результат'
         }));

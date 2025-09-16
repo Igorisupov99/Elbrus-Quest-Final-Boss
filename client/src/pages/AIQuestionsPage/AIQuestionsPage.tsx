@@ -2,7 +2,6 @@ import React, { useState } from 'react';
 import { aiApi } from '../../api/ai/aiApi';
 import type { AIQuestionResponse, AICheckAnswerResponse } from '../../api/ai/aiApi';
 import CodeRunner from '../../components/CodeRunner/CodeRunner';
-import ValidationTest from '../../components/ValidationTest/ValidationTest';
 import styles from './AIQuestionsPage.module.css';
 
 interface AIQuestion {
@@ -401,9 +400,6 @@ result;`);
               Используйте console.log() для вывода или просто возвращайте значения из функций.
             </p>
           </div>
-          
-          {/* Тест валидации */}
-          <ValidationTest />
           
           <div className={styles.codeRunnerContainer}>
             <CodeRunner

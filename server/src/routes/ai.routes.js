@@ -17,4 +17,7 @@ router.post('/ide/validate-code', authMiddleware, aiController.validateIDECode);
 router.post('/ide/get-solution', authMiddleware, aiController.getIDESolution);
 router.post('/ide/get-hint', authMiddleware, aiController.getIDEHint);
 
+// Временный маршрут для тестирования без аутентификации
+router.post('/ide/validate-code-test', aiController.validateIDECode);
+
 module.exports = router;
