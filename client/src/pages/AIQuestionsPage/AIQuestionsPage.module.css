@@ -23,11 +23,12 @@
   height: 100vh;
   margin: 0;
   padding: 1rem;
+  min-height: 100vh;
   font-family: 'Cinzel', serif;
+  position: relative;
   overflow-y: auto;
   overflow-x: auto;
   box-sizing: border-box;
-  position: relative;
 }
 
 .container::before {
