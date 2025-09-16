@@ -78,12 +78,14 @@ export function MainPage(): JSX.Element {
   };
 
   useEffect(() => {
-    // Hide body overflow when MainPage is mounted
+    // Hide body and html overflow when MainPage is mounted
     document.body.style.overflow = 'hidden';
+    document.documentElement.style.overflow = 'hidden';
 
-    // Restore body overflow when MainPage is unmounted
+    // Restore body and html overflow when MainPage is unmounted
     return () => {
       document.body.style.overflow = 'auto';
+      document.documentElement.style.overflow = 'auto';
     };
   }, []);
 
