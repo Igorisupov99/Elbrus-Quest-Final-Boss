@@ -1,0 +1,147 @@
+.container {
+  padding: 2rem;
+  background: #f8f9fa;
+  border-radius: 8px;
+  margin: 1rem 0;
+  border: 1px solid #dee2e6;
+}
+
+.testButton {
+  background: #007bff;
+  color: white;
+  border: none;
+  padding: 0.75rem 1.5rem;
+  border-radius: 6px;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: background-color 0.2s;
+  margin-bottom: 1rem;
+}
+
+.testButton:hover:not(:disabled) {
+  background: #0056b3;
+}
+
+.testButton:disabled {
+  background: #6c757d;
+  cursor: not-allowed;
+}
+
+.testOptions {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+  padding: 1rem;
+  background: #f8f9fa;
+  border-radius: 6px;
+  border: 1px solid #dee2e6;
+}
+
+.optionLabel {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  cursor: pointer;
+  font-size: 0.9rem;
+  color: #495057;
+}
+
+.optionLabel input[type="radio"] {
+  margin: 0;
+}
+
+.error {
+  background: #f8d7da;
+  border: 1px solid #f5c6cb;
+  color: #721c24;
+  padding: 1rem;
+  border-radius: 6px;
+  margin: 1rem 0;
+}
+
+.result {
+  background: white;
+  border: 1px solid #dee2e6;
+  border-radius: 6px;
+  padding: 1rem;
+  margin: 1rem 0;
+}
+
+.resultItem {
+  margin: 0.5rem 0;
+  font-size: 1rem;
+}
+
+.testResults {
+  margin-top: 1rem;
+}
+
+.testItem {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.75rem;
+  padding: 1rem;
+  margin: 0.5rem 0;
+  border-radius: 6px;
+  border: 1px solid;
+}
+
+.testItem.passed {
+  background: #d4edda;
+  border-color: #c3e6cb;
+}
+
+.testItem.failed {
+  background: #f8d7da;
+  border-color: #f5c6cb;
+}
+
+.testStatus {
+  font-size: 1.2rem;
+  flex-shrink: 0;
+}
+
+.testInfo {
+  flex: 1;
+}
+
+.testInfo div {
+  margin: 0.25rem 0;
+  font-size: 0.9rem;
+}
+
+.errorMessage {
+  background: #f8d7da;
+  border: 1px solid #f5c6cb;
+  color: #721c24;
+  padding: 0.75rem;
+  border-radius: 4px;
+  margin-top: 1rem;
+}
+
+.debugInfo {
+  background: #e7f3ff;
+  border: 1px solid #b3d9ff;
+  color: #004085;
+  padding: 1rem;
+  border-radius: 6px;
+  margin: 1rem 0;
+}
+
+.debugItem {
+  margin: 0.5rem 0;
+  font-size: 0.9rem;
+}
+
+.codeBlock {
+  background: #f8f9fa;
+  border: 1px solid #dee2e6;
+  border-radius: 4px;
+  padding: 0.75rem;
+  margin: 0.5rem 0;
+  font-size: 0.8rem;
+  overflow-x: auto;
+  white-space: pre-wrap;
+  word-break: break-all;
+}

@@ -1,38 +1,36 @@
-import { useEffect, useState } from "react";
-import type { ChangeEvent, FormEvent, MouseEvent } from "react";
-import axios from "axios";
-import api from "../../api/axios";
-import { 
-  getFriends, 
-  getIncomingRequests, 
+import { useEffect, useState } from 'react';
+import type { ChangeEvent, FormEvent, MouseEvent } from 'react';
+import axios from 'axios';
+import api from '../../api/axios';
+import {
+  getFriends,
+  getIncomingRequests,
   getOutgoingRequests,
-  acceptFriendRequest, 
+  acceptFriendRequest,
   rejectFriendRequest,
   removeFriend,
   getUserByUsername,
   sendFriendRequest,
-  type User as FriendUser, 
-  type Friendship 
-} from "../../api/friendship/friendshipApi";
-import { getFriendsCountText } from "../../utils/declination";
+  type User as FriendUser,
+  type Friendship,
+} from '../../api/friendship/friendshipApi';
+import { getFriendsCountText } from '../../utils/declination';
 
-import { achievementApi } from "../../api/achievements/achievementApi";
-import { AchievementCard } from "../../components/Achievement/AchievementCard/AchievementCard";
-import { AchievementModal } from "../../components/Achievement/AchievementModal/AchievementModal";
-import { FavoriteQuestionModal } from "../../components/FavoriteQuestionModal/FavoriteQuestionModal";
-import { UserAvatar } from "../../components/common/UserAvatar";
-import { SuccessModal } from "../../components/common/modals/SuccessModal/SuccessModal";
-import { ConfirmModal } from "../../components/common/modals/ConfirmModal/ConfirmModal";
-import type { Achievement } from "../../types/achievement";
-import { favoriteApi } from "../../api/favorites/favoriteApi";
-import type { FavoriteQuestion } from "../../types/favorite";
-import { useAppDispatch, useAppSelector } from "../../store/hooks";
-import { fetchCurrentAvatar } from "../../store/avatarSlice";
-import { Link, useNavigate } from "react-router-dom";
-import type { User } from "../../types/auth";
-import styles from "./Profile.module.css";
-
-
+import { achievementApi } from '../../api/achievements/achievementApi';
+import { AchievementCard } from '../../components/Achievement/AchievementCard/AchievementCard';
+import { AchievementModal } from '../../components/Achievement/AchievementModal/AchievementModal';
+import { FavoriteQuestionModal } from '../../components/FavoriteQuestionModal/FavoriteQuestionModal';
+import { UserAvatar } from '../../components/common/UserAvatar';
+import { SuccessModal } from '../../components/common/modals/SuccessModal/SuccessModal';
+import { ConfirmModal } from '../../components/common/modals/ConfirmModal/ConfirmModal';
+import type { Achievement } from '../../types/achievement';
+import { favoriteApi } from '../../api/favorites/favoriteApi';
+import type { FavoriteQuestion } from '../../types/favorite';
+import { useAppDispatch, useAppSelector } from '../../store/hooks';
+import { fetchCurrentAvatar } from '../../store/avatarSlice';
+import { Link, useNavigate } from 'react-router-dom';
+import type { User } from '../../types/auth';
+import styles from './Profile.module.css';
 
 interface ApiResponse<T> {
   success: boolean;
@@ -42,18 +40,18 @@ interface ApiResponse<T> {
 
 // Форматирование даты регистрации
 const formatRegistrationDate = (dateString?: string) => {
-  if (!dateString) return "Дата регистрации: неизвестна";
-  
+  if (!dateString) return 'Дата регистрации: неизвестна';
+
   try {
     const date = new Date(dateString);
     const formattedDate = date.toLocaleDateString('ru-RU', {
       year: 'numeric',
       month: 'long',
-      day: 'numeric'
+      day: 'numeric',
     });
     return `Дата регистрации: ${formattedDate}`;
   } catch {
-    return "Дата регистрации: неизвестна";
+    return 'Дата регистрации: неизвестна';
   }
 };
 
@@ -72,7 +70,7 @@ export function Profile() {
   const [outgoingRequests, setOutgoingRequests] = useState<Friendship[]>([]);
   const [friendsLoading, setFriendsLoading] = useState<boolean>(false);
   const [currentFriendsIndex, setCurrentFriendsIndex] = useState<number>(0);
-  
+
   // Для модальных окон заявок
   const [isIncomingModalOpen, setIsIncomingModalOpen] = useState(false);
   const [isOutgoingModalOpen, setIsOutgoingModalOpen] = useState(false);
@@ -101,33 +99,38 @@ export function Profile() {
   const [searchLoading, setSearchLoading] = useState<boolean>(false);
   const [searchError, setSearchError] = useState<string>('');
 
-
   // Для достижений
   const [achievements, setAchievements] = useState<Achievement[]>([]);
-  const [achievementsLoading, setAchievementsLoading] = useState<boolean>(false);
-  const [currentAchievementIndex, setCurrentAchievementIndex] = useState<number>(0);
-  const [selectedAchievement, setSelectedAchievement] = useState<Achievement | null>(null);
-  const [isAchievementModalOpen, setIsAchievementModalOpen] = useState<boolean>(false);
+  const [achievementsLoading, setAchievementsLoading] =
+    useState<boolean>(false);
+  const [currentAchievementIndex, setCurrentAchievementIndex] =
+    useState<number>(0);
+  const [selectedAchievement, setSelectedAchievement] =
+    useState<Achievement | null>(null);
+  const [isAchievementModalOpen, setIsAchievementModalOpen] =
+    useState<boolean>(false);
 
   // Для избранных вопросов
-  const [favoriteQuestions, setFavoriteQuestions] = useState<FavoriteQuestion[]>([]);
+  const [favoriteQuestions, setFavoriteQuestions] = useState<
+    FavoriteQuestion[]
+  >([]);
   const [favoritesLoading, setFavoritesLoading] = useState<boolean>(false);
   const [currentFavoriteIndex, setCurrentFavoriteIndex] = useState<number>(0);
-  const [selectedQuestion, setSelectedQuestion] = useState<FavoriteQuestion | null>(null);
-  const [isQuestionModalOpen, setIsQuestionModalOpen] = useState<boolean>(false);
+  const [selectedQuestion, setSelectedQuestion] =
+    useState<FavoriteQuestion | null>(null);
+  const [isQuestionModalOpen, setIsQuestionModalOpen] =
+    useState<boolean>(false);
 
   // Redux для аватаров
   const dispatch = useAppDispatch();
-  const currentAvatar = useAppSelector(state => state.avatar.currentAvatar);
-
-
+  const currentAvatar = useAppSelector((state) => state.avatar.currentAvatar);
 
   // Для управления формой настроек
   const [formData, setFormData] = useState({
-    username: "",
-    email: "",
-    currentPassword: "",
-    newPassword: "",
+    username: '',
+    email: '',
+    currentPassword: '',
+    newPassword: '',
   });
 
   // Загрузка данных профиля
@@ -137,13 +140,14 @@ export function Profile() {
         setLoading(true);
         setError(null);
 
-        const response = await api.get<ApiResponse<User>>("/api/auth/profile", {
+        const response = await api.get<ApiResponse<User>>('/api/auth/profile', {
           withCredentials: true,
         });
 
-
         if (!response.data.success) {
-          throw new Error(response.data.message || "Ошибка при загрузке профиля");
+          throw new Error(
+            response.data.message || 'Ошибка при загрузке профиля'
+          );
         }
 
         setUser(response.data.data);
@@ -155,10 +159,9 @@ export function Profile() {
           email: response.data.data.email,
         }));
       } catch (err) {
-        let errorMessage = "Ошибка";
+        let errorMessage = 'Ошибка';
         if (axios.isAxiosError(err)) {
-          errorMessage =
-            err.response?.data?.message || err.message || "Ошибка";
+          errorMessage = err.response?.data?.message || err.message || 'Ошибка';
         } else if (err instanceof Error) {
           errorMessage = err.message;
         }
@@ -177,11 +180,12 @@ export function Profile() {
       try {
         setFriendsLoading(true);
 
-        const [friendsResponse, incomingResponse, outgoingResponse] = await Promise.all([
-          getFriends(),
-          getIncomingRequests(),
-          getOutgoingRequests()
-        ]);
+        const [friendsResponse, incomingResponse, outgoingResponse] =
+          await Promise.all([
+            getFriends(),
+            getIncomingRequests(),
+            getOutgoingRequests(),
+          ]);
 
         if (friendsResponse.success) {
           setFriends(friendsResponse.data || []);
@@ -214,11 +218,11 @@ export function Profile() {
           const userData = await achievementApi.getUserAchievements();
           // Фильтруем только полученные достижения
           const earnedAchievements = userData.achievements
-            .filter(ua => ua.achievement)
-            .map(ua => ({
+            .filter((ua) => ua.achievement)
+            .map((ua) => ({
               ...ua.achievement,
               earned: true,
-              earned_at: ua.earned_at
+              earned_at: ua.earned_at,
             }));
           setAchievements(earnedAchievements);
         } catch {
@@ -242,9 +246,9 @@ export function Profile() {
     const loadFavorites = async () => {
       setFavoritesLoading(true);
       try {
-        const response = await favoriteApi.getUserFavorites({ 
-          page: 1, 
-          limit: 15 // Загружаем 15 вопросов для карусели
+        const response = await favoriteApi.getUserFavorites({
+          page: 1,
+          limit: 15, // Загружаем 15 вопросов для карусели
         });
         setFavoriteQuestions(response.favorites || []);
       } catch (error) {
@@ -282,7 +286,11 @@ export function Profile() {
   const closeOutgoingModal = () => setIsOutgoingModalOpen(false);
 
   // Функции для модальных окон уведомлений
-  const showSuccessModal = (title: string, message: string, type: 'success' | 'info' | 'warning' = 'success') => {
+  const showSuccessModal = (
+    title: string,
+    message: string,
+    type: 'success' | 'info' | 'warning' = 'success'
+  ) => {
     setSuccessModalData({ title, message, type });
     setIsSuccessModalOpen(true);
   };
@@ -294,9 +302,9 @@ export function Profile() {
 
   // Функции для модального окна подтверждения
   const showConfirmModal = (
-    title: string, 
-    message: string, 
-    onConfirm: () => void, 
+    title: string,
+    message: string,
+    onConfirm: () => void,
     confirmText: string = 'Подтвердить',
     type: 'warning' | 'danger' | 'info' = 'warning'
   ) => {
@@ -309,11 +317,10 @@ export function Profile() {
     setConfirmModalData(null);
   };
 
-
   // Функции для карусели достижений
   const nextAchievements = () => {
     if (achievements.length > 3) {
-      setCurrentAchievementIndex((prev) => 
+      setCurrentAchievementIndex((prev) =>
         prev + 3 >= achievements.length ? 0 : prev + 3
       );
     }
@@ -321,14 +328,17 @@ export function Profile() {
 
   const prevAchievements = () => {
     if (achievements.length > 3) {
-      setCurrentAchievementIndex((prev) => 
+      setCurrentAchievementIndex((prev) =>
         prev - 3 < 0 ? Math.max(0, achievements.length - 3) : prev - 3
       );
     }
   };
 
   const getVisibleAchievements = () => {
-    return achievements.slice(currentAchievementIndex, currentAchievementIndex + 3);
+    return achievements.slice(
+      currentAchievementIndex,
+      currentAchievementIndex + 3
+    );
   };
 
   // Обработчики для модального окна достижений
@@ -356,7 +366,7 @@ export function Profile() {
   // Функции для карусели избранных вопросов
   const nextFavorites = () => {
     if (favoriteQuestions.length > 3) {
-      setCurrentFavoriteIndex((prev) => 
+      setCurrentFavoriteIndex((prev) =>
         prev + 3 >= favoriteQuestions.length ? 0 : prev + 3
       );
     }
@@ -364,20 +374,23 @@ export function Profile() {
 
   const prevFavorites = () => {
     if (favoriteQuestions.length > 3) {
-      setCurrentFavoriteIndex((prev) => 
+      setCurrentFavoriteIndex((prev) =>
         prev - 3 < 0 ? Math.max(0, favoriteQuestions.length - 3) : prev - 3
       );
     }
   };
 
   const getVisibleFavorites = () => {
-    return favoriteQuestions.slice(currentFavoriteIndex, currentFavoriteIndex + 3);
+    return favoriteQuestions.slice(
+      currentFavoriteIndex,
+      currentFavoriteIndex + 3
+    );
   };
 
   // Функции для карусели друзей
   const nextFriends = () => {
     if (friends.length > 5) {
-      setCurrentFriendsIndex((prev) => 
+      setCurrentFriendsIndex((prev) =>
         prev + 5 >= friends.length ? 0 : prev + 5
       );
     }
@@ -385,7 +398,7 @@ export function Profile() {
 
   const prevFriends = () => {
     if (friends.length > 5) {
-      setCurrentFriendsIndex((prev) => 
+      setCurrentFriendsIndex((prev) =>
         prev - 5 < 0 ? Math.max(0, friends.length - 5) : prev - 5
       );
     }
@@ -395,25 +408,29 @@ export function Profile() {
     return friends.slice(currentFriendsIndex, currentFriendsIndex + 5);
   };
 
-
   // Принять заявку на дружбу
   const handleAcceptRequest = async (friendshipId: number) => {
     try {
       const response = await acceptFriendRequest(friendshipId);
-      
+
       if (response.success) {
         // Обновляем списки
         const [friendsResponse, incomingResponse] = await Promise.all([
           getFriends(),
-          getIncomingRequests()
+          getIncomingRequests(),
         ]);
-        
+
         if (friendsResponse.success) setFriends(friendsResponse.data || []);
-        if (incomingResponse.success) setIncomingRequests(incomingResponse.data || []);
-        
+        if (incomingResponse.success)
+          setIncomingRequests(incomingResponse.data || []);
+
         showSuccessModal('Успешно!', 'Заявка на дружбу принята!');
       } else {
-        showSuccessModal('Ошибка', response.message || 'Ошибка при принятии заявки', 'warning');
+        showSuccessModal(
+          'Ошибка',
+          response.message || 'Ошибка при принятии заявки',
+          'warning'
+        );
       }
     } catch (error) {
       console.error('Ошибка при принятии заявки:', error);
@@ -428,11 +445,16 @@ export function Profile() {
       if (response.success) {
         // Обновляем список заявок
         const requestsResponse = await getIncomingRequests();
-        if (requestsResponse.success) setIncomingRequests(requestsResponse.data || []);
-        
+        if (requestsResponse.success)
+          setIncomingRequests(requestsResponse.data || []);
+
         showSuccessModal('Успешно!', 'Заявка на дружбу отклонена');
       } else {
-        showSuccessModal('Ошибка', response.message || 'Ошибка при отклонении заявки', 'warning');
+        showSuccessModal(
+          'Ошибка',
+          response.message || 'Ошибка при отклонении заявки',
+          'warning'
+        );
       }
     } catch (error) {
       console.error('Ошибка при отклонении заявки:', error);
@@ -452,14 +474,22 @@ export function Profile() {
             // Обновляем список друзей
             const friendsResponse = await getFriends();
             if (friendsResponse.success) setFriends(friendsResponse.data || []);
-            
+
             showSuccessModal('Успешно!', `${friendName} удален из друзей`);
           } else {
-            showSuccessModal('Ошибка', response.message || 'Ошибка при удалении из друзей', 'warning');
+            showSuccessModal(
+              'Ошибка',
+              response.message || 'Ошибка при удалении из друзей',
+              'warning'
+            );
           }
         } catch (error) {
           console.error('Ошибка при удалении из друзей:', error);
-          showSuccessModal('Ошибка', 'Ошибка при удалении из друзей', 'warning');
+          showSuccessModal(
+            'Ошибка',
+            'Ошибка при удалении из друзей',
+            'warning'
+          );
         }
       },
       'Удалить',
@@ -477,10 +507,10 @@ export function Profile() {
 
     setSearchLoading(true);
     setSearchError('');
-    
+
     try {
       const response = await getUserByUsername(username.trim());
-      
+
       if (response.success && response.data) {
         setSearchResult(response.data);
       } else {
@@ -497,26 +527,41 @@ export function Profile() {
   };
 
   // Отправить заявку на дружбу
-  const handleSendFriendRequest = async (friendId: number, friendName: string) => {
+  const handleSendFriendRequest = async (
+    friendId: number,
+    friendName: string
+  ) => {
     try {
       const response = await sendFriendRequest(friendId);
-      
+
       if (response.success) {
         // Обновляем список исходящих заявок
         const outgoingResponse = await getOutgoingRequests();
-        if (outgoingResponse.success) setOutgoingRequests(outgoingResponse.data || []);
-        
+        if (outgoingResponse.success)
+          setOutgoingRequests(outgoingResponse.data || []);
+
         // Очищаем результат поиска
         setSearchResult(null);
         setSearchQuery('');
-        
-        showSuccessModal('Успешно!', `Заявка на дружбу отправлена пользователю ${friendName}`);
+
+        showSuccessModal(
+          'Успешно!',
+          `Заявка на дружбу отправлена пользователю ${friendName}`
+        );
       } else {
-        showSuccessModal('Ошибка', response.message || 'Ошибка при отправке заявки на дружбу', 'warning');
+        showSuccessModal(
+          'Ошибка',
+          response.message || 'Ошибка при отправке заявки на дружбу',
+          'warning'
+        );
       }
     } catch (error) {
       console.error('Ошибка при отправке заявки на дружбу:', error);
-      showSuccessModal('Ошибка', 'Ошибка при отправке заявки на дружбу', 'warning');
+      showSuccessModal(
+        'Ошибка',
+        'Ошибка при отправке заявки на дружбу',
+        'warning'
+      );
     }
   };
 
@@ -543,20 +588,20 @@ export function Profile() {
   // Проверяем, является ли пользователь уже другом или есть ли заявка
   const getFriendshipStatus = (userId: number) => {
     // Проверяем, есть ли пользователь в списке друзей
-    if (friends.some(friend => friend.id === userId)) {
+    if (friends.some((friend) => friend.id === userId)) {
       return 'friend';
     }
-    
+
     // Проверяем исходящие заявки
-    if (outgoingRequests.some(request => request.friend?.id === userId)) {
+    if (outgoingRequests.some((request) => request.friend?.id === userId)) {
       return 'pending_outgoing';
     }
-    
+
     // Проверяем входящие заявки
-    if (incomingRequests.some(request => request.user?.id === userId)) {
+    if (incomingRequests.some((request) => request.user?.id === userId)) {
       return 'pending_incoming';
     }
-    
+
     return 'none';
   };
 
@@ -564,7 +609,6 @@ export function Profile() {
   const handleFriendClick = (friendId: number) => {
     navigate(`/user/${friendId}`);
   };
-
 
   // Обработчик изменения полей формы
   const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
@@ -574,46 +618,52 @@ export function Profile() {
   // Обработчик отправки формы
   const handleSave = async (e: FormEvent) => {
     e.preventDefault();
-    
+
     try {
       setLoading(true);
       setError(null);
 
       // Отправляем данные на сервер для обновления профиля
-      const response = await api.put<ApiResponse<User>>('/api/auth/update-profile', {
-        username: formData.username,
-        email: formData.email,
-        currentPassword: formData.currentPassword,
-        newPassword: formData.newPassword || undefined, // отправляем только если есть новый пароль
-      }, {
-        withCredentials: true
-      });
+      const response = await api.put<ApiResponse<User>>(
+        '/api/auth/update-profile',
+        {
+          username: formData.username,
+          email: formData.email,
+          currentPassword: formData.currentPassword,
+          newPassword: formData.newPassword || undefined, // отправляем только если есть новый пароль
+        },
+        {
+          withCredentials: true,
+        }
+      );
 
       if (!response.data.success) {
-        throw new Error(response.data.message || "Ошибка при обновлении профиля");
+        throw new Error(
+          response.data.message || 'Ошибка при обновлении профиля'
+        );
       }
 
       // Обновляем локальное состояние пользователя с данными с сервера
       setUser(response.data.data);
 
       // Очищаем пароли из формы после успешного обновления
-      setFormData(prev => ({
+      setFormData((prev) => ({
         ...prev,
-        currentPassword: "",
-        newPassword: "",
+        currentPassword: '',
+        newPassword: '',
         username: response.data.data.username,
         email: response.data.data.email,
       }));
 
       closeSettings();
-      
+
       // Показываем уведомление об успешном обновлении
-      showSuccessModal("Успешно!", "Профиль успешно обновлен!");
-      
+      showSuccessModal('Успешно!', 'Профиль успешно обновлен!');
     } catch (err) {
-      let errorMessage = "Ошибка при обновлении профиля";
+      let errorMessage = 'Ошибка при обновлении профиля';
       if (axios.isAxiosError(err)) {
-        errorMessage = err.response?.data?.message || err.message || errorMessage;
+        errorMessage =
+          err.response?.data?.message || err.message || errorMessage;
       } else if (err instanceof Error) {
         errorMessage = err.message;
       }
@@ -633,11 +683,13 @@ export function Profile() {
           setLoading(true);
           setError(null);
           // вызов API для удаления аккаунта
-          await api.delete("/api/auth/delete-account", { withCredentials: true });
+          await api.delete('/api/auth/delete-account', {
+            withCredentials: true,
+          });
           // например, редирект на страницу входа или главную
-          window.location.href = "/register";
+          window.location.href = '/register';
         } catch (err) {
-          let errorMessage = "Ошибка удаления аккаунта";
+          let errorMessage = 'Ошибка удаления аккаунта';
           if (axios.isAxiosError(err)) {
             errorMessage =
               err.response?.data?.message || err.message || errorMessage;
@@ -656,700 +708,838 @@ export function Profile() {
 
   if (loading) return <div className={styles.loading}>Загрузка профиля...</div>;
   if (error) return <div className={styles.error}>Ошибка: {error}</div>;
-  if (!user) return <div className={styles.notFound}>Пользователь не найден</div>;
+  if (!user)
+    return <div className={styles.notFound}>Пользователь не найден</div>;
 
   return (
-<section className={styles.profileSection}>
-  <div className={styles.mainContainer}>
-    {/* Левый блок (2/3 ширины) */}
-    <div className={styles.leftBlock}>
-      
-      {/* Блок 1.1 - Основная информация */}
-      <h3 className={styles.blockTitle}>👤 Профиль</h3>
-      <div className={styles.profileInfoBlock}>
-        <div className={styles.avatarSection} style={{ position: 'relative' }}>
-          <Link 
-            to="/avatar-shop" 
-            className={styles.avatarShopLink}
-            style={{
-              position: 'absolute',
-              top: '16px',
-              right: '8px',
-              zIndex: 10
-            }}
-          >
-            🛒
-          </Link>
-          
-          <img
-            src={currentAvatar?.imageUrl || (user?.image_url && user.image_url !== null ? user.image_url : "/default-avatar.svg")}
-            alt="Аватар"
-            className={styles.avatar}
-          />
-          
-          <button className={styles.editButton} onClick={openSettings}>
-            ⚙️ Редактировать
-          </button>
-        </div>
-        <div className={styles.basicInfo}>
-          <h2 className={styles.username}>{user.username}</h2>
-          <p className={styles.userEmail}>📧 {user.email}</p>
-          <p className={styles.registrationDate}>{formatRegistrationDate(user.createdAt)}</p>
-          <p className={styles.friendsCount}>{getFriendsCountText(friends.length)}</p>
-        </div>
-      </div>
-
-      {/* Блок 1.2 - Достижения */}
-      <div className={styles.achievementsBlock}>
-        <div className={styles.achievementsHeader}>
-          <h3 className={styles.blockTitle}>🏆 Достижения</h3>
-          {achievements.length > 3 && (
-            <div className={styles.carouselControls}>
-              <button 
-                className={styles.carouselButton}
-                onClick={prevAchievements}
-                aria-label="Предыдущие достижения"
-              >
-                ←
-              </button>
-              <button 
-                className={styles.carouselButton}
-                onClick={nextAchievements}
-                aria-label="Следующие достижения"
-              >
-                →
-              </button>
-            </div>
-          )}
-        </div>
-        
-        <div className={styles.achievementsCarousel}>
-          {achievementsLoading ? (
-            <div className={styles.loading}>Загрузка достижений...</div>
-          ) : achievements.length === 0 ? (
-            <div className={styles.emptyMessage}>У вас пока нет достижений</div>
-          ) : (
-            <div className={styles.achievementsList}>
-              {getVisibleAchievements().map((achievement) => (
-                <div key={achievement.id} className={styles.achievementWrapper}>
-                  <AchievementCard 
-                    achievement={achievement}
-                    className={styles.profileAchievementCard}
-                    onClick={handleAchievementClick}
-                  />
-                </div>
-              ))}
-            </div>
-          )}
-        </div>
-        
-        {achievements.length > 0 && (
-          <div className={styles.achievementsIndicator}>
-            {achievements.length > 3 ? `${currentAchievementIndex + 1}-${Math.min(currentAchievementIndex + 3, achievements.length)} из ${achievements.length}` : `${achievements.length} достижени${achievements.length === 1 ? 'е' : achievements.length < 5 ? 'я' : 'й'}`}
-          </div>
-        )}
-      </div>
-
-      {/* Блок избранных вопросов */}
-      <div className={styles.favoriteQuestionsSection}>
-          <div className={styles.favoritesHeader}>
-            <h3 className={styles.blockTitle}>⭐ Избранные вопросы</h3>
-            {favoriteQuestions.length > 3 && (
-              <div className={styles.carouselControls}>
-                <button 
-                  className={styles.carouselButton}
-                  onClick={prevFavorites}
-                  aria-label="Предыдущие вопросы"
-                >
-                  ↑
-                </button>
-                <button 
-                  className={styles.carouselButton}
-                  onClick={nextFavorites}
-                  aria-label="Следующие вопросы"
-                >
-                  ↓
-                </button>
-              </div>
-            )}
-        </div>
-        
-        <div className={styles.favoritesCarousel}>
-          {favoritesLoading ? (
-            <div className={styles.loading}>Загрузка избранных вопросов...</div>
-          ) : favoriteQuestions.length === 0 ? (
-            <div className={styles.emptyMessage}>У вас нет избранных вопросов</div>
-          ) : (
-            <div className={styles.questionsList}>
-              {getVisibleFavorites().map((favorite, index) => (
-                <div 
-                  key={`favorite-${favorite.id}-${favorite.question.id}-${index}`} 
-                  className={styles.questionCard}
-                  onClick={() => handleQuestionClick(favorite)}
-                >
-                  <div className={styles.questionHeader}>
-                    <span className={styles.topicBadge}>
-                      {favorite.question.topic.title}
-                    </span>
-                    <span className={styles.phaseInfo}>
-                      Фаза {favorite.question.topic.phaseId}
-                    </span>
-                  </div>
-                  
-                  <div className={styles.questionContent}>
-                    <p className={styles.questionText}>
-                      {favorite.question.text}
-                    </p>
-                    
-                    <div className={styles.questionMeta}>
-                      <span className={styles.questionType}>
-                        {favorite.question.questionType}
-                      </span>
-                      <span className={styles.addedDate}>
-                        {new Date(favorite.createdAt).toLocaleDateString('ru-RU')}
-                      </span>
-                    </div>
-                  </div>
-                </div>
-              ))}
-            </div>
-          )}
-        </div>
-        
-        {favoriteQuestions.length > 0 && (
-          <div className={styles.favoritesIndicator}>
-            {favoriteQuestions.length > 3 ? `${currentFavoriteIndex + 1}-${Math.min(currentFavoriteIndex + 3, favoriteQuestions.length)} из ${favoriteQuestions.length}` : `${favoriteQuestions.length} вопрос${favoriteQuestions.length === 1 ? '' : favoriteQuestions.length < 5 ? 'а' : 'ов'}`}
-          </div>
-        )}
-      </div>
-    </div>
-
-    {/* Правый блок (1/3 ширины) */}
-    <div className={styles.rightBlock}>
-      
-      {/* Секция статистики */}
-      <div className={styles.statisticsBlock}>
-          <h3 className={styles.blockTitle}>📊 Статистика</h3>
-        <div className={styles.statsGrid}>
-          <div className={styles.statCard}>
-            <div className={styles.statValue}>{user.score ?? 0}</div>
-            <div className={styles.statLabel}>Очки</div>
-          </div>
-          <div className={styles.statCard}>
-            <div className={styles.statValue}>0</div>
-            <div className={styles.statLabel}>Игры</div>
-          </div>
-        </div>
-      </div>
-
-      {/* Секция друзей */}
-      <div className={styles.friendsSection}>
-          <h3 className={styles.blockTitle}>👥 Друзья</h3>
-        
-        {friendsLoading ? (
-          <div className={styles.loading}>Загрузка...</div>
-        ) : (
-          <>
-            <div className={styles.tabsContainer}>
-              <button 
-                className={styles.tab}
-                onClick={openIncomingModal}
-              >
-                📨 Входящие заявки ({incomingRequests.length})
-              </button>
-              <button 
-                className={styles.tab}
-                onClick={openOutgoingModal}
-              >
-                📤 Отправленные заявки ({outgoingRequests.length})
-              </button>
-            </div>
-            
-            {/* Более выразительная информация о количестве друзей с кнопками карусели */}
-            <div 
-              style={{
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'space-between',
-                padding: '12px 20px',
-                marginBottom: '20px',
-                background: 'linear-gradient(135deg, #d8a35d, #b0752d)',
-                color: '#2c1810',
-                borderRadius: '8px',
-                border: '2px solid #8b5a2b',
-                boxShadow: '0 3px 6px rgba(0, 0, 0, 0.15)',
-                fontWeight: '700',
-                fontSize: '1.1rem',
-                textShadow: '0 1px 0 #f3e0c0'
-              }}
+    <section className={styles.profileSection}>
+      <div className={styles.mainContainer}>
+        {/* Левый блок (2/3 ширины) */}
+        <div className={styles.leftBlock}>
+          {/* Блок 1.1 - Основная информация */}
+          <h3 className={styles.blockTitle}>
+            <img
+              src="/ChatGPT Image Sep 16, 2025, 09_34_33 PM.png"
+              alt="Profile"
+              className={styles.profileIcon}
+            />
+            Профиль
+          </h3>
+          <div className={styles.profileInfoBlock}>
+            <div
+              className={styles.avatarSection}
+              style={{ position: 'relative' }}
             >
-              {friends.length > 5 && (
-                <button 
-                  onClick={prevFriends}
-                  style={{
-                    width: '32px',
-                    height: '32px',
-                    borderRadius: '50%',
-                    border: '2px solid #2c1810',
-                    background: 'rgba(44, 24, 16, 0.1)',
-                    color: '#2c1810',
-                    fontSize: '16px',
-                    fontWeight: 'bold',
-                    cursor: 'pointer',
-                    transition: 'all 0.2s ease',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center'
-                  }}
-                  onMouseEnter={(e: MouseEvent<HTMLButtonElement>) => {
-                    e.currentTarget.style.background = 'rgba(44, 24, 16, 0.2)';
-                    e.currentTarget.style.transform = 'scale(1.1)';
-                  }}
-                  onMouseLeave={(e: MouseEvent<HTMLButtonElement>) => {
-                    e.currentTarget.style.background = 'rgba(44, 24, 16, 0.1)';
-                    e.currentTarget.style.transform = 'scale(1)';
-                  }}
-                >
-                  ←
-                </button>
-              )}
-              
-              <div style={{ textAlign: 'center', flex: 1 }}>
-                👥 У вас {getFriendsCountText(friends.length)}
-              </div>
-              
-              {friends.length > 5 && (
-                <button 
-                  onClick={nextFriends}
-                  style={{
-                    width: '32px',
-                    height: '32px',
-                    borderRadius: '50%',
-                    border: '2px solid #2c1810',
-                    background: 'rgba(44, 24, 16, 0.1)',
-                    color: '#2c1810',
-                    fontSize: '16px',
-                    fontWeight: 'bold',
-                    cursor: 'pointer',
-                    transition: 'all 0.2s ease',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center'
-                  }}
-                  onMouseEnter={(e: MouseEvent<HTMLButtonElement>) => {
-                    e.currentTarget.style.background = 'rgba(44, 24, 16, 0.2)';
-                    e.currentTarget.style.transform = 'scale(1.1)';
-                  }}
-                  onMouseLeave={(e: MouseEvent<HTMLButtonElement>) => {
-                    e.currentTarget.style.background = 'rgba(44, 24, 16, 0.1)';
-                    e.currentTarget.style.transform = 'scale(1)';
-                  }}
-                >
-                  →
-                </button>
-              )}
-            </div>
-
-            {/* Поиск друзей */}
-            <div 
-              style={{
-                padding: '10px',
-                marginBottom: '10px',
-                background: '#fffaf0',
-                borderRadius: '6px',
-                border: '2px solid #6b3e15',
-                boxShadow: '0 1px 6px rgba(0, 0, 0, 0.1)'
-              }}
-            >
-              <h4 
+              <Link
+                to="/avatar-shop"
+                className={styles.avatarShopLink}
                 style={{
-                  margin: '0 0 8px 0',
-                  color: '#2c1810',
-                  fontSize: '0.95rem',
-                  fontWeight: '700',
-                  textAlign: 'center'
+                  position: 'absolute',
+                  top: '16px',
+                  right: '8px',
+                  zIndex: 10,
                 }}
               >
-                🔍 Найти друга
-              </h4>
-              
-              <div style={{ position: 'relative', marginBottom: '8px' }}>
-                <input
-                  type="text"
-                  value={searchQuery}
-                  onChange={handleSearchQueryChange}
-                  placeholder="Введите логин пользователя..."
-                  style={{
-                    width: '100%',
-                    padding: '6px 10px',
-                    border: '2px solid #d8a35d',
-                    borderRadius: '5px',
-                    fontSize: '0.85rem',
-                    background: '#fff',
-                    color: '#2c1810',
-                    fontFamily: 'inherit',
-                    transition: 'border-color 0.2s ease',
-                    outline: 'none'
-                  }}
-                  onFocus={(e: React.FocusEvent<HTMLInputElement>) => {
-                    e.currentTarget.style.borderColor = '#b0752d';
-                    e.currentTarget.style.boxShadow = '0 0 8px rgba(176, 117, 45, 0.3)';
-                  }}
-                  onBlur={(e: React.FocusEvent<HTMLInputElement>) => {
-                    e.currentTarget.style.borderColor = '#d8a35d';
-                    e.currentTarget.style.boxShadow = 'none';
-                  }}
-                />
-                
-                {searchLoading && (
-                  <div 
-                    style={{
-                      position: 'absolute',
-                      right: '12px',
-                      top: '50%',
-                      transform: 'translateY(-50%)',
-                      color: '#b0752d',
-                      fontSize: '14px'
-                    }}
-                  >
-                    ⏳
-                  </div>
-                )}
-              </div>
+                🛒
+              </Link>
 
-              {/* Результат поиска */}
-              {searchError && (
-                <div 
-                  style={{
-                    padding: '6px',
-                    background: '#ffe6e6',
-                    border: '1px solid #ff9999',
-                    borderRadius: '4px',
-                    color: '#cc0000',
-                    fontSize: '0.8rem',
-                    textAlign: 'center'
-                  }}
-                >
-                  {searchError}
+              <img
+                src={
+                  currentAvatar?.imageUrl ||
+                  (user?.image_url && user.image_url !== null
+                    ? user.image_url
+                    : '/default-avatar.svg')
+                }
+                alt="Аватар"
+                className={styles.avatar}
+              />
+
+              <button className={styles.editButton} onClick={openSettings}>
+                ⚙️ Редактировать
+              </button>
+            </div>
+            <div className={styles.basicInfo}>
+              <h2 className={styles.username}>{user.username}</h2>
+              <p className={styles.userEmail}>📧 {user.email}</p>
+              <p className={styles.registrationDate}>
+                {formatRegistrationDate(user.createdAt)}
+              </p>
+              <p className={styles.friendsCount}>
+                {getFriendsCountText(friends.length)}
+              </p>
+            </div>
+          </div>
+
+          {/* Блок 1.2 - Достижения */}
+          <div className={styles.achievementsBlock}>
+            <div className={styles.achievementsHeader}>
+              <h3 className={styles.blockTitle}>
+                <img
+                  src="/ChatGPT Image Sep 16, 2025, 09_15_37 PM.png"
+                  alt="Trophy"
+                  className={styles.trophyIcon}
+                />
+                Достижения
+              </h3>
+              {achievements.length > 3 && (
+                <div className={styles.carouselControls}>
+                  <button
+                    className={styles.carouselButton}
+                    onClick={prevAchievements}
+                    aria-label="Предыдущие достижения"
+                  >
+                    ←
+                  </button>
+                  <button
+                    className={styles.carouselButton}
+                    onClick={nextAchievements}
+                    aria-label="Следующие достижения"
+                  >
+                    →
+                  </button>
                 </div>
               )}
+            </div>
 
-              {searchResult && (
-                <div 
+            <div className={styles.achievementsCarousel}>
+              {achievementsLoading ? (
+                <div className={styles.loading}>Загрузка достижений...</div>
+              ) : achievements.length === 0 ? (
+                <div className={styles.emptyMessage}>
+                  У вас пока нет достижений
+                </div>
+              ) : (
+                <div className={styles.achievementsList}>
+                  {getVisibleAchievements().map((achievement) => (
+                    <div
+                      key={achievement.id}
+                      className={styles.achievementWrapper}
+                    >
+                      <AchievementCard
+                        achievement={achievement}
+                        className={styles.profileAchievementCard}
+                        onClick={handleAchievementClick}
+                      />
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+
+            {achievements.length > 0 && (
+              <div className={styles.achievementsIndicator}>
+                {achievements.length > 3
+                  ? `${currentAchievementIndex + 1}-${Math.min(
+                      currentAchievementIndex + 3,
+                      achievements.length
+                    )} из ${achievements.length}`
+                  : `${achievements.length} достижени${
+                      achievements.length === 1
+                        ? 'е'
+                        : achievements.length < 5
+                        ? 'я'
+                        : 'й'
+                    }`}
+              </div>
+            )}
+          </div>
+
+          {/* Блок избранных вопросов */}
+          <div className={styles.favoriteQuestionsSection}>
+            <div className={styles.favoritesHeader}>
+              <h3 className={styles.blockTitle}>
+                <img
+                  src="/ChatGPT Image Sep 16, 2025, 09_42_08 PM.png"
+                  alt="Star"
+                  className={styles.starIcon}
+                />
+                Избранные вопросы
+              </h3>
+              {favoriteQuestions.length > 3 && (
+                <div className={styles.carouselControls}>
+                  <button
+                    className={styles.carouselButton}
+                    onClick={prevFavorites}
+                    aria-label="Предыдущие вопросы"
+                  >
+                    ↑
+                  </button>
+                  <button
+                    className={styles.carouselButton}
+                    onClick={nextFavorites}
+                    aria-label="Следующие вопросы"
+                  >
+                    ↓
+                  </button>
+                </div>
+              )}
+            </div>
+
+            <div className={styles.favoritesCarousel}>
+              {favoritesLoading ? (
+                <div className={styles.loading}>
+                  Загрузка избранных вопросов...
+                </div>
+              ) : favoriteQuestions.length === 0 ? (
+                <div className={styles.emptyMessage}>
+                  У вас нет избранных вопросов
+                </div>
+              ) : (
+                <div className={styles.questionsList}>
+                  {getVisibleFavorites().map((favorite, index) => (
+                    <div
+                      key={`favorite-${favorite.id}-${favorite.question.id}-${index}`}
+                      className={styles.questionCard}
+                      onClick={() => handleQuestionClick(favorite)}
+                    >
+                      <div className={styles.questionHeader}>
+                        <span className={styles.topicBadge}>
+                          {favorite.question.topic.title}
+                        </span>
+                        <span className={styles.phaseInfo}>
+                          Фаза {favorite.question.topic.phaseId}
+                        </span>
+                      </div>
+
+                      <div className={styles.questionContent}>
+                        <p className={styles.questionText}>
+                          {favorite.question.text}
+                        </p>
+
+                        <div className={styles.questionMeta}>
+                          <span className={styles.questionType}>
+                            {favorite.question.questionType}
+                          </span>
+                          <span className={styles.addedDate}>
+                            {new Date(favorite.createdAt).toLocaleDateString(
+                              'ru-RU'
+                            )}
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+
+            {favoriteQuestions.length > 0 && (
+              <div className={styles.favoritesIndicator}>
+                {favoriteQuestions.length > 3
+                  ? `${currentFavoriteIndex + 1}-${Math.min(
+                      currentFavoriteIndex + 3,
+                      favoriteQuestions.length
+                    )} из ${favoriteQuestions.length}`
+                  : `${favoriteQuestions.length} вопрос${
+                      favoriteQuestions.length === 1
+                        ? ''
+                        : favoriteQuestions.length < 5
+                        ? 'а'
+                        : 'ов'
+                    }`}
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* Правый блок (1/3 ширины) */}
+        <div className={styles.rightBlock}>
+          {/* Секция статистики */}
+          <div className={styles.statisticsBlock}>
+            <h3 className={styles.blockTitle}>
+              <img
+                src="/ChatGPT Image Sep 16, 2025, 09_53_05 PM.png"
+                alt="Statistics"
+                className={styles.statisticsIcon}
+              />
+              Статистика
+            </h3>
+            <div className={styles.statsGrid}>
+              <div className={styles.statCard}>
+                <div className={styles.statValue}>{user.score ?? 0}</div>
+                <div className={styles.statLabel}>Очки</div>
+              </div>
+              <div className={styles.statCard}>
+                <div className={styles.statValue}>0</div>
+                <div className={styles.statLabel}>Игры</div>
+              </div>
+            </div>
+          </div>
+
+          {/* Секция друзей */}
+          <div className={styles.friendsSection}>
+            <h3 className={styles.blockTitle}>
+              <img
+                src="/ChatGPT Image Sep 16, 2025, 10_14_23 PM.png"
+                alt="Friends"
+                className={styles.friendsIcon}
+              />
+              Друзья
+            </h3>
+
+            {friendsLoading ? (
+              <div className={styles.loading}>Загрузка...</div>
+            ) : (
+              <>
+                <div className={styles.tabsContainer}>
+                  <button className={styles.tab} onClick={openIncomingModal}>
+                    📨 Входящие заявки ({incomingRequests.length})
+                  </button>
+                  <button className={styles.tab} onClick={openOutgoingModal}>
+                    📤 Отправленные заявки ({outgoingRequests.length})
+                  </button>
+                </div>
+
+                {/* Более выразительная информация о количестве друзей с кнопками карусели */}
+                <div
                   style={{
-                    padding: '8px',
-                    background: '#f0f8ff',
-                    border: '1px solid #87ceeb',
-                    borderRadius: '6px',
                     display: 'flex',
                     alignItems: 'center',
-                    gap: '6px',
-                    cursor: 'pointer',
-                    transition: 'all 0.2s ease'
-                  }}
-                  onClick={() => navigate(`/user/${searchResult.id}`)}
-                  onMouseEnter={(e) => {
-                    e.currentTarget.style.background = '#e6f3ff';
-                    e.currentTarget.style.borderColor = '#5dade2';
-                    e.currentTarget.style.transform = 'translateY(-1px)';
-                    e.currentTarget.style.boxShadow = '0 4px 8px rgba(0, 123, 255, 0.2)';
-                  }}
-                  onMouseLeave={(e) => {
-                    e.currentTarget.style.background = '#f0f8ff';
-                    e.currentTarget.style.borderColor = '#87ceeb';
-                    e.currentTarget.style.transform = 'translateY(0)';
-                    e.currentTarget.style.boxShadow = 'none';
+                    justifyContent: 'space-between',
+                    padding: '12px 20px',
+                    marginBottom: '20px',
+                    background: 'linear-gradient(135deg, #d8a35d, #b0752d)',
+                    color: '#2c1810',
+                    borderRadius: '8px',
+                    border: '2px solid #8b5a2b',
+                    boxShadow: '0 3px 6px rgba(0, 0, 0, 0.15)',
+                    fontWeight: '700',
+                    fontSize: '1.1rem',
+                    textShadow: '0 1px 0 #f3e0c0',
                   }}
                 >
-                  <UserAvatar
-                    userId={searchResult.id}
-                    fallbackImageUrl={searchResult.image_url || "/default-avatar.svg"}
-                    size="small"
-                    shape="square"
-                    alt={`Аватар ${searchResult.username}`}
-                    style={{
-                      border: '1px solid #87ceeb',
-                      flexShrink: 0
-                    }}
-                  />
-                  
-                  <div style={{ flex: 1 }}>
-                    <h5 
+                  {friends.length > 5 && (
+                    <button
+                      onClick={prevFriends}
                       style={{
-                        margin: '0 0 1px 0',
-                        fontSize: '0.9rem',
-                        fontWeight: '700',
+                        width: '32px',
+                        height: '32px',
+                        borderRadius: '50%',
+                        border: '2px solid #2c1810',
+                        background: 'rgba(44, 24, 16, 0.1)',
                         color: '#2c1810',
+                        fontSize: '16px',
+                        fontWeight: 'bold',
+                        cursor: 'pointer',
+                        transition: 'all 0.2s ease',
                         display: 'flex',
                         alignItems: 'center',
-                        gap: '4px'
+                        justifyContent: 'center',
+                      }}
+                      onMouseEnter={(e: MouseEvent<HTMLButtonElement>) => {
+                        e.currentTarget.style.background =
+                          'rgba(44, 24, 16, 0.2)';
+                        e.currentTarget.style.transform = 'scale(1.1)';
+                      }}
+                      onMouseLeave={(e: MouseEvent<HTMLButtonElement>) => {
+                        e.currentTarget.style.background =
+                          'rgba(44, 24, 16, 0.1)';
+                        e.currentTarget.style.transform = 'scale(1)';
                       }}
                     >
-                      {searchResult.username}
-                      <span style={{ fontSize: '0.7rem', color: '#666' }}>👆</span>
-                    </h5>
-                    {searchResult.score !== undefined && (
-                      <p 
+                      ←
+                    </button>
+                  )}
+
+                  <div style={{ textAlign: 'center', flex: 1 }}>
+                    <img
+                      src="/ChatGPT Image Sep 16, 2025, 10_14_23 PM.png"
+                      alt="Friends"
+                      style={{
+                        width: '1.2rem',
+                        height: '1.2rem',
+                        marginRight: '8px',
+                        verticalAlign: 'middle',
+                        filter: 'drop-shadow(1px 1px 2px rgba(0, 0, 0, 0.3))',
+                      }}
+                    />
+                    У вас {getFriendsCountText(friends.length)}
+                  </div>
+
+                  {friends.length > 5 && (
+                    <button
+                      onClick={nextFriends}
+                      style={{
+                        width: '32px',
+                        height: '32px',
+                        borderRadius: '50%',
+                        border: '2px solid #2c1810',
+                        background: 'rgba(44, 24, 16, 0.1)',
+                        color: '#2c1810',
+                        fontSize: '16px',
+                        fontWeight: 'bold',
+                        cursor: 'pointer',
+                        transition: 'all 0.2s ease',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                      }}
+                      onMouseEnter={(e: MouseEvent<HTMLButtonElement>) => {
+                        e.currentTarget.style.background =
+                          'rgba(44, 24, 16, 0.2)';
+                        e.currentTarget.style.transform = 'scale(1.1)';
+                      }}
+                      onMouseLeave={(e: MouseEvent<HTMLButtonElement>) => {
+                        e.currentTarget.style.background =
+                          'rgba(44, 24, 16, 0.1)';
+                        e.currentTarget.style.transform = 'scale(1)';
+                      }}
+                    >
+                      →
+                    </button>
+                  )}
+                </div>
+
+                {/* Поиск друзей */}
+                <div
+                  style={{
+                    padding: '10px',
+                    marginBottom: '10px',
+                    background: '#fffaf0',
+                    borderRadius: '6px',
+                    border: '2px solid #6b3e15',
+                    boxShadow: '0 1px 6px rgba(0, 0, 0, 0.1)',
+                  }}
+                >
+                  <h4
+                    style={{
+                      margin: '0 0 8px 0',
+                      color: '#2c1810',
+                      fontSize: '0.95rem',
+                      fontWeight: '700',
+                      textAlign: 'center',
+                    }}
+                  >
+                    🔍 Найти друга
+                  </h4>
+
+                  <div style={{ position: 'relative', marginBottom: '8px' }}>
+                    <input
+                      type="text"
+                      value={searchQuery}
+                      onChange={handleSearchQueryChange}
+                      placeholder="Введите логин пользователя..."
+                      style={{
+                        width: '100%',
+                        padding: '6px 10px',
+                        border: '2px solid #d8a35d',
+                        borderRadius: '5px',
+                        fontSize: '0.85rem',
+                        background: '#fff',
+                        color: '#2c1810',
+                        fontFamily: 'inherit',
+                        transition: 'border-color 0.2s ease',
+                        outline: 'none',
+                      }}
+                      onFocus={(e: React.FocusEvent<HTMLInputElement>) => {
+                        e.currentTarget.style.borderColor = '#b0752d';
+                        e.currentTarget.style.boxShadow =
+                          '0 0 8px rgba(176, 117, 45, 0.3)';
+                      }}
+                      onBlur={(e: React.FocusEvent<HTMLInputElement>) => {
+                        e.currentTarget.style.borderColor = '#d8a35d';
+                        e.currentTarget.style.boxShadow = 'none';
+                      }}
+                    />
+
+                    {searchLoading && (
+                      <div
                         style={{
-                          margin: '0',
-                          fontSize: '0.75rem',
-                          color: '#666'
+                          position: 'absolute',
+                          right: '12px',
+                          top: '50%',
+                          transform: 'translateY(-50%)',
+                          color: '#b0752d',
+                          fontSize: '14px',
                         }}
                       >
-                        Очки: {searchResult.score}
-                      </p>
+                        ⏳
+                      </div>
                     )}
                   </div>
 
-                  {(() => {
-                    const status = getFriendshipStatus(searchResult.id);
-                    
-                    if (searchResult.id === user?.id) {
-                      return (
-                        <div 
-                          style={{
-                            padding: '4px 8px',
-                            background: '#e0e0e0',
-                            borderRadius: '4px',
-                            color: '#666',
-                            fontSize: '0.75rem'
-                          }}
-                        >
-                          Это вы
-                        </div>
-                      );
-                    }
-                    
-                    if (status === 'friend') {
-                      return (
-                        <div 
-                          style={{
-                            padding: '4px 8px',
-                            background: '#d4edda',
-                            border: '1px solid #28a745',
-                            borderRadius: '4px',
-                            color: '#155724',
-                            fontSize: '0.75rem',
-                            fontWeight: '600'
-                          }}
-                        >
-                          ✅ Уже друг
-                        </div>
-                      );
-                    }
-                    
-                    if (status === 'pending_outgoing') {
-                      return (
-                        <div 
-                          style={{
-                            padding: '4px 8px',
-                            background: '#fff3cd',
-                            border: '1px solid #ffc107',
-                            borderRadius: '4px',
-                            color: '#856404',
-                            fontSize: '0.75rem',
-                            fontWeight: '600'
-                          }}
-                        >
-                          ⏳ Заявка отправлена
-                        </div>
-                      );
-                    }
-                    
-                    if (status === 'pending_incoming') {
-                      return (
-                        <div 
-                          style={{
-                            padding: '4px 8px',
-                            background: '#cce5ff',
-                            border: '1px solid #007bff',
-                            borderRadius: '4px',
-                            color: '#004085',
-                            fontSize: '0.75rem',
-                            fontWeight: '600'
-                          }}
-                        >
-                          📨 Есть заявка от вас
-                        </div>
-                      );
-                    }
-                    
-                    return (
-                      <button
-                        onClick={(e) => {
-                          e.stopPropagation(); // Предотвращаем всплытие события
-                          handleSendFriendRequest(searchResult.id, searchResult.username);
-                        }}
-                        style={{
-                          padding: '6px 10px',
-                          background: 'linear-gradient(135deg, #28a745, #20c997)',
-                          color: 'white',
-                          border: '1px solid #1e7e34',
-                          borderRadius: '5px',
-                          fontSize: '0.8rem',
-                          fontWeight: '700',
-                          cursor: 'pointer',
-                          transition: 'all 0.2s ease',
-                          boxShadow: '0 2px 6px rgba(40, 167, 69, 0.3)'
-                        }}
-                        onMouseEnter={(e: MouseEvent<HTMLButtonElement>) => {
-                          e.currentTarget.style.background = 'linear-gradient(135deg, #218838, #17a2b8)';
-                          e.currentTarget.style.transform = 'translateY(-2px)';
-                          e.currentTarget.style.boxShadow = '0 5px 12px rgba(40, 167, 69, 0.4)';
-                        }}
-                        onMouseLeave={(e: MouseEvent<HTMLButtonElement>) => {
-                          e.currentTarget.style.background = 'linear-gradient(135deg, #28a745, #20c997)';
-                          e.currentTarget.style.transform = 'translateY(0)';
-                          e.currentTarget.style.boxShadow = '0 3px 8px rgba(40, 167, 69, 0.3)';
-                        }}
-                      >
-                        ➕ Добавить в друзья
-                      </button>
-                    );
-                  })()}
-                </div>
-              )}
-            </div>
-            
-            <div className={styles.friendsList}>
-              {friends.length === 0 ? (
-                <div className={styles.emptyMessage}>У вас еще нет друзей</div>
-              ) : (
-                getVisibleFriends().map((friend) => (
-                  <div 
-                    key={friend.id} 
-                    className={styles.friendCard}
-                    onClick={() => handleFriendClick(friend.id)}
-                    style={{
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'space-between',
-                      gap: '12px',
-                      padding: '18px',
-                      background: '#fffaf0',
-                      borderRadius: '12px',
-                      border: '3px solid #6b3e15',
-                      boxShadow: '0 4px 12px rgba(0, 0, 0, 0.15)',
-                      transition: 'all 0.2s ease-in-out',
-                      position: 'relative',
-                      overflow: 'hidden',
-                      cursor: 'pointer'
-                    }}
-                    onMouseEnter={(e) => {
-                      e.currentTarget.style.transform = 'translateY(-3px)';
-                      e.currentTarget.style.boxShadow = '0 6px 16px rgba(0, 0, 0, 0.2)';
-                      e.currentTarget.style.borderColor = '#8b5a2b';
-                      e.currentTarget.style.background = '#fff8dc';
-                    }}
-                    onMouseLeave={(e) => {
-                      e.currentTarget.style.transform = 'translateY(0)';
-                      e.currentTarget.style.boxShadow = '0 4px 12px rgba(0, 0, 0, 0.15)';
-                      e.currentTarget.style.borderColor = '#6b3e15';
-                      e.currentTarget.style.background = '#fffaf0';
-                    }}
-                  >
-                    {/* Декоративная полоска сверху */}
+                  {/* Результат поиска */}
+                  {searchError && (
                     <div
                       style={{
-                        position: 'absolute',
-                        top: 0,
-                        left: 0,
-                        right: 0,
-                        height: '4px',
-                        background: 'linear-gradient(90deg, #d8a35d, #b0752d)'
-                      }}
-                    />
-                    <div style={{ display: 'flex', alignItems: 'flex-start', gap: '12px', flex: 1 }}>
-                      <UserAvatar
-                        userId={friend.id}
-                        fallbackImageUrl={friend.image_url || "/default-avatar.svg"}
-                        size="medium"
-                        shape="square"
-                        alt={`Аватар ${friend.username}`}
-                        className={styles.friendAvatar}
-                      />
-                      <div style={{ display: 'flex', flexDirection: 'column', flex: 1 }}>
-                        <h4 className={styles.friendName}>{friend.username}</h4>
-                        <p className={styles.friendScore}>
-                          🏆 {friend.score ?? 0} очков
-                        </p>
-                      </div>
-                    </div>
-                    <button
-                      className={styles.removeFriendButton}
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        handleRemoveFriend(friend.id, friend.username);
-                      }}
-                      onMouseEnter={(e: MouseEvent<HTMLButtonElement>) => {
-                        e.currentTarget.style.background = 'linear-gradient(135deg, #e74c3c, #c0392b)';
-                        e.currentTarget.style.transform = 'translateY(-2px)';
-                        e.currentTarget.style.boxShadow = '0 5px 12px rgba(220, 53, 69, 0.4)';
-                        e.currentTarget.style.borderColor = '#a71e2a';
-                      }}
-                      onMouseLeave={(e: MouseEvent<HTMLButtonElement>) => {
-                        e.currentTarget.style.background = 'linear-gradient(135deg, #dc3545, #c82333)';
-                        e.currentTarget.style.transform = 'translateY(0)';
-                        e.currentTarget.style.boxShadow = '0 3px 8px rgba(220, 53, 69, 0.3)';
-                        e.currentTarget.style.borderColor = '#b21e2f';
-                      }}
-                      onMouseDown={(e: MouseEvent<HTMLButtonElement>) => {
-                        e.currentTarget.style.transform = 'translateY(1px)';
-                        e.currentTarget.style.boxShadow = '0 2px 4px rgba(220, 53, 69, 0.4)';
-                      }}
-                      onMouseUp={(e: MouseEvent<HTMLButtonElement>) => {
-                        e.currentTarget.style.transform = 'translateY(-2px)';
-                        e.currentTarget.style.boxShadow = '0 5px 12px rgba(220, 53, 69, 0.4)';
+                        padding: '6px',
+                        background: '#ffe6e6',
+                        border: '1px solid #ff9999',
+                        borderRadius: '4px',
+                        color: '#cc0000',
+                        fontSize: '0.8rem',
+                        textAlign: 'center',
                       }}
                     >
-                      🗑️
-                    </button>
-                  </div>
-                ))
-              )}
-            </div>
-            
-            {/* Индикатор карусели друзей */}
-            {friends.length > 0 && (
-              <div 
-                style={{
-                  textAlign: 'center',
-                  marginTop: '16px',
-                  fontSize: '0.9rem',
-                  color: '#8b7355',
-                  fontWeight: '500'
-                }}
-              >
-                {friends.length > 5 ? 
-                  `${currentFriendsIndex + 1}-${Math.min(currentFriendsIndex + 5, friends.length)} из ${friends.length}` : 
-                  getFriendsCountText(friends.length)
-                }
-              </div>
-            )}
-          </>
-        )}
-      </div>
-    </div>
-  </div>
+                      {searchError}
+                    </div>
+                  )}
 
+                  {searchResult && (
+                    <div
+                      style={{
+                        padding: '8px',
+                        background: '#f0f8ff',
+                        border: '1px solid #87ceeb',
+                        borderRadius: '6px',
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '6px',
+                        cursor: 'pointer',
+                        transition: 'all 0.2s ease',
+                      }}
+                      onClick={() => navigate(`/user/${searchResult.id}`)}
+                      onMouseEnter={(e) => {
+                        e.currentTarget.style.background = '#e6f3ff';
+                        e.currentTarget.style.borderColor = '#5dade2';
+                        e.currentTarget.style.transform = 'translateY(-1px)';
+                        e.currentTarget.style.boxShadow =
+                          '0 4px 8px rgba(0, 123, 255, 0.2)';
+                      }}
+                      onMouseLeave={(e) => {
+                        e.currentTarget.style.background = '#f0f8ff';
+                        e.currentTarget.style.borderColor = '#87ceeb';
+                        e.currentTarget.style.transform = 'translateY(0)';
+                        e.currentTarget.style.boxShadow = 'none';
+                      }}
+                    >
+                      <UserAvatar
+                        userId={searchResult.id}
+                        fallbackImageUrl={
+                          searchResult.image_url || '/default-avatar.svg'
+                        }
+                        size="small"
+                        shape="square"
+                        alt={`Аватар ${searchResult.username}`}
+                        style={{
+                          border: '1px solid #87ceeb',
+                          flexShrink: 0,
+                        }}
+                      />
+
+                      <div style={{ flex: 1 }}>
+                        <h5
+                          style={{
+                            margin: '0 0 1px 0',
+                            fontSize: '0.9rem',
+                            fontWeight: '700',
+                            color: '#2c1810',
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: '4px',
+                          }}
+                        >
+                          {searchResult.username}
+                          <span style={{ fontSize: '0.7rem', color: '#666' }}>
+                            👆
+                          </span>
+                        </h5>
+                        {searchResult.score !== undefined && (
+                          <p
+                            style={{
+                              margin: '0',
+                              fontSize: '0.75rem',
+                              color: '#666',
+                            }}
+                          >
+                            Очки: {searchResult.score}
+                          </p>
+                        )}
+                      </div>
+
+                      {(() => {
+                        const status = getFriendshipStatus(searchResult.id);
+
+                        if (searchResult.id === user?.id) {
+                          return (
+                            <div
+                              style={{
+                                padding: '4px 8px',
+                                background: '#e0e0e0',
+                                borderRadius: '4px',
+                                color: '#666',
+                                fontSize: '0.75rem',
+                              }}
+                            >
+                              Это вы
+                            </div>
+                          );
+                        }
+
+                        if (status === 'friend') {
+                          return (
+                            <div
+                              style={{
+                                padding: '4px 8px',
+                                background: '#d4edda',
+                                border: '1px solid #28a745',
+                                borderRadius: '4px',
+                                color: '#155724',
+                                fontSize: '0.75rem',
+                                fontWeight: '600',
+                              }}
+                            >
+                              ✅ Уже друг
+                            </div>
+                          );
+                        }
+
+                        if (status === 'pending_outgoing') {
+                          return (
+                            <div
+                              style={{
+                                padding: '4px 8px',
+                                background: '#fff3cd',
+                                border: '1px solid #ffc107',
+                                borderRadius: '4px',
+                                color: '#856404',
+                                fontSize: '0.75rem',
+                                fontWeight: '600',
+                              }}
+                            >
+                              ⏳ Заявка отправлена
+                            </div>
+                          );
+                        }
+
+                        if (status === 'pending_incoming') {
+                          return (
+                            <div
+                              style={{
+                                padding: '4px 8px',
+                                background: '#cce5ff',
+                                border: '1px solid #007bff',
+                                borderRadius: '4px',
+                                color: '#004085',
+                                fontSize: '0.75rem',
+                                fontWeight: '600',
+                              }}
+                            >
+                              📨 Есть заявка от вас
+                            </div>
+                          );
+                        }
+
+                        return (
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation(); // Предотвращаем всплытие события
+                              handleSendFriendRequest(
+                                searchResult.id,
+                                searchResult.username
+                              );
+                            }}
+                            style={{
+                              padding: '6px 10px',
+                              background:
+                                'linear-gradient(135deg, #28a745, #20c997)',
+                              color: 'white',
+                              border: '1px solid #1e7e34',
+                              borderRadius: '5px',
+                              fontSize: '0.8rem',
+                              fontWeight: '700',
+                              cursor: 'pointer',
+                              transition: 'all 0.2s ease',
+                              boxShadow: '0 2px 6px rgba(40, 167, 69, 0.3)',
+                            }}
+                            onMouseEnter={(
+                              e: MouseEvent<HTMLButtonElement>
+                            ) => {
+                              e.currentTarget.style.background =
+                                'linear-gradient(135deg, #218838, #17a2b8)';
+                              e.currentTarget.style.transform =
+                                'translateY(-2px)';
+                              e.currentTarget.style.boxShadow =
+                                '0 5px 12px rgba(40, 167, 69, 0.4)';
+                            }}
+                            onMouseLeave={(
+                              e: MouseEvent<HTMLButtonElement>
+                            ) => {
+                              e.currentTarget.style.background =
+                                'linear-gradient(135deg, #28a745, #20c997)';
+                              e.currentTarget.style.transform = 'translateY(0)';
+                              e.currentTarget.style.boxShadow =
+                                '0 3px 8px rgba(40, 167, 69, 0.3)';
+                            }}
+                          >
+                            ➕ Добавить в друзья
+                          </button>
+                        );
+                      })()}
+                    </div>
+                  )}
+                </div>
+
+                <div className={styles.friendsList}>
+                  {friends.length === 0 ? (
+                    <div className={styles.emptyMessage}>
+                      У вас еще нет друзей
+                    </div>
+                  ) : (
+                    getVisibleFriends().map((friend) => (
+                      <div
+                        key={friend.id}
+                        className={styles.friendCard}
+                        onClick={() => handleFriendClick(friend.id)}
+                        style={{
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'space-between',
+                          gap: '12px',
+                          padding: '18px',
+                          background: '#fffaf0',
+                          borderRadius: '12px',
+                          border: '3px solid #6b3e15',
+                          boxShadow: '0 4px 12px rgba(0, 0, 0, 0.15)',
+                          transition: 'all 0.2s ease-in-out',
+                          position: 'relative',
+                          overflow: 'hidden',
+                          cursor: 'pointer',
+                        }}
+                        onMouseEnter={(e) => {
+                          e.currentTarget.style.transform = 'translateY(-3px)';
+                          e.currentTarget.style.boxShadow =
+                            '0 6px 16px rgba(0, 0, 0, 0.2)';
+                          e.currentTarget.style.borderColor = '#8b5a2b';
+                          e.currentTarget.style.background = '#fff8dc';
+                        }}
+                        onMouseLeave={(e) => {
+                          e.currentTarget.style.transform = 'translateY(0)';
+                          e.currentTarget.style.boxShadow =
+                            '0 4px 12px rgba(0, 0, 0, 0.15)';
+                          e.currentTarget.style.borderColor = '#6b3e15';
+                          e.currentTarget.style.background = '#fffaf0';
+                        }}
+                      >
+                        {/* Декоративная полоска сверху */}
+                        <div
+                          style={{
+                            position: 'absolute',
+                            top: 0,
+                            left: 0,
+                            right: 0,
+                            height: '4px',
+                            background:
+                              'linear-gradient(90deg, #d8a35d, #b0752d)',
+                          }}
+                        />
+                        <div
+                          style={{
+                            display: 'flex',
+                            alignItems: 'flex-start',
+                            gap: '12px',
+                            flex: 1,
+                          }}
+                        >
+                          <UserAvatar
+                            userId={friend.id}
+                            fallbackImageUrl={
+                              friend.image_url || '/default-avatar.svg'
+                            }
+                            size="medium"
+                            shape="square"
+                            alt={`Аватар ${friend.username}`}
+                            className={styles.friendAvatar}
+                          />
+                          <div
+                            style={{
+                              display: 'flex',
+                              flexDirection: 'column',
+                              flex: 1,
+                            }}
+                          >
+                            <h4 className={styles.friendName}>
+                              {friend.username}
+                            </h4>
+                            <p className={styles.friendScore}>
+                              🏆 {friend.score ?? 0} очков
+                            </p>
+                          </div>
+                        </div>
+                        <button
+                          className={styles.removeFriendButton}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleRemoveFriend(friend.id, friend.username);
+                          }}
+                          onMouseEnter={(e: MouseEvent<HTMLButtonElement>) => {
+                            e.currentTarget.style.background =
+                              'linear-gradient(135deg, #e74c3c, #c0392b)';
+                            e.currentTarget.style.transform =
+                              'translateY(-2px)';
+                            e.currentTarget.style.boxShadow =
+                              '0 5px 12px rgba(220, 53, 69, 0.4)';
+                            e.currentTarget.style.borderColor = '#a71e2a';
+                          }}
+                          onMouseLeave={(e: MouseEvent<HTMLButtonElement>) => {
+                            e.currentTarget.style.background =
+                              'linear-gradient(135deg, #dc3545, #c82333)';
+                            e.currentTarget.style.transform = 'translateY(0)';
+                            e.currentTarget.style.boxShadow =
+                              '0 3px 8px rgba(220, 53, 69, 0.3)';
+                            e.currentTarget.style.borderColor = '#b21e2f';
+                          }}
+                          onMouseDown={(e: MouseEvent<HTMLButtonElement>) => {
+                            e.currentTarget.style.transform = 'translateY(1px)';
+                            e.currentTarget.style.boxShadow =
+                              '0 2px 4px rgba(220, 53, 69, 0.4)';
+                          }}
+                          onMouseUp={(e: MouseEvent<HTMLButtonElement>) => {
+                            e.currentTarget.style.transform =
+                              'translateY(-2px)';
+                            e.currentTarget.style.boxShadow =
+                              '0 5px 12px rgba(220, 53, 69, 0.4)';
+                          }}
+                        >
+                          🗑️
+                        </button>
+                      </div>
+                    ))
+                  )}
+                </div>
+
+                {/* Индикатор карусели друзей */}
+                {friends.length > 0 && (
+                  <div
+                    style={{
+                      textAlign: 'center',
+                      marginTop: '16px',
+                      fontSize: '0.9rem',
+                      color: '#8b7355',
+                      fontWeight: '500',
+                    }}
+                  >
+                    {friends.length > 5
+                      ? `${currentFriendsIndex + 1}-${Math.min(
+                          currentFriendsIndex + 5,
+                          friends.length
+                        )} из ${friends.length}`
+                      : getFriendsCountText(friends.length)}
+                  </div>
+                )}
+              </>
+            )}
+          </div>
+        </div>
+      </div>
 
       {/* Модальное окно */}
       {isSettingsOpen && (
         <div className={styles.modalOverlay} onClick={closeSettings}>
           <div
             className={styles.modalContent}
-            onClick={e => e.stopPropagation()} // чтобы клик по содержимому не закрывал модал
+            onClick={(e) => e.stopPropagation()} // чтобы клик по содержимому не закрывал модал
           >
-            <button className={styles.closeBtn} onClick={closeSettings} aria-label="Закрыть модальное окно">
+            <button
+              className={styles.closeBtn}
+              onClick={closeSettings}
+              aria-label="Закрыть модальное окно"
+            >
               &times;
             </button>
             <h2 className={styles.modalHeader}>Настройки профиля</h2>
 
-            {error && (
-              <div className={styles.errorWithMargin}>
-                {error}
-              </div>
-            )}
+            {error && <div className={styles.errorWithMargin}>{error}</div>}
 
             <form onSubmit={handleSave}>
               <div className={styles.formGroup}>
@@ -1390,7 +1580,9 @@ export function Profile() {
               </div>
 
               <div className={styles.formGroup}>
-                <label htmlFor="newPassword">Новый пароль (оставьте пустым, если не хотите менять)</label>
+                <label htmlFor="newPassword">
+                  Новый пароль (оставьте пустым, если не хотите менять)
+                </label>
                 <input
                   id="newPassword"
                   name="newPassword"
@@ -1402,7 +1594,10 @@ export function Profile() {
               </div>
 
               <div className={styles.modalActions}>
-                <button type="submit" className={`${styles.button} ${styles.saveBtn}`}>
+                <button
+                  type="submit"
+                  className={`${styles.button} ${styles.saveBtn}`}
+                >
                   Сохранить изменения
                 </button>
                 <button
@@ -1421,15 +1616,18 @@ export function Profile() {
       {/* Модальное окно входящих заявок */}
       {isIncomingModalOpen && (
         <div className={styles.modalOverlay} onClick={closeIncomingModal}>
-          <div className={styles.modalContent} onClick={e => e.stopPropagation()}>
-            <button 
-              className={styles.closeBtn} 
-              onClick={closeIncomingModal} 
+          <div
+            className={styles.modalContent}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <button
+              className={styles.closeBtn}
+              onClick={closeIncomingModal}
               aria-label="Закрыть модальное окно"
             >
               ×
             </button>
-            
+
             <div className={styles.modalHeader}>
               <div className={styles.modalIcon}>
                 <span className={styles.modalIconText}>📨</span>
@@ -1437,11 +1635,16 @@ export function Profile() {
               <div>
                 <h2 className={styles.modalTitle}>Входящие заявки</h2>
                 <p className={styles.modalSubtitle}>
-                  {incomingRequests.length} {incomingRequests.length === 1 ? 'заявка' : incomingRequests.length < 5 ? 'заявки' : 'заявок'}
+                  {incomingRequests.length}{' '}
+                  {incomingRequests.length === 1
+                    ? 'заявка'
+                    : incomingRequests.length < 5
+                    ? 'заявки'
+                    : 'заявок'}
                 </p>
               </div>
             </div>
-            
+
             <div className={styles.modalBody}>
               {incomingRequests.length === 0 ? (
                 <div className={styles.modalEmptyState}>
@@ -1450,8 +1653,8 @@ export function Profile() {
                 </div>
               ) : (
                 incomingRequests.map((request, index) => (
-                  <div 
-                    key={`incoming-${request.id}-${index}`} 
+                  <div
+                    key={`incoming-${request.id}-${index}`}
                     className={styles.requestItem}
                     onClick={() => {
                       if (request.user?.id) {
@@ -1461,20 +1664,22 @@ export function Profile() {
                     }}
                   >
                     <div className={styles.requestItemLeftBorder} />
-                    
+
                     <UserAvatar
                       userId={request.user?.id || 0}
-                      fallbackImageUrl={request.user?.image_url || "/default-avatar.svg"}
+                      fallbackImageUrl={
+                        request.user?.image_url || '/default-avatar.svg'
+                      }
                       size="medium"
                       shape="square"
                       alt={`Аватар ${request.user?.username}`}
                       style={{
                         border: '3px solid #8b4513',
                         boxShadow: '0 4px 8px rgba(139, 69, 19, 0.2)',
-                        flexShrink: 0
+                        flexShrink: 0,
                       }}
                     />
-                    
+
                     <div className={styles.requestItemInfo}>
                       <h4 className={styles.requestItemName}>
                         {request.user?.username}
@@ -1490,7 +1695,7 @@ export function Profile() {
                         </p>
                       )}
                     </div>
-                    
+
                     <div className={styles.requestActions}>
                       <button
                         className={`${styles.requestActionButton} ${styles.requestActionButtonAccept}`}
@@ -1522,15 +1727,18 @@ export function Profile() {
       {/* Модальное окно исходящих заявок */}
       {isOutgoingModalOpen && (
         <div className={styles.modalOverlay} onClick={closeOutgoingModal}>
-          <div className={styles.modalContent} onClick={e => e.stopPropagation()}>
-            <button 
-              className={styles.closeBtn} 
-              onClick={closeOutgoingModal} 
+          <div
+            className={styles.modalContent}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <button
+              className={styles.closeBtn}
+              onClick={closeOutgoingModal}
               aria-label="Закрыть модальное окно"
             >
               ×
             </button>
-            
+
             <div className={styles.modalHeader}>
               <div className={styles.modalIcon}>
                 <span className={styles.modalIconText}>📤</span>
@@ -1538,11 +1746,16 @@ export function Profile() {
               <div>
                 <h2 className={styles.modalTitle}>Отправленные заявки</h2>
                 <p className={styles.modalSubtitle}>
-                  {outgoingRequests.length} {outgoingRequests.length === 1 ? 'заявка' : outgoingRequests.length < 5 ? 'заявки' : 'заявок'}
+                  {outgoingRequests.length}{' '}
+                  {outgoingRequests.length === 1
+                    ? 'заявка'
+                    : outgoingRequests.length < 5
+                    ? 'заявки'
+                    : 'заявок'}
                 </p>
               </div>
             </div>
-            
+
             <div className={styles.modalBody}>
               {outgoingRequests.length === 0 ? (
                 <div className={styles.modalEmptyState}>
@@ -1551,8 +1764,8 @@ export function Profile() {
                 </div>
               ) : (
                 outgoingRequests.map((request, index) => (
-                  <div 
-                    key={`outgoing-${request.id}-${index}`} 
+                  <div
+                    key={`outgoing-${request.id}-${index}`}
                     className={`${styles.requestItem} ${styles.requestItemOutgoing}`}
                     onClick={() => {
                       if (request.friend?.id) {
@@ -1562,20 +1775,22 @@ export function Profile() {
                     }}
                   >
                     <div className={styles.requestItemLeftBorder} />
-                    
+
                     <UserAvatar
                       userId={request.friend?.id || 0}
-                      fallbackImageUrl={request.friend?.image_url || "/default-avatar.svg"}
+                      fallbackImageUrl={
+                        request.friend?.image_url || '/default-avatar.svg'
+                      }
                       size="medium"
                       shape="square"
                       alt={`Аватар ${request.friend?.username}`}
                       style={{
                         border: '3px solid #d2691e',
                         boxShadow: '0 4px 8px rgba(210, 105, 30, 0.2)',
-                        flexShrink: 0
+                        flexShrink: 0,
                       }}
                     />
-                    
+
                     <div className={styles.requestItemInfo}>
                       <h4 className={styles.requestItemName}>
                         {request.friend?.username}
@@ -1591,7 +1806,7 @@ export function Profile() {
                         </p>
                       )}
                     </div>
-                    
+
                     <div className={styles.requestStatusBadge}>
                       <span className={styles.requestStatusIcon}>⏳</span>
                       Ожидает ответа
@@ -1603,7 +1818,7 @@ export function Profile() {
           </div>
         </div>
       )}
-      
+
       {/* Модальное окно для достижений */}
       <AchievementModal
         achievement={selectedAchievement}
@@ -1642,7 +1857,6 @@ export function Profile() {
           type={confirmModalData.type}
         />
       )}
-
     </section>
   );
 }

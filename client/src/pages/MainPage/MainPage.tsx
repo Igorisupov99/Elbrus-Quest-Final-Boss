@@ -78,12 +78,14 @@ export function MainPage(): JSX.Element {
   };
 
   useEffect(() => {
-    // Hide body overflow when MainPage is mounted
+    // Hide body and html overflow when MainPage is mounted
     document.body.style.overflow = 'hidden';
+    document.documentElement.style.overflow = 'hidden';
 
-    // Restore body overflow when MainPage is unmounted
+    // Restore body and html overflow when MainPage is unmounted
     return () => {
       document.body.style.overflow = 'auto';
+      document.documentElement.style.overflow = 'auto';
     };
   }, []);
 
@@ -322,7 +324,14 @@ export function MainPage(): JSX.Element {
   return (
     <div className={styles.mainPage}>
       <div className={styles.mainContent}>
-        <h2 className={styles.pageTitle}>🏰 Доступные комнаты</h2>
+        <h2 className={styles.pageTitle}>
+          <img
+            src="/ChatGPT Image Sep 16, 2025, 09_09_32 PM.png"
+            alt="Castle"
+            className={styles.castleIcon}
+          />
+          Доступные комнаты
+        </h2>
         {loading && <p className={styles.loading}>⚔️ Загрузка комнат...</p>}
         {error && <p className={styles.error}>❌ Ошибка: {error}</p>}
 

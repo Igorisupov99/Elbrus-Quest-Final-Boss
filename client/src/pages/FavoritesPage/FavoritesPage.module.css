@@ -26,7 +26,8 @@
   left: 0;
   right: 0;
   bottom: 0;
-  background: url('/fcbdb22c-619d-4a24-b5b5-784e11027e94.png') no-repeat center center;
+  background: url('/fcbdb22c-619d-4a24-b5b5-784e11027e94.png') no-repeat center
+    center;
   background-size: cover;
   z-index: -2;
 }
@@ -38,7 +39,12 @@
   left: 0;
   right: 0;
   bottom: 0;
-  background: linear-gradient(135deg, rgba(244, 225, 193, 0.7), rgba(230, 210, 181, 0.7), rgba(216, 195, 165, 0.7));
+  background: linear-gradient(
+    135deg,
+    rgba(244, 225, 193, 0.7),
+    rgba(230, 210, 181, 0.7),
+    rgba(216, 195, 165, 0.7)
+  );
   z-index: -1;
 }
 
@@ -54,6 +60,17 @@
   text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.1);
   letter-spacing: 1px;
   font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+}
+
+.booksIcon {
+  width: 2.8rem;
+  height: 2.8rem;
+  object-fit: contain;
+  filter: drop-shadow(2px 2px 4px rgba(0, 0, 0, 0.1));
 }
 
 .subtitle {
@@ -84,8 +101,12 @@
 }
 
 @keyframes spin {
-  0% { transform: rotate(0deg); }
-  100% { transform: rotate(360deg); }
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
 }
 
 .error {
@@ -239,7 +260,11 @@
 .topicBadge {
   display: inline-block;
   padding: 0.25rem 0.75rem;
-  background: linear-gradient(135deg, var(--fantasy-gold), var(--fantasy-gold-2));
+  background: linear-gradient(
+    135deg,
+    var(--fantasy-gold),
+    var(--fantasy-gold-2)
+  );
   color: #2c1810;
   border-radius: 1rem;
   font-size: 0.875rem;
@@ -297,11 +322,7 @@
 .aiChatButton {
   appearance: none;
   border: 2px solid #4a90e2;
-  background: linear-gradient(
-    180deg,
-    #4a90e2,
-    #357abd
-  );
+  background: linear-gradient(180deg, #4a90e2, #357abd);
   color: white;
   border-radius: 0.5rem;
   padding: 0.5rem 1rem;
@@ -470,14 +491,22 @@
 }
 
 .pageNumber:hover {
-  background: linear-gradient(180deg, var(--fantasy-gold), var(--fantasy-gold-2));
+  background: linear-gradient(
+    180deg,
+    var(--fantasy-gold),
+    var(--fantasy-gold-2)
+  );
   color: #2c1810;
   transform: translateY(-1px);
   box-shadow: 0 5px 10px rgba(0, 0, 0, 0.3);
 }
 
 .pageNumber.active {
-  background: linear-gradient(180deg, var(--fantasy-gold), var(--fantasy-gold-2));
+  background: linear-gradient(
+    180deg,
+    var(--fantasy-gold),
+    var(--fantasy-gold-2)
+  );
   color: #2c1810;
   border-color: var(--fantasy-gold);
 }

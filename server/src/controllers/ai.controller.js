@@ -106,6 +106,82 @@ class AIController {
       res.status(500).json({ error: 'Ошибка получения статистики' });
     }
   }
+
+  // Генерация IDE задачи
+  async generateIDETask(req, res) {
+    try {
+      const { language, difficulty, topic } = req.body;
+
+      if (!language || !difficulty || !topic) {
+        return res.status(400).json({ error: 'Все поля обязательны' });
+      }
+
+      const task = await messageManager.generateIDETask(language, difficulty, topic);
+      
+      res.json({ task });
+
+    } catch (error) {
+      console.error('IDE Task Generation Error:', error);
+      res.status(500).json({ error: 'Не удалось сгенерировать IDE задачу' });
+    }
+  }
+
+  // Валидация кода IDE
+  async validateIDECode(req, res) {
+    try {
+      const { taskId, userCode, taskDescription, testCases } = req.body;
+
+      if (!taskId || !userCode || !taskDescription || !testCases) {
+        return res.status(400).json({ error: 'Все поля обязательны' });
+      }
+
+      const validation = await messageManager.validateIDECode(taskId, userCode, taskDescription, testCases);
+      
+      res.json(validation);
+
+    } catch (error) {
+      console.error('IDE Code Validation Error:', error);
+      res.status(500).json({ error: 'Не удалось проверить код' });
+    }
+  }
+
+  // Получение решения IDE задачи
+  async getIDESolution(req, res) {
+    try {
+      const { taskId, taskDescription } = req.body;
+
+      if (!taskId || !taskDescription) {
+        return res.status(400).json({ error: 'Все поля обязательны' });
+      }
+
+      const solution = await messageManager.getIDESolution(taskId, taskDescription);
+      
+      res.json(solution);
+
+    } catch (error) {
+      console.error('IDE Solution Error:', error);
+      res.status(500).json({ error: 'Не удалось получить решение' });
+    }
+  }
+
+  // Получение подсказки для IDE задачи
+  async getIDEHint(req, res) {
+    try {
+      const { taskId, hintIndex, taskDescription, userCode } = req.body;
+
+      if (!taskId || !taskDescription) {
+        return res.status(400).json({ error: 'Все поля обязательны' });
+      }
+
+      const hint = await messageManager.getIDEHint(taskId, hintIndex, taskDescription, userCode);
+      
+      res.json(hint);
+
+    } catch (error) {
+      console.error('IDE Hint Error:', error);
+      res.status(500).json({ error: 'Не удалось получить подсказку' });
+    }
+  }
 }
 
 module.exports = new AIController();
