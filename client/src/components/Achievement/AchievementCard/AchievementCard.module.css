@@ -27,7 +27,7 @@
   color: white;
   padding: 4px 8px;
   border-radius: 4px;
-  font-size: 11px;
+  font-size: 13.2px;
   white-space: nowrap;
   pointer-events: none;
   z-index: 10;
@@ -58,7 +58,7 @@
 }
 
 .icon {
-  font-size: 32px;
+  font-size: 38.4px;
   width: 48px;
   height: 48px;
   display: flex;
@@ -74,7 +74,7 @@
 }
 
 .title {
-  font-size: 16px;
+  font-size: 19.2px;
   font-weight: 700;
   margin: 0;
   color: #2d2e18;
@@ -82,7 +82,7 @@
 }
 
 .points {
-  font-size: 12px;
+  font-size: 14.4px;
   font-weight: 600;
   color: #4a4c2a;
   margin: 0;
@@ -97,7 +97,7 @@
 }
 
 .category {
-  font-size: 12px;
+  font-size: 14.4px;
   padding: 4px 8px;
   border-radius: 12px;
   background: rgba(243, 244, 246, 0.8);
@@ -107,7 +107,7 @@
 }
 
 .rarity {
-  font-size: 12px;
+  font-size: 14.4px;
   padding: 4px 8px;
   border-radius: 12px;
   font-weight: 600;
@@ -136,7 +136,7 @@
 }
 
 .earnedDate {
-  font-size: 11px;
+  font-size: 13.2px;
   color: #4a4c2a;
   font-weight: 500;
   margin-top: 4px;
@@ -155,5 +155,5 @@
   top: 8px;
   right: 8px;
   color: #4a4c2a;
-  font-size: 16px;
+  font-size: 19.2px;
 }

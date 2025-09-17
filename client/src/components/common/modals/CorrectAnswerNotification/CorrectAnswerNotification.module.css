@@ -66,7 +66,7 @@
 }
 
 .icon {
-  font-size: 64px;
+  font-size: 76.8px;
   display: block;
   animation: pulse 1.5s ease-in-out infinite;
   filter: drop-shadow(0 4px 8px rgba(76, 175, 80, 0.4));
@@ -85,7 +85,7 @@
 
 .title {
   margin: 0 0 20px 0;
-  font-size: 28px;
+  font-size: 33.6px;
   font-weight: 900;
   letter-spacing: 0.5px;
   color: var(--rpg-success-light);
@@ -103,7 +103,7 @@
 .message {
   margin: 0 0 16px 0;
   color: var(--rpg-text);
-  font-size: 18px;
+  font-size: 21.6px;
   font-weight: 600;
   line-height: 1.4;
 }
@@ -111,20 +111,20 @@
 .pointsMessage {
   margin: 0;
   color: var(--rpg-muted);
-  font-size: 16px;
+  font-size: 19.2px;
   line-height: 1.4;
 }
 
 .points {
   color: var(--rpg-success);
   font-weight: 700;
-  font-size: 18px;
+  font-size: 21.6px;
   text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
 }
 
 .countdown {
   color: var(--rpg-muted);
-  font-size: 14px;
+  font-size: 16.8px;
   font-style: italic;
   border-top: 1px solid var(--rpg-border);
   padding-top: 16px;
@@ -134,5 +134,5 @@
 .timer {
   color: var(--rpg-success);
   font-weight: 700;
-  font-size: 16px;
+  font-size: 19.2px;
 }

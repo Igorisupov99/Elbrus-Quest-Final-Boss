@@ -142,7 +142,7 @@
   color: white;
   padding: 6px 12px;
   border-radius: 16px;
-  font-size: 11px;
+  font-size: 13.2px;
   font-weight: 700;
   z-index: 3;
   box-shadow: 
@@ -164,7 +164,7 @@
   color: white;
   padding: 6px 12px;
   border-radius: 16px;
-  font-size: 11px;
+  font-size: 13.2px;
   font-weight: 700;
   z-index: 3;
   box-shadow: 
@@ -193,7 +193,7 @@
 }
 
 .name {
-  font-size: 20px;
+  font-size: 24px;
   font-weight: 800;
   color: #4b2e05;
   margin: 0 0 12px 0;
@@ -205,7 +205,7 @@
 }
 
 .description {
-  font-size: 14px;
+  font-size: 16.8px;
   color: #5c3b09;
   margin: 0 0 16px 0;
   line-height: 1.5;
@@ -234,7 +234,7 @@
   display: inline-block;
   padding: 6px 12px;
   border-radius: 12px;
-  font-size: 11px;
+  font-size: 13.2px;
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.5px;
@@ -319,7 +319,7 @@
 }
 
 .priceLabel {
-  font-size: 13px;
+  font-size: 15.6px;
   color: #5c3b09;
   font-family: 'Cormorant Garamond', serif;
   font-weight: 600;
@@ -329,7 +329,7 @@
 }
 
 .priceValue {
-  font-size: 18px;
+  font-size: 21.6px;
   font-weight: 800;
   color: #4b2e05;
   font-family: 'Cormorant Garamond', serif;
@@ -340,7 +340,7 @@
 .priceValue::before {
   content: '💰';
   margin-right: 4px;
-  font-size: 14px;
+  font-size: 16.8px;
 }
 
 .userScore {
@@ -383,7 +383,7 @@
 }
 
 .scoreLabel {
-  font-size: 13px;
+  font-size: 15.6px;
   color: #5c3b09;
   font-family: 'Cormorant Garamond', serif;
   font-weight: 600;
@@ -393,7 +393,7 @@
 }
 
 .scoreValue {
-  font-size: 18px;
+  font-size: 21.6px;
   font-weight: 800;
   color: #4b2e05;
   font-family: 'Cormorant Garamond', serif;
@@ -404,7 +404,7 @@
 .scoreValue::before {
   content: '⭐';
   margin-right: 4px;
-  font-size: 14px;
+  font-size: 16.8px;
 }
 
 .actions {
@@ -417,7 +417,7 @@
   padding: 14px 20px;
   border: 2px solid;
   border-radius: 12px;
-  font-size: 13px;
+  font-size: 15.6px;
   font-weight: 700;
   cursor: pointer;
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
@@ -476,7 +476,7 @@
 .purchaseButton::after {
   content: '🛒';
   margin-left: 6px;
-  font-size: 12px;
+  font-size: 14.4px;
 }
 
 .equipButton {
@@ -498,7 +498,7 @@
 .equipButton::after {
   content: '⚔️';
   margin-left: 6px;
-  font-size: 12px;
+  font-size: 14.4px;
 }
 
 .unequipButton {
@@ -520,7 +520,7 @@
 .unequipButton::after {
   content: '🗡️';
   margin-left: 6px;
-  font-size: 12px;
+  font-size: 14.4px;
 }
 
 .disabled {

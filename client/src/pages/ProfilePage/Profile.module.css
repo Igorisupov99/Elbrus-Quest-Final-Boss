@@ -564,7 +564,7 @@
   border: 2px solid #6b3e15;
   background: linear-gradient(180deg, #d8a35d, #b0752d);
   color: #2c1810;
-  font-size: 18px;
+  font-size: 21.6px;
   font-weight: bold;
   cursor: pointer;
   transition: all 0.2s ease;
@@ -1047,13 +1047,13 @@
   }
 
   .avatarName {
-    font-size: 14px;
+    font-size: 16.8px;
     font-weight: 600;
     color: var(--fantasy-text);
   }
 
   .avatarRarity {
-    font-size: 12px;
+    font-size: 14.4px;
     padding: 2px 8px;
     border-radius: 12px;
     background: var(--fantasy-gold);
@@ -1088,16 +1088,16 @@
   }
 
   .scoreIcon {
-    font-size: 18px;
+    font-size: 21.6px;
   }
 
   .scoreAmount {
-    font-size: 16px;
+    font-size: 19.2px;
     font-weight: 700;
   }
 
   .scoreLabel {
-    font-size: 14px;
+    font-size: 16.8px;
   }
 
   .shopLink {
@@ -1110,7 +1110,7 @@
     text-decoration: none;
     border-radius: 8px;
     font-weight: 600;
-    font-size: 14px;
+    font-size: 16.8px;
     transition: all 0.2s ease;
     box-shadow: 0 2px 8px rgba(59, 130, 246, 0.3);
   }
@@ -1419,7 +1419,7 @@
   background: #2a1b10;
   color: #f7f4ef;
   cursor: pointer;
-  font-size: 18px;
+  font-size: 21.6px;
   font-weight: bold;
   line-height: 1;
   display: grid;
@@ -1462,7 +1462,7 @@
 }
 
 .modalIconText {
-  font-size: 24px;
+  font-size: 28.8px;
   filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.3));
 }
 
@@ -1498,7 +1498,7 @@
 }
 
 .modalEmptyIcon {
-  font-size: 48px;
+  font-size: 57.6px;
   margin-bottom: 16px;
 }
 
@@ -1639,7 +1639,7 @@
 
 .requestStatusIcon {
   margin-right: 8px;
-  font-size: 16px;
+  font-size: 19.2px;
 }
 
 /* Адаптивность для модальных окон */
@@ -1663,7 +1663,7 @@
   }
 
   .modalIconText {
-    font-size: 20px;
+    font-size: 24px;
   }
 
   .requestItem {

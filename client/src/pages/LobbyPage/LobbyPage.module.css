@@ -166,7 +166,7 @@ html, body {
 }
 
 .usageInfo {
-  font-size: 11px;
+  font-size: 13.2px;
   color: rgba(255, 255, 255, 0.8);
   margin-top: 4px;
   font-style: italic;
@@ -235,7 +235,7 @@ html, body {
   padding: 8px 16px;
   border-radius: 10px;
   cursor: pointer;
-  font-size: 14px;
+  font-size: 16.8px;
   transition: all 0.3s ease;
   font-weight: 500;
   font-family: inherit;

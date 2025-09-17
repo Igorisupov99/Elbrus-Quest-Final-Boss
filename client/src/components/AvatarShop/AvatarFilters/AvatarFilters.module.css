@@ -38,7 +38,7 @@
 }
 
 .title {
-  font-size: 24px;
+  font-size: 28.8px;
   font-weight: 700;
   color: #4b2e05;
   margin: 0;
@@ -61,11 +61,11 @@
 }
 
 .coinsIcon {
-  font-size: 18px;
+  font-size: 21.6px;
 }
 
 .coinsAmount {
-  font-size: 16px;
+  font-size: 19.2px;
   font-weight: 700;
 }
 
@@ -82,7 +82,7 @@
 }
 
 .label {
-  font-size: 14px;
+  font-size: 16.8px;
   font-weight: 600;
   color: #4b2e05;
   text-transform: uppercase;
@@ -94,7 +94,7 @@
   padding: 12px 16px;
   border: 2px solid #8b5a2b;
   border-radius: 8px;
-  font-size: 14px;
+  font-size: 16.8px;
   transition: all 0.2s ease;
   background: rgba(255, 248, 220, 0.8);
   backdrop-filter: blur(3px);
@@ -130,7 +130,7 @@
     rgba(255, 248, 220, 0.8)
   );
   color: #4b2e05;
-  font-size: 14px;
+  font-size: 16.8px;
   font-weight: 600;
   cursor: pointer;
   transition: all 0.2s ease;
@@ -176,7 +176,7 @@
   align-items: center;
   gap: 8px;
   cursor: pointer;
-  font-size: 14px;
+  font-size: 16.8px;
   color: #4b2e05;
   font-family: 'Cormorant Garamond', serif;
   font-weight: 500;
@@ -199,7 +199,7 @@
   color: #f5deb3;
   border: 2px solid #8b5a2b;
   border-radius: 8px;
-  font-size: 14px;
+  font-size: 16.8px;
   font-weight: 600;
   cursor: pointer;
   transition: all 0.2s ease;

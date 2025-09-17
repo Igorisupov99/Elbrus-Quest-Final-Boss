@@ -66,7 +66,7 @@
   right: 20px;
   background: linear-gradient(180deg, var(--rpg-surface-2), var(--rpg-surface));
   border: 2px solid var(--rpg-border);
-  font-size: 20px;
+  font-size: 24px;
   cursor: pointer;
   color: var(--rpg-muted);
   width: 36px;
@@ -95,7 +95,7 @@
 }
 
 .icon {
-  font-size: 64px;
+  font-size: 76.8px;
   display: block;
   animation: pulse 1.5s ease-in-out infinite;
   filter: drop-shadow(0 4px 8px rgba(184, 146, 45, 0.4));
@@ -115,7 +115,7 @@
 .title {
   text-align: center;
   margin: 0 0 20px 0;
-  font-size: 28px;
+  font-size: 33.6px;
   font-weight: 900;
   letter-spacing: 0.5px;
   color: var(--rpg-gold);
@@ -131,7 +131,7 @@
   margin: 0 0 24px 0;
   color: var(--rpg-text);
   line-height: 1.5;
-  font-size: 18px;
+  font-size: 21.6px;
   font-weight: 600;
 }
 
@@ -148,7 +148,7 @@
   border: 2px solid #6b3e15;
   border-radius: 12px;
   padding: 14px 20px;
-  font-size: 16px;
+  font-size: 19.2px;
   font-weight: bold;
   cursor: pointer;
   background: linear-gradient(180deg, var(--rpg-gold-2), #a67400);
@@ -180,7 +180,7 @@
   border: 2px solid var(--rpg-border);
   border-radius: 12px;
   padding: 12px 18px;
-  font-size: 16px;
+  font-size: 19.2px;
   font-weight: bold;
   cursor: pointer;
   background: linear-gradient(180deg, var(--rpg-surface-2), var(--rpg-surface));
