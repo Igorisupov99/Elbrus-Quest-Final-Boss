@@ -1137,24 +1137,45 @@ function initLobbySockets(nsp) {
                 // Обновим точку экзамена как выполненную и известим всех
                 const points = lobbyPoints.get(lobbyId);
                 if (points) {
-                  const examKey = state.examId === 'exam2' ? 'exam2' : 'exam';
+                  const examKey = state.examId;
                   const examPoint = points.find((p) => p.id === examKey);
                   if (examPoint) examPoint.status = 'completed';
+                  
+                  // Разблокируем следующую фазу в зависимости от завершенного экзамена
                   if (examKey === 'exam') {
-                    // Разблокируем темы фазы 2 только после первого экзамена
+                    // Разблокируем темы фазы 2 после первого экзамена
                     points.forEach(p => {
                       if (p.phase_id === 2 && p.id !== 'exam2' && p.status === 'locked') {
                         p.status = 'available';
                       }
                     });
+                  } else if (examKey === 'exam2') {
+                    // Разблокируем темы фазы 3 после второго экзамена
+                    points.forEach(p => {
+                      if (p.phase_id === 3 && p.id !== 'exam3' && p.status === 'locked') {
+                        p.status = 'available';
+                      }
+                    });
+                  } else if (examKey === 'exam3') {
+                    // Разблокируем темы фазы 4 после третьего экзамена
+                    points.forEach(p => {
+                      if (p.phase_id === 4 && p.id !== 'exam4' && p.status === 'locked') {
+                        p.status = 'available';
+                      }
+                    });
                   }
                 }
-                const examKey = state.examId === 'exam2' ? 'exam2' : 'exam';
+                const examKey = state.examId;
                 nsp.to(roomKey).emit('lobby:updatePointStatus', { pointId: examKey, status: 'completed' });
-                // Разослать новые статусы по фазе 2
+                
+                // Разослать новые статусы для разблокированной фазы
                 const updatedPoints = lobbyPoints.get(lobbyId) || [];
+                let targetPhase = 2; // по умолчанию
+                if (examKey === 'exam2') targetPhase = 3;
+                else if (examKey === 'exam3') targetPhase = 4;
+                
                 updatedPoints.forEach(p => {
-                  if (p.phase_id === 2 && p.id !== 'exam2') {
+                  if (p.phase_id === targetPhase && p.id !== examKey) {
                     nsp.to(roomKey).emit('lobby:updatePointStatus', { pointId: p.id, status: p.status });
                   }
                 });
