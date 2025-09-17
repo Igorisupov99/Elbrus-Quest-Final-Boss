@@ -56,7 +56,7 @@
   background: var(--fantasy-surface-2);
   color: var(--fantasy-text);
   font-size: 0.9rem;
-  font-family: 'Cinzel', serif;
+  font-family: 'Cormorant Garamond', serif;
   width: 100%;
   cursor: pointer;
   transition: all 0.3s ease;
@@ -85,7 +85,7 @@
   font-weight: 600;
   cursor: pointer;
   transition: all 0.3s ease;
-  font-family: 'Cinzel', serif;
+  font-family: 'Cormorant Garamond', serif;
   display: flex;
   align-items: center;
   gap: 0.25rem;
@@ -119,7 +119,7 @@
   font-weight: 600;
   cursor: pointer;
   transition: all 0.3s ease;
-  font-family: 'Cinzel', serif;
+  font-family: 'Cormorant Garamond', serif;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
@@ -238,7 +238,7 @@
   font-weight: 600;
   cursor: pointer;
   transition: all 0.3s ease;
-  font-family: 'Cinzel', serif;
+  font-family: 'Cormorant Garamond', serif;
   display: flex;
   align-items: center;
   gap: 0.25rem;

@@ -13,7 +13,7 @@
 /* Основная секция профиля */
 .profileSection {
   min-height: 100vh;
-  font-family: 'Cinzel', serif;
+  font-family: 'Cormorant Garamond', serif;
   padding: 20px;
   display: flex;
   flex-direction: column;

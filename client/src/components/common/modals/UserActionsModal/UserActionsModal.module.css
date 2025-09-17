@@ -155,7 +155,7 @@
   color: #2c1810;
   box-shadow: 0 4px 0 #6b3e15, 0 6px 10px rgba(0, 0, 0, 0.25);
   text-shadow: 0 1px 0 #f3e0c0;
-  font-family: 'Cinzel', serif;
+  font-family: 'Cormorant Garamond', serif;
   transition: all 0.2s ease-in-out;
   display: flex;
   align-items: center;
@@ -186,7 +186,7 @@
   background: linear-gradient(180deg, var(--rpg-surface-2), var(--rpg-surface));
   color: var(--rpg-muted);
   box-shadow: 0 3px 0 var(--rpg-border), 0 5px 8px rgba(0, 0, 0, 0.2);
-  font-family: 'Cinzel', serif;
+  font-family: 'Cormorant Garamond', serif;
   transition: all 0.2s ease-in-out;
 }
 
