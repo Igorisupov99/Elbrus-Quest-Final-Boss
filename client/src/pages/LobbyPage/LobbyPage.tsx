@@ -219,6 +219,40 @@ export function LobbyPage() {
       if (phase2AllDone && exam2.status === "locked") updatePoint("exam2", "available");
       if (!phase2AllDone && exam2.status === "available") updatePoint("exam2", "locked");
     }
+
+    // После завершения экзамена 2 — разблокировать темы 9-12 (фаза 3)
+    const exam2Completed = exam2?.status === "completed";
+    const phase3 = points.filter(p => p.phaseId === 3 && p.id !== "exam3");
+    if (exam2Completed) {
+      phase3.forEach(p => {
+        if (p.status === "locked") updatePoint(p.id, "available");
+      });
+    }
+
+    // Фаза 3: экзамен 3 становится доступен, когда темы 9-12 выполнены
+    const exam3 = points.find(p => p.id === "exam3");
+    const phase3AllDone = phase3.every(p => p.status === "completed");
+    if (exam3 && exam3.status !== "completed") {
+      if (phase3AllDone && exam3.status === "locked") updatePoint("exam3", "available");
+      if (!phase3AllDone && exam3.status === "available") updatePoint("exam3", "locked");
+    }
+
+    // После завершения экзамена 3 — разблокировать темы 13-16 (фаза 4)
+    const exam3Completed = exam3?.status === "completed";
+    const phase4 = points.filter(p => p.phaseId === 4 && p.id !== "exam4");
+    if (exam3Completed) {
+      phase4.forEach(p => {
+        if (p.status === "locked") updatePoint(p.id, "available");
+      });
+    }
+
+    // Фаза 4: экзамен 4 становится доступен, когда темы 13-16 выполнены
+    const exam4 = points.find(p => p.id === "exam4");
+    const phase4AllDone = phase4.every(p => p.status === "completed");
+    if (exam4 && exam4.status !== "completed") {
+      if (phase4AllDone && exam4.status === "locked") updatePoint("exam4", "available");
+      if (!phase4AllDone && exam4.status === "available") updatePoint("exam4", "locked");
+    }
   }, [points]);
 
   useEffect(() => {
