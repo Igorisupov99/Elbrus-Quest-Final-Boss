@@ -26,6 +26,7 @@ interface ExamModalProps {
   onAnswerSync?: (answer: string, activePlayerName: string) => void;
   syncedAnswer?: string;          // 👈 синхронизированный ввод от активного игрока
   onExamFail?: () => void;        // 👈 колбэк для провала экзамена
+  sharedResult?: string | null;   // 👈 глобальное уведомление
 }
 
 export function ExamModal({
@@ -41,6 +42,7 @@ export function ExamModal({
   onAnswerSync,
   syncedAnswer,
   onExamFail,
+  sharedResult,
 }: ExamModalProps) {
   // Для отправки прогресса экзамена (следующий вопрос) используем хук сокета через пропсы не получаем, поэтому просто импорт нельзя использовать напрямую.
   const globalQuestions = useAppSelector(s => s.lobbyPage.examQuestions);
@@ -331,8 +333,14 @@ export function ExamModal({
       <div className={styles.modal}>
         <h2 className={styles.title}>Экзамен</h2>
         
-        {result && (
-          <p className={styles.result}>{result}</p>
+        {(result || sharedResult) && (
+          <p className={`${styles.result} ${
+            (result || sharedResult)?.includes('Ход') && 
+            (result || sharedResult)?.includes('передан') ? 
+            styles.turnNotification : ''
+          }`}>
+            {result || sharedResult}
+          </p>
         )}
 
         {correctAnswer && (

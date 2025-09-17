@@ -652,6 +652,7 @@ export function LobbyPage() {
             sendExamAnswerInput(answer, activePlayerName);
           }}
           syncedAnswer={syncedExamAnswer}
+          sharedResult={modalResult}
           onExamFail={() => {
             // Проваливаем экзамен при закрытии активным игроком
             console.log('❌ Экзамен провален при закрытии активным игроком');

@@ -158,12 +158,12 @@ export function useLobbySocket(lobbyId: number, onAnswerInputSync?: (answer: str
     };
 
     const onPassTurnNotification = () => {
-      dispatch(setModalResult('Ход будет передан следующему игроку'));
+      dispatch(setModalResult('🔄 Ход передан следующему игроку!'));
       setTimeout(() => {
         dispatch(setModalResult(null));
         dispatch(closeModal());
         dispatch(closeExamModal());
-      }, 2000);
+      }, 3000); // Увеличили время показа до 3 секунд
     };
     
     const onOpenModal = (payload: { questionId: number; topic: string; question: string }) => {

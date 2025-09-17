@@ -233,6 +233,37 @@
     0 4px 8px rgba(0, 0, 0, 0.15);
 }
 
+.turnNotification {
+  background: linear-gradient(135deg, #ff6b35 0%, #ff8c42 50%, #ffaa5e 100%) !important;
+  border: 3px solid #d63000 !important;
+  color: white !important;
+  font-size: 18px !important;
+  font-weight: 900 !important;
+  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.7) !important;
+  box-shadow: 
+    0 6px 20px rgba(255, 107, 53, 0.4),
+    0 0 0 1px rgba(255, 107, 53, 0.3),
+    inset 0 1px 0 rgba(255, 255, 255, 0.2) !important;
+  animation: turnPulse 0.8s ease-in-out infinite alternate !important;
+  transform: scale(1.05) !important;
+  z-index: 1000 !important;
+}
+
+@keyframes turnPulse {
+  0% {
+    box-shadow: 
+      0 6px 20px rgba(255, 107, 53, 0.4),
+      0 0 0 1px rgba(255, 107, 53, 0.3),
+      inset 0 1px 0 rgba(255, 255, 255, 0.2);
+  }
+  100% {
+    box-shadow: 
+      0 8px 25px rgba(255, 107, 53, 0.6),
+      0 0 0 3px rgba(255, 107, 53, 0.5),
+      inset 0 1px 0 rgba(255, 255, 255, 0.3);
+  }
+}
+
 .actions {
   display: flex;
   justify-content: space-between;
