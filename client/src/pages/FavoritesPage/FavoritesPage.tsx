@@ -183,7 +183,7 @@ const FavoritesPage: React.FC = () => {
                       className={styles.aiChatButton}
                       onClick={() => handleOpenAIChat(favorite)}
                     >
-                      🤖 Обсудить с АИ
+                      🤖 Обсудить с AI
                     </button>
                     {favorite.question.mentorTip && (
                       <button

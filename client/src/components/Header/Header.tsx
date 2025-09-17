@@ -95,7 +95,7 @@ export function Header() {
                   className={styles.burgerLink}
                   onClick={() => setIsBurgerMenuOpen(false)}
                 >
-                  🤖 Вопросы от АИ
+                  🤖 Вопросы от AI
                 </Link>
                 <Link
                   to="/avatar-shop"
