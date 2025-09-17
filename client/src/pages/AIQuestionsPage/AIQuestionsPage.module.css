@@ -405,6 +405,7 @@
   display: flex;
   gap: 1rem;
   flex-wrap: wrap;
+  justify-content: center;
 }
 
 .checkButton {
@@ -567,6 +568,7 @@
   display: flex;
   gap: 1rem;
   flex-wrap: wrap;
+  justify-content: center;
 }
 
 .newQuestionButton {
@@ -598,6 +600,32 @@
   opacity: 0.5;
   cursor: not-allowed;
   transform: none;
+}
+
+.clearTextButton {
+  appearance: none;
+  border: 2px solid var(--fantasy-accent);
+  background: linear-gradient(180deg, var(--fantasy-gold), var(--fantasy-gold-2));
+  color: #2c1810;
+  border-radius: 0.75rem;
+  padding: 0.75rem 1.5rem;
+  cursor: pointer;
+  font-size: 0.9rem;
+  font-weight: bold;
+  transition: all 0.2s ease-in-out;
+  box-shadow: 0 3px 6px rgba(0, 0, 0, 0.2);
+  text-shadow: 0 1px 0 #f3e0c0;
+  font-family: inherit;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+}
+
+.clearTextButton:hover {
+  background: linear-gradient(180deg, #f0c33b, #c48a00);
+  transform: translateY(-1px);
+  box-shadow: 0 5px 10px rgba(0, 0, 0, 0.3);
 }
 
 /* История вопросов */
@@ -813,10 +841,6 @@
     margin: 0 auto;
   }
   
-  .codeRunnerContainer {
-    width: 100%;
-    margin: 0 auto;
-  }
   
   .codeRunnerHeader {
     width: 80%;
@@ -930,16 +954,6 @@
   margin: 0 auto;
 }
 
-.codeRunnerContainer {
-  background: linear-gradient(135deg, #f4e1c1, #e6d2b5, #d8c3a5);
-  border-radius: 12px;
-  border: 2px solid var(--fantasy-border);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-  overflow: visible;
-  min-height: 500px;
-  width: 100%;
-  margin: 0 auto;
-}
 
 /* Кастомизация скроллбара */
 .container::-webkit-scrollbar {

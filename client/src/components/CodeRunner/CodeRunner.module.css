@@ -1,26 +1,24 @@
-.container {
-  display: flex;
-  flex-direction: column;
-  min-height: 500px;
-  border: 1px solid #e0e0e0;
-  border-radius: 8px;
-  overflow: visible;
-  background: transparent;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-}
-
 .taskGeneratorContainer {
-  background: #f8f9fa;
-  border-bottom: 1px solid #e0e0e0;
+  background: transparent;
+  border-bottom: none;
   padding: 0;
   flex-shrink: 0;
+  margin-bottom: 1rem;
 }
 
 .editorAndOutputContainer {
   display: flex;
   flex: 1;
-  min-height: 400px;
+  min-height: 600px; /* Увеличено на 50%: 400px * 1.5 = 600px */
   height: auto;
+  background: linear-gradient(145deg, #f5deb3, #fff8dc);
+  border: 3px solid #8b5a2b;
+  border-radius: 15px;
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15),
+    inset 0 1px 0 rgba(255, 248, 230, 0.8),
+    inset 0 -1px 0 rgba(139, 90, 43, 0.3);
+  position: relative;
+  overflow: hidden;
 }
 
 /* Левая панель - Редактор */
@@ -28,8 +26,10 @@
   flex: 1;
   display: flex;
   flex-direction: column;
-  border-right: 1px solid #e0e0e0;
-  background: #1e1e1e;
+  border-right: 2px solid #8b5a2b;
+  background: linear-gradient(145deg, #2d2d30, #1e1e1e);
+  border-radius: 12px 0 0 12px;
+  position: relative;
 }
 
 .editorHeader {
@@ -37,14 +37,18 @@
   justify-content: space-between;
   align-items: center;
   padding: 12px 16px;
-  background: #2d2d30;
-  border-bottom: 1px solid #3e3e42;
+  background: linear-gradient(145deg, #3d3d40, #2d2d30);
+  border-bottom: 2px solid #8b5a2b;
+  border-radius: 12px 0 0 0;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
 }
 
 .editorTitle {
-  font-size: 14px;
-  font-weight: 600;
-  color: #cccccc;
+  font-size: 16px;
+  font-weight: 700;
+  color: #f5deb3;
+  text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5);
+  letter-spacing: 0.5px;
 }
 
 .editorActions {
@@ -53,23 +57,26 @@
 }
 
 .runButton {
-  background: #007acc;
-  color: white;
-  border: none;
+  background: linear-gradient(145deg, #d4a017, #a97400);
+  color: #2c1810;
+  border: 2px solid #8b5a2b;
   padding: 8px 16px;
-  border-radius: 4px;
+  border-radius: 8px;
   font-size: 12px;
-  font-weight: 500;
+  font-weight: 700;
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition: all 0.3s ease;
   display: flex;
   align-items: center;
   gap: 4px;
+  box-shadow: 0 3px 6px rgba(0, 0, 0, 0.2);
+  text-shadow: 0 1px 0 #f3e0c0;
 }
 
 .runButton:hover:not(:disabled) {
-  background: #005a9e;
-  transform: translateY(-1px);
+  background: linear-gradient(145deg, #f0c33b, #c48a00);
+  transform: translateY(-2px);
+  box-shadow: 0 5px 10px rgba(0, 0, 0, 0.3);
 }
 
 .runButton:disabled {
@@ -117,7 +124,7 @@
 }
 
 .copyButton {
-  background: #28a745;
+  background: #17a2b8;
   color: white;
   border: none;
   padding: 8px 12px;
@@ -131,7 +138,7 @@
 }
 
 .copyButton:hover {
-  background: #218838;
+  background: #138496;
   transform: translateY(-1px);
 }
 
@@ -156,15 +163,14 @@
 
 .editorContainer {
   flex: 1;
-  position: relative;
   min-height: 300px;
-  height: auto;
 }
 
 .editorFooter {
   padding: 8px 16px;
   background: #2d2d30;
   border-top: 1px solid #3e3e42;
+  text-align: center;
 }
 
 .hotkeyHint {
@@ -173,13 +179,17 @@
   font-style: italic;
 }
 
-/* Правая панель - Вывод */
+/* Правая панель - Вывод результатов */
 .outputPanel {
   flex: 1;
   display: flex;
   flex-direction: column;
-  background: #f5deb3;
+  background: linear-gradient(145deg, #f5deb3, #fff8dc);
+  border-left: 2px solid #8b5a2b;
+  border-radius: 0 12px 12px 0;
   min-width: 300px;
+  position: relative;
+  box-shadow: inset 2px 0 4px rgba(139, 90, 43, 0.1);
 }
 
 .outputHeader {
@@ -187,104 +197,38 @@
   justify-content: space-between;
   align-items: center;
   padding: 12px 16px;
-  background: linear-gradient(135deg, #d4a017, #a97400);
-  border-bottom: 1px solid #8b5a2b;
+  background: linear-gradient(145deg, #fff8dc, #f5deb3);
+  border-bottom: 2px solid #8b5a2b;
+  border-radius: 0 12px 0 0;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
 .outputTitle {
-  font-size: 14px;
-  font-weight: 600;
-  color: #2c1810;
-  text-shadow: 0 1px 0 #f3e0c0;
+  font-size: 16px;
+  font-weight: 700;
+  color: #4b2e05;
+  text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.1);
+  letter-spacing: 0.5px;
 }
 
 .outputActions {
   display: flex;
-  gap: 12px;
   align-items: center;
+  gap: 8px;
+  flex-wrap: nowrap;
 }
 
 .outputCount {
-  font-size: 13px;
-  color: #2c1810;
-  background: rgba(255, 255, 255, 0.9);
-  padding: 5px 10px;
-  border-radius: 12px;
-  border: 1px solid rgba(139, 90, 43, 0.3);
-  font-weight: 600;
-  letter-spacing: 0.2px;
-}
-
-.exportButton {
-  background: #17a2b8;
-  color: white;
-  border: none;
-  padding: 6px 12px;
-  border-radius: 4px;
-  font-size: 11px;
-  cursor: pointer;
-  transition: all 0.2s ease;
-  display: flex;
-  align-items: center;
-  gap: 4px;
-}
-
-.exportButton:hover {
-  background: #138496;
-  transform: translateY(-1px);
-}
-
-.taskInfo {
   font-size: 12px;
-  color: #2c1810;
-  background: rgba(255, 255, 255, 0.8);
-  padding: 3px 8px;
-  border-radius: 4px;
-  max-width: 150px;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+  color: #6c757d;
   font-weight: 500;
-  letter-spacing: 0.1px;
-}
-
-.validationInfo {
-  font-size: 12px;
-  color: #2c1810;
-  background: rgba(255, 255, 255, 0.8);
-  padding: 3px 8px;
-  border-radius: 4px;
-  font-weight: 500;
-  letter-spacing: 0.1px;
-}
-
-.hintInfo {
-  font-size: 12px;
-  color: #8b5a2b;
-  background: rgba(255, 243, 205, 0.9);
-  padding: 3px 8px;
-  border-radius: 4px;
-  font-weight: 500;
-  letter-spacing: 0.1px;
-}
-
-.solutionInfo {
-  font-size: 12px;
-  color: #0c5460;
-  background: rgba(209, 236, 241, 0.9);
-  padding: 3px 8px;
-  border-radius: 4px;
-  font-weight: 500;
-  letter-spacing: 0.1px;
 }
 
 .outputContainer {
   flex: 1;
   overflow-y: auto;
-  padding: 0;
-  min-height: 200px;
-  max-height: 600px;
-  background: #f5deb3;
+  padding: 16px;
+  background: #f5deb3; /* var(--fantasy-surface) - пергаментный фон */
 }
 
 .emptyOutput {
@@ -293,9 +237,12 @@
   align-items: center;
   justify-content: center;
   height: 100%;
-  padding: 40px 20px;
+  color: #8b5a2b;
   text-align: center;
-  color: #6c757d;
+  background: linear-gradient(145deg, rgba(245, 222, 179, 0.3), rgba(255, 248, 220, 0.2));
+  border-radius: 12px;
+  margin: 16px;
+  border: 2px dashed rgba(139, 90, 43, 0.3);
 }
 
 .emptyIcon {
@@ -316,17 +263,21 @@
 }
 
 .outputList {
-  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
 }
 
 .outputItem {
-  border-bottom: 1px solid #e9ecef;
-  padding: 12px 16px;
-  transition: background-color 0.2s ease;
-}
-
-.outputItem:hover {
-  background: #f8f9fa;
+  background: linear-gradient(145deg, rgba(255, 255, 255, 0.9), rgba(248, 235, 215, 0.8));
+  border-radius: 12px;
+  padding: 16px;
+  border-left: 4px solid #8b5a2b;
+  border: 2px solid rgba(139, 90, 43, 0.3);
+  animation: fadeIn 0.4s ease-out;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15),
+    inset 0 1px 0 rgba(255, 255, 255, 0.5);
+  backdrop-filter: blur(2px);
 }
 
 .outputItemHeader {
@@ -338,86 +289,54 @@
 
 .outputIcon {
   font-size: 16px;
-  margin-right: 8px;
 }
 
 .outputTime {
-  font-size: 12px;
-  color: #495057;
-  font-family: 'Consolas', 'Monaco', 'Courier New', monospace;
-  background: rgba(255, 255, 255, 0.8);
-  padding: 3px 8px;
-  border-radius: 4px;
+  font-size: 11px;
+  color: #6c757d;
   font-weight: 500;
-  letter-spacing: 0.2px;
 }
 
 .outputMessage {
   margin: 0;
-  font-family: 'Consolas', 'Monaco', 'Courier New', monospace;
-  font-size: 14px;
-  line-height: 1.6;
+  font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+  font-size: 13px;
+  line-height: 1.4;
   white-space: pre-wrap;
-  word-wrap: break-word;
-  overflow-x: auto;
-  font-weight: 400;
-  letter-spacing: 0.3px;
+  word-break: break-word;
+  color: #4b2e05;
+  text-shadow: 0.5px 0.5px 1px rgba(0, 0, 0, 0.1);
 }
 
 /* Типы сообщений */
 .logMessage {
-  background: #f8f9fa;
-}
-
-.logMessage .outputMessage {
-  color: #495057;
+  border-left-color: #4a90e2;
+  background: linear-gradient(135deg, rgba(74, 144, 226, 0.1), rgba(227, 242, 253, 0.3));
 }
 
 .errorMessage {
-  background: #f8d7da;
-  border-left: 4px solid #dc3545;
-}
-
-.errorMessage .outputMessage {
-  color: #721c24;
+  border-left-color: #d4a017;
+  background: linear-gradient(135deg, rgba(212, 160, 23, 0.1), rgba(255, 245, 245, 0.3));
 }
 
 .warnMessage {
-  background: #fff3cd;
-  border-left: 4px solid #ffc107;
-}
-
-.warnMessage .outputMessage {
-  color: #856404;
+  border-left-color: #a97400;
+  background: linear-gradient(135deg, rgba(169, 116, 0, 0.1), rgba(255, 251, 240, 0.3));
 }
 
 .resultMessage {
-  background: #d1ecf1;
-  border-left: 4px solid #17a2b8;
-}
-
-.resultMessage .outputMessage {
-  color: #0c5460;
-  font-weight: 500;
+  border-left-color: #4caf50;
+  background: linear-gradient(135deg, rgba(76, 175, 80, 0.1), rgba(240, 255, 244, 0.3));
 }
 
 .clearMessage {
-  background: #e2e3e5;
-  border-left: 4px solid #6c757d;
-}
-
-.clearMessage .outputMessage {
-  color: #495057;
+  border-left-color: #8b5a2b;
+  background: linear-gradient(135deg, rgba(139, 90, 43, 0.1), rgba(248, 249, 250, 0.3));
   font-style: italic;
 }
 
 /* Адаптивность */
 @media (max-width: 768px) {
-  .container {
-    flex-direction: column;
-    min-height: 400px;
-  }
-  
   .editorPanel {
     border-right: none;
     border-bottom: 1px solid #e0e0e0;
@@ -444,21 +363,10 @@
   }
 }
 
-/* Большие экраны */
-@media (min-width: 1920px) {
-  .container {
-    min-height: 600px;
-  }
-}
-
 /* Очень маленькие экраны */
 @media (max-height: 600px) {
-  .container {
-    min-height: 300px;
-  }
-  
   .editorAndOutputContainer {
-    min-height: 250px;
+    min-height: 375px; /* Увеличено на 50%: 250px * 1.5 = 375px */
   }
 }
 

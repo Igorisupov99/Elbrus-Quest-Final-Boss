@@ -389,7 +389,7 @@ result;`);
                   </button>
                   
                   <button
-                    className={styles.clearButton}
+                    className={styles.clearTextButton}
                     onClick={handleClearQuestion}
                   >
                     🗑️ Очистить
@@ -440,14 +440,12 @@ result;`);
             </p>
           </div>
           
-          <div className={styles.codeRunnerContainer}>
-            <CodeRunner
-              initialCode={codeRunnerCode}
-              language={selectedLanguage as 'javascript' | 'typescript'}
-              height="100%"
-              onCodeChange={setCodeRunnerCode}
-            />
-          </div>
+          <CodeRunner
+            initialCode={codeRunnerCode}
+            language={selectedLanguage as 'javascript' | 'typescript'}
+            height="100%"
+            onCodeChange={setCodeRunnerCode}
+          />
         </div>
       )}
 
