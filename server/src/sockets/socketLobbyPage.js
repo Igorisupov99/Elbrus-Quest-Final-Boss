@@ -894,7 +894,7 @@ function initLobbySockets(nsp) {
     socket.on('lobby:openExam', (payload) => {
       try {
         const questions = payload?.questions || [];
-        const examId = payload?.examId === 'exam2' ? 'exam2' : 'exam';
+        const examId = payload?.examId || 'exam';
         console.log(`🎯 [EXAM] Создаем экзамен ${examId} с ${questions.length} вопросами для лобби ${lobbyId}`);
         lobbyExamState.set(lobbyId, { 
           questions, 
@@ -988,7 +988,7 @@ function initLobbySockets(nsp) {
           // Сбрасываем фазу - делаем все точки текущей фазы доступными для повторного прохождения
           const points = lobbyPoints.get(lobbyId);
           if (points) {
-            const currentPhaseId = state.examId === 'exam2' ? 2 : 1;
+            const currentPhaseId = state.examId === 'exam' ? 1 : state.examId === 'exam2' ? 2 : state.examId === 'exam3' ? 3 : 4;
             
             // Сбрасываем все точки текущей фазы в состояние "доступно" для повторного прохождения
             points.forEach(p => {
@@ -1197,7 +1197,7 @@ function initLobbySockets(nsp) {
                 // Сбрасываем фазу - делаем все точки текущей фазы доступными для повторного прохождения
                 const points = lobbyPoints.get(lobbyId);
                 if (points) {
-                  const currentPhaseId = state.examId === 'exam2' ? 2 : 1;
+                  const currentPhaseId = state.examId === 'exam' ? 1 : state.examId === 'exam2' ? 2 : state.examId === 'exam3' ? 3 : 4;
                   
                   // Сбрасываем все точки текущей фазы в состояние "доступно" для повторного прохождения
                   points.forEach(p => {
@@ -1220,7 +1220,7 @@ function initLobbySockets(nsp) {
                   correctAnswers: state.correctAnswers,
                   totalQuestions: state.totalQuestions,
                   successRate: successRate,
-                  phaseId: state.examId === 'exam2' ? 2 : 1
+                  phaseId: state.examId === 'exam' ? 1 : state.examId === 'exam2' ? 2 : state.examId === 'exam3' ? 3 : 4
                 });
                 
                 // Отправляем обновление счётчика неправильных ответов (обнуляем при провале)
@@ -1338,24 +1338,43 @@ function initLobbySockets(nsp) {
               // Обновим точку экзамена как выполненную и известим всех
               const points = lobbyPoints.get(lobbyId);
               if (points) {
-                const examKey = state.examId === 'exam2' ? 'exam2' : 'exam';
+                const examKey = state.examId;
                 const examPoint = points.find((p) => p.id === examKey);
                 if (examPoint) examPoint.status = 'completed';
+                // Разблокируем следующую фазу в зависимости от завершенного экзамена
                 if (examKey === 'exam') {
-                  // Разблокируем темы фазы 2 только после первого экзамена
+                  // Разблокируем темы фазы 2 после первого экзамена
                   points.forEach(p => {
                     if (p.phase_id === 2 && p.id !== 'exam2' && p.status === 'locked') {
                       p.status = 'available';
                     }
                   });
+                } else if (examKey === 'exam2') {
+                  // Разблокируем темы фазы 3 после второго экзамена
+                  points.forEach(p => {
+                    if (p.phase_id === 3 && p.id !== 'exam3' && p.status === 'locked') {
+                      p.status = 'available';
+                    }
+                  });
+                } else if (examKey === 'exam3') {
+                  // Разблокируем темы фазы 4 после третьего экзамена
+                  points.forEach(p => {
+                    if (p.phase_id === 4 && p.id !== 'exam4' && p.status === 'locked') {
+                      p.status = 'available';
+                    }
+                  });
                 }
               }
-              const examKey = state.examId === 'exam2' ? 'exam2' : 'exam';
+              const examKey = state.examId;
               nsp.to(roomKey).emit('lobby:updatePointStatus', { pointId: examKey, status: 'completed' });
-              // Разослать новые статусы по фазе 2
+              // Разослать новые статусы для разблокированной фазы
               const updatedPoints = lobbyPoints.get(lobbyId) || [];
+              let targetPhase = 2; // по умолчанию
+              if (examKey === 'exam2') targetPhase = 3;
+              else if (examKey === 'exam3') targetPhase = 4;
+              
               updatedPoints.forEach(p => {
-                if (p.phase_id === 2 && p.id !== 'exam2') {
+                if (p.phase_id === targetPhase && p.id !== examKey) {
                   nsp.to(roomKey).emit('lobby:updatePointStatus', { pointId: p.id, status: p.status });
                 }
               });
@@ -1374,7 +1393,7 @@ function initLobbySockets(nsp) {
               // Сбрасываем фазу - делаем все точки текущей фазы доступными для повторного прохождения
               const points = lobbyPoints.get(lobbyId);
               if (points) {
-                const currentPhaseId = state.examId === 'exam2' ? 2 : 1;
+                const currentPhaseId = state.examId === 'exam' ? 1 : state.examId === 'exam2' ? 2 : state.examId === 'exam3' ? 3 : 4;
                 
                 // Сбрасываем все точки текущей фазы в состояние "доступно" для повторного прохождения
                 points.forEach(p => {

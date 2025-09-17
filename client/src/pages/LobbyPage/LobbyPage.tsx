@@ -126,7 +126,7 @@ export function LobbyPage() {
 
     // Если неактивный игрок пытается открыть вопрос или экзамен
     if (user?.id !== activePlayerId) {
-      if (pointId === "exam" || pointId === "exam2") {
+      if (pointId === "exam" || pointId === "exam2" || pointId === "exam3" || pointId === "exam4") {
         // Для экзамена запрашиваем активный экзамен
         console.log('👁️ [INACTIVE] Неактивный игрок запрашивает активный экзамен для поинта:', pointId);
         sendCheckActiveExam(pointId);
@@ -139,7 +139,7 @@ export function LobbyPage() {
     }
 
     try {
-      if (pointId !== "exam" && pointId !== "exam2") {
+      if (pointId !== "exam" && pointId !== "exam2" && pointId !== "exam3" && pointId !== "exam4") {
         const res = await api.get("/api/question/textQuestion", {
           params: { phase_id: point.phaseId, topic_id: point.topicId },
           withCredentials: true,
@@ -173,7 +173,7 @@ export function LobbyPage() {
         }
         
         console.log('🆕 [EXAM] Начинаем новый экзамен:', pointId);
-        const phaseId = pointId === "exam" ? 1 : 2;
+        const phaseId = pointId === "exam" ? 1 : pointId === "exam2" ? 2 : pointId === "exam3" ? 3 : 4;
         const res = await api.get("/api/exam/examQuestion", {
           params: { phase_id: phaseId, count: usersInLobby.length + incorrectAnswers },
           withCredentials: true,
