@@ -424,6 +424,11 @@
   gap: 10px;
 }
 
+/* Специальный стиль для заголовка "Друзья" */
+.friendsSection .blockTitle {
+  font-size: 22px;
+}
+
 .profileIcon {
   width: 1.8rem;
   height: 1.8rem;
@@ -806,7 +811,7 @@
   background: linear-gradient(145deg, #d4a017 0%, #f0c33b 50%, #a97400 100%);
   color: #2c1810;
   font-weight: bold;
-  font-size: 1.1rem;
+  font-size: 15px; /* Уменьшено с 18px */
   border-radius: 12px;
   padding: 6px 12px;
   cursor: pointer;
@@ -1154,12 +1159,12 @@
     text-align: center;
   }
 
-  .friendsStats p {
-    margin: 0;
-    font-size: 1rem;
-    color: #5c3d2e;
-    font-weight: 600;
-  }
+.friendsStats p {
+  margin: 0;
+  font-size: 15px; /* Уменьшено с 18px */
+  color: #5c3d2e;
+  font-weight: 600;
+}
 
   .friendsActions {
     display: flex;
@@ -1267,34 +1272,34 @@
     flex-direction: column;
   }
 
-  .friendName {
-    margin: 0 0 4px 0;
-    font-size: 1.1rem;
-    font-weight: 600;
-    color: #5c3d2e;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-  }
+.friendName {
+  margin: 0 0 4px 0;
+  font-size: 15px; /* Уменьшено с 18px */
+  font-weight: 600;
+  color: #5c3d2e;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
 
-  .friendEmail {
-    margin: 0 0 4px 0;
-    font-size: 0.9rem;
-    color: #8b4513;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-  }
+.friendEmail {
+  margin: 0 0 4px 0;
+  font-size: 13px; /* Уменьшено с 16px */
+  color: #8b4513;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
 
-  .friendScore {
-    margin: 4px 0 0 0;
-    font-size: 0.8rem;
-    color: #d8a35d;
-    font-weight: 600;
-    display: flex;
-    align-items: center;
-    gap: 4px;
-  }
+.friendScore {
+  margin: 4px 0 0 0;
+  font-size: 12px; /* Уменьшено с 14px */
+  color: #d8a35d;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
 
   /* Кнопки действий */
   .removeButton,
@@ -1303,7 +1308,7 @@
     padding: 8px 12px;
     border-radius: 6px;
     border: none;
-    font-size: 0.9rem;
+    font-size: 13px; /* Уменьшено с 16px */
     font-weight: 600;
     cursor: pointer;
     transition: all 0.2s ease;
@@ -1574,7 +1579,7 @@
   padding: 10px 20px;
   border: 2px solid;
   border-radius: 8px;
-  font-size: 0.95rem;
+  font-size: 16px;
   font-weight: 700;
   cursor: pointer;
   transition: all 0.2s ease;
@@ -1626,7 +1631,7 @@
   border: 2px solid #b8922d;
   border-radius: 20px;
   color: #b8922d;
-  font-size: 0.95rem;
+  font-size: 16px;
   font-weight: 700;
   text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
   box-shadow: 0 3px 8px rgba(0, 0, 0, 0.3);
@@ -1682,14 +1687,14 @@
     flex: 1;
     text-align: center;
     padding: 8px 12px;
-    font-size: 0.9rem;
+    font-size: 16px;
   }
 
   .requestStatusBadge {
     width: 100%;
     min-width: auto;
     padding: 10px 16px;
-    font-size: 0.9rem;
+    font-size: 16px;
   }
 }
 

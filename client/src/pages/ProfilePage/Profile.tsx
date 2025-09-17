@@ -1004,7 +1004,7 @@ export function Profile() {
                     border: '2px solid #8b5a2b',
                     boxShadow: '0 3px 6px rgba(0, 0, 0, 0.15)',
                     fontWeight: '700',
-                    fontSize: '1.1rem',
+                    fontSize: '0.9rem', /* Уменьшено с 1.1rem */
                     textShadow: '0 1px 0 #f3e0c0',
                   }}
                 >
@@ -1018,7 +1018,7 @@ export function Profile() {
                         border: '2px solid #2c1810',
                         background: 'rgba(44, 24, 16, 0.1)',
                         color: '#2c1810',
-                        fontSize: '16px',
+                        fontSize: '13px', /* Уменьшено с 16px */
                         fontWeight: 'bold',
                         cursor: 'pointer',
                         transition: 'all 0.2s ease',
@@ -1066,7 +1066,7 @@ export function Profile() {
                         border: '2px solid #2c1810',
                         background: 'rgba(44, 24, 16, 0.1)',
                         color: '#2c1810',
-                        fontSize: '16px',
+                        fontSize: '13px', /* Уменьшено с 16px */
                         fontWeight: 'bold',
                         cursor: 'pointer',
                         transition: 'all 0.2s ease',
@@ -1105,7 +1105,7 @@ export function Profile() {
                     style={{
                       margin: '0 0 8px 0',
                       color: '#2c1810',
-                      fontSize: '0.95rem',
+                      fontSize: '0.8rem', /* Уменьшено с 0.95rem */
                       fontWeight: '700',
                       textAlign: 'center',
                     }}
@@ -1124,7 +1124,7 @@ export function Profile() {
                         padding: '6px 10px',
                         border: '2px solid #d8a35d',
                         borderRadius: '5px',
-                        fontSize: '0.85rem',
+                        fontSize: '0.75rem', /* Уменьшено с 0.85rem */
                         background: '#fff',
                         color: '#2c1810',
                         fontFamily: 'inherit',
@@ -1150,7 +1150,7 @@ export function Profile() {
                           top: '50%',
                           transform: 'translateY(-50%)',
                           color: '#b0752d',
-                          fontSize: '14px',
+                          fontSize: '12px', /* Уменьшено с 14px */
                         }}
                       >
                         ⏳
@@ -1167,7 +1167,7 @@ export function Profile() {
                         border: '1px solid #ff9999',
                         borderRadius: '4px',
                         color: '#cc0000',
-                        fontSize: '0.8rem',
+                        fontSize: '0.7rem', /* Уменьшено с 0.8rem */
                         textAlign: 'center',
                       }}
                     >
@@ -1222,7 +1222,7 @@ export function Profile() {
                         <h5
                           style={{
                             margin: '0 0 1px 0',
-                            fontSize: '0.9rem',
+                            fontSize: '0.8rem', /* Уменьшено с 0.9rem */
                             fontWeight: '700',
                             color: '#2c1810',
                             display: 'flex',
@@ -1231,7 +1231,7 @@ export function Profile() {
                           }}
                         >
                           {searchResult.username}
-                          <span style={{ fontSize: '0.7rem', color: '#666' }}>
+                          <span style={{ fontSize: '0.6rem', color: '#666' }}>
                             👆
                           </span>
                         </h5>
@@ -1239,7 +1239,7 @@ export function Profile() {
                           <p
                             style={{
                               margin: '0',
-                              fontSize: '0.75rem',
+                              fontSize: '0.65rem', /* Уменьшено с 0.75rem */
                               color: '#666',
                             }}
                           >
@@ -1259,7 +1259,7 @@ export function Profile() {
                                 background: '#e0e0e0',
                                 borderRadius: '4px',
                                 color: '#666',
-                                fontSize: '0.75rem',
+                                fontSize: '0.65rem', /* Уменьшено с 0.75rem */
                               }}
                             >
                               Это вы
@@ -1276,7 +1276,7 @@ export function Profile() {
                                 border: '1px solid #28a745',
                                 borderRadius: '4px',
                                 color: '#155724',
-                                fontSize: '0.75rem',
+                                fontSize: '0.65rem', /* Уменьшено с 0.75rem */
                                 fontWeight: '600',
                               }}
                             >
@@ -1294,7 +1294,7 @@ export function Profile() {
                                 border: '1px solid #ffc107',
                                 borderRadius: '4px',
                                 color: '#856404',
-                                fontSize: '0.75rem',
+                                fontSize: '0.65rem', /* Уменьшено с 0.75rem */
                                 fontWeight: '600',
                               }}
                             >
@@ -1312,7 +1312,7 @@ export function Profile() {
                                 border: '1px solid #007bff',
                                 borderRadius: '4px',
                                 color: '#004085',
-                                fontSize: '0.75rem',
+                                fontSize: '0.65rem', /* Уменьшено с 0.75rem */
                                 fontWeight: '600',
                               }}
                             >
@@ -1337,7 +1337,7 @@ export function Profile() {
                               color: 'white',
                               border: '1px solid #1e7e34',
                               borderRadius: '5px',
-                              fontSize: '0.8rem',
+                              fontSize: '0.7rem', /* Уменьшено с 0.8rem */
                               fontWeight: '700',
                               cursor: 'pointer',
                               transition: 'all 0.2s ease',
@@ -1506,7 +1506,7 @@ export function Profile() {
                     style={{
                       textAlign: 'center',
                       marginTop: '16px',
-                      fontSize: '0.9rem',
+                      fontSize: '0.8rem', /* Уменьшено с 0.9rem */
                       color: '#8b7355',
                       fontWeight: '500',
                     }}
