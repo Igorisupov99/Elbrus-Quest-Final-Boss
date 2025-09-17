@@ -1,10 +1,12 @@
 import React, { useCallback } from 'react';
-import type { AvatarShopFilters, AvatarCategory, AvatarRarity } from '../../../types/avatar';
+import type { AvatarShopFilters, AvatarRarity } from '../../../types/avatar';
 import styles from './AvatarFilters.module.css';
 
 interface AvatarFiltersProps {
   filters: AvatarShopFilters;
-  onFiltersChange: (filters: (prev: AvatarShopFilters) => AvatarShopFilters) => void;
+  onFiltersChange: (
+    filters: (prev: AvatarShopFilters) => AvatarShopFilters
+  ) => void;
   userScore: number;
 }
 
@@ -13,14 +15,6 @@ const AvatarFiltersComponent: React.FC<AvatarFiltersProps> = ({
   onFiltersChange,
   userScore,
 }) => {
-  const categories: { value: AvatarCategory; label: string }[] = [
-    { value: 'animals', label: '🐾 Животные' },
-    { value: 'fantasy', label: '🧙 Фэнтези' },
-    { value: 'robots', label: '🤖 Роботы' },
-    { value: 'nature', label: '🌿 Природа' },
-    { value: 'space', label: '🚀 Космос' },
-  ];
-
   const rarities: { value: AvatarRarity; label: string; color: string }[] = [
     { value: 'common', label: 'Обычный', color: '#9ca3af' },
     { value: 'rare', label: 'Редкий', color: '#3b82f6' },
@@ -28,25 +22,36 @@ const AvatarFiltersComponent: React.FC<AvatarFiltersProps> = ({
     { value: 'legendary', label: 'Легендарный', color: '#f59e0b' },
   ];
 
-  const handleCategoryChange = useCallback((category: AvatarCategory | undefined) => {
-    onFiltersChange((prev) => ({ ...prev, category }));
-  }, [onFiltersChange]);
+  const handleRarityChange = useCallback(
+    (rarity: AvatarRarity | undefined) => {
+      onFiltersChange((prev) => ({ ...prev, rarity }));
+    },
+    [onFiltersChange]
+  );
 
-  const handleRarityChange = useCallback((rarity: AvatarRarity | undefined) => {
-    onFiltersChange((prev) => ({ ...prev, rarity }));
-  }, [onFiltersChange]);
+  const handleShowOwnedChange = useCallback(
+    (showOwned: boolean) => {
+      onFiltersChange((prev) => ({ ...prev, showOwned }));
+    },
+    [onFiltersChange]
+  );
 
-  const handleShowOwnedChange = useCallback((showOwned: boolean) => {
-    onFiltersChange((prev) => ({ ...prev, showOwned }));
-  }, [onFiltersChange]);
+  const handleShowLockedChange = useCallback(
+    (showLocked: boolean) => {
+      onFiltersChange((prev) => ({ ...prev, showLocked }));
+    },
+    [onFiltersChange]
+  );
 
-  const handleShowLockedChange = useCallback((showLocked: boolean) => {
-    onFiltersChange((prev) => ({ ...prev, showLocked }));
-  }, [onFiltersChange]);
-
-  const handleSearchChange = useCallback((searchQuery: string) => {
-    onFiltersChange((prev) => ({ ...prev, searchQuery: searchQuery || undefined }));
-  }, [onFiltersChange]);
+  const handleSearchChange = useCallback(
+    (searchQuery: string) => {
+      onFiltersChange((prev) => ({
+        ...prev,
+        searchQuery: searchQuery || undefined,
+      }));
+    },
+    [onFiltersChange]
+  );
 
   const clearFilters = useCallback(() => {
     onFiltersChange(() => ({}));
@@ -73,32 +78,6 @@ const AvatarFiltersComponent: React.FC<AvatarFiltersProps> = ({
             onChange={(e) => handleSearchChange(e.target.value)}
             className={styles.searchInput}
           />
-        </div>
-
-        {/* Категории */}
-        <div className={styles.filterGroup}>
-          <label className={styles.label}>Категория</label>
-          <div className={styles.buttonGroup}>
-            <button
-              onClick={() => handleCategoryChange(undefined)}
-              className={`${styles.filterButton} ${
-                !filters.category ? styles.active : ''
-              }`}
-            >
-              Все
-            </button>
-            {categories.map((category) => (
-              <button
-                key={category.value}
-                onClick={() => handleCategoryChange(category.value)}
-                className={`${styles.filterButton} ${
-                  filters.category === category.value ? styles.active : ''
-                }`}
-              >
-                {category.label}
-              </button>
-            ))}
-          </div>
         </div>
 
         {/* Редкость */}

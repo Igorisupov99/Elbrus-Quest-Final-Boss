@@ -748,7 +748,7 @@ export function Profile() {
                   currentAvatar?.imageUrl ||
                   (user?.image_url && user.image_url !== null
                     ? user.image_url
-                    : '/default-avatar.svg')
+                    : '/ChatGPT Image Sep 17, 2025, 09_40_09 PM.png')
                 }
                 alt="Аватар"
                 className={styles.avatar}
@@ -1206,7 +1206,8 @@ export function Profile() {
                       <UserAvatar
                         userId={searchResult.id}
                         fallbackImageUrl={
-                          searchResult.image_url || '/default-avatar.svg'
+                          searchResult.image_url ||
+                          '/ChatGPT Image Sep 17, 2025, 09_40_09 PM.png'
                         }
                         size="small"
                         shape="square"
@@ -1434,7 +1435,8 @@ export function Profile() {
                           <UserAvatar
                             userId={friend.id}
                             fallbackImageUrl={
-                              friend.image_url || '/default-avatar.svg'
+                              friend.image_url ||
+                              '/ChatGPT Image Sep 17, 2025, 09_40_09 PM.png'
                             }
                             size="medium"
                             shape="square"
@@ -1668,7 +1670,8 @@ export function Profile() {
                     <UserAvatar
                       userId={request.user?.id || 0}
                       fallbackImageUrl={
-                        request.user?.image_url || '/default-avatar.svg'
+                        request.user?.image_url ||
+                        '/ChatGPT Image Sep 17, 2025, 09_40_09 PM.png'
                       }
                       size="medium"
                       shape="square"
@@ -1779,7 +1782,8 @@ export function Profile() {
                     <UserAvatar
                       userId={request.friend?.id || 0}
                       fallbackImageUrl={
-                        request.friend?.image_url || '/default-avatar.svg'
+                        request.friend?.image_url ||
+                        '/ChatGPT Image Sep 17, 2025, 09_40_09 PM.png'
                       }
                       size="medium"
                       shape="square"

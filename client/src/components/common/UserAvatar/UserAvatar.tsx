@@ -20,14 +20,14 @@ interface UserAvatarProps {
  */
 export const UserAvatar: React.FC<UserAvatarProps> = ({
   userId,
-  fallbackImageUrl = "/default-avatar.svg",
-  className = "",
-  size = "medium",
-  shape = "circle",
+  fallbackImageUrl = '/ChatGPT Image Sep 17, 2025, 09_40_09 PM.png',
+  className = '',
+  size = 'medium',
+  shape = 'circle',
   showLoading = true,
-  alt = "Аватар пользователя",
+  alt = 'Аватар пользователя',
   onClick,
-  style
+  style,
 }) => {
   const { avatar, loading, error } = useUserAvatar(userId);
 
@@ -55,8 +55,10 @@ export const UserAvatar: React.FC<UserAvatarProps> = ({
 
   if (loading && showLoading) {
     return (
-      <div 
-        className={`${styles.avatar} ${getSizeClass()} ${getShapeClass()} ${styles.loading} ${className}`}
+      <div
+        className={`${styles.avatar} ${getSizeClass()} ${getShapeClass()} ${
+          styles.loading
+        } ${className}`}
         onClick={onClick}
         style={style}
       >
@@ -73,7 +75,9 @@ export const UserAvatar: React.FC<UserAvatarProps> = ({
     <img
       src={getImageUrl()}
       alt={alt}
-      className={`${styles.avatar} ${getSizeClass()} ${getShapeClass()} ${className}`}
+      className={`${
+        styles.avatar
+      } ${getSizeClass()} ${getShapeClass()} ${className}`}
       onClick={onClick}
       style={style}
       onError={(e) => {

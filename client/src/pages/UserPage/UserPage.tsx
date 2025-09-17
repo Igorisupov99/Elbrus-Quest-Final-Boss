@@ -1,9 +1,9 @@
-import { useEffect, useState } from "react";
-import { useParams, useNavigate } from "react-router-dom";
-import axios from "axios";
-import api from "../../api/axios";
-import { achievementApi } from "../../api/achievements/achievementApi";
-import { 
+import { useEffect, useState } from 'react';
+import { useParams, useNavigate } from 'react-router-dom';
+import axios from 'axios';
+import api from '../../api/axios';
+import { achievementApi } from '../../api/achievements/achievementApi';
+import {
   checkFriendshipStatus,
   sendFriendRequest,
   acceptFriendRequest,
@@ -12,25 +12,23 @@ import {
   getIncomingRequests,
   getOutgoingRequests,
   type User as FriendUser,
-  type Friendship, 
-} from "../../api/friendship/friendshipApi";
-import { getFriendsCountText } from "../../utils/declination";
+  type Friendship,
+} from '../../api/friendship/friendshipApi';
+import { getFriendsCountText } from '../../utils/declination';
 
-import { AchievementCard } from "../../components/Achievement/AchievementCard/AchievementCard";
-import { AchievementModal } from "../../components/Achievement/AchievementModal/AchievementModal";
-import { FavoriteQuestionModal } from "../../components/FavoriteQuestionModal/FavoriteQuestionModal";
-import { UserAvatar } from "../../components/common/UserAvatar";
-import { SuccessModal } from "../../components/common/modals/SuccessModal/SuccessModal";
-import { ConfirmModal } from "../../components/common/modals/ConfirmModal/ConfirmModal";
-import type { Achievement } from "../../types/achievement";
-import type { FavoriteQuestion } from "../../types/favorite";
-import type { User } from "../../types/auth";
-import { useAppSelector } from "../../store/hooks";
-import { Link } from "react-router-dom";
-import { avatarApi } from "../../api/avatar/avatarApi";
-import styles from "../ProfilePage/Profile.module.css";
-
-
+import { AchievementCard } from '../../components/Achievement/AchievementCard/AchievementCard';
+import { AchievementModal } from '../../components/Achievement/AchievementModal/AchievementModal';
+import { FavoriteQuestionModal } from '../../components/FavoriteQuestionModal/FavoriteQuestionModal';
+import { UserAvatar } from '../../components/common/UserAvatar';
+import { SuccessModal } from '../../components/common/modals/SuccessModal/SuccessModal';
+import { ConfirmModal } from '../../components/common/modals/ConfirmModal/ConfirmModal';
+import type { Achievement } from '../../types/achievement';
+import type { FavoriteQuestion } from '../../types/favorite';
+import type { User } from '../../types/auth';
+import { useAppSelector } from '../../store/hooks';
+import { Link } from 'react-router-dom';
+import { avatarApi } from '../../api/avatar/avatarApi';
+import styles from '../ProfilePage/Profile.module.css';
 
 interface ApiResponse<T> {
   success: boolean;
@@ -40,55 +38,70 @@ interface ApiResponse<T> {
 
 // Форматирование даты регистрации
 const formatRegistrationDate = (dateString?: string) => {
-  if (!dateString) return "Дата регистрации: неизвестна";
-  
+  if (!dateString) return 'Дата регистрации: неизвестна';
+
   try {
     const date = new Date(dateString);
     const formattedDate = date.toLocaleDateString('ru-RU', {
       year: 'numeric',
       month: 'long',
-      day: 'numeric'
+      day: 'numeric',
     });
     return `Дата регистрации: ${formattedDate}`;
   } catch {
-    return "Дата регистрации: неизвестна";
+    return 'Дата регистрации: неизвестна';
   }
 };
 
 export function UserPage() {
   const { userId } = useParams<{ userId: string }>();
   const navigate = useNavigate();
-  const currentUser = useAppSelector(state => state.auth.user);
-  
-  
+  const currentUser = useAppSelector((state) => state.auth.user);
+
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
-  const [userAvatar, setUserAvatar] = useState<{ imageUrl: string } | null>(null);
+  const [userAvatar, setUserAvatar] = useState<{ imageUrl: string } | null>(
+    null
+  );
 
   // Для друзей
   const [friends, setFriends] = useState<FriendUser[]>([]);
   const [friendsLoading, setFriendsLoading] = useState<boolean>(false);
   const [currentFriendsIndex, setCurrentFriendsIndex] = useState<number>(0);
-  
+
   // Для статуса дружбы
-  const [friendshipStatus, setFriendshipStatus] = useState<'none' | 'pending' | 'accepted' | 'blocked' | 'loading'>('loading');
-  const [incomingRequest, setIncomingRequest] = useState<Friendship | null>(null);
-  const [outgoingRequest, setOutgoingRequest] = useState<Friendship | null>(null);
+  const [friendshipStatus, setFriendshipStatus] = useState<
+    'none' | 'pending' | 'accepted' | 'blocked' | 'loading'
+  >('loading');
+  const [incomingRequest, setIncomingRequest] = useState<Friendship | null>(
+    null
+  );
+  const [outgoingRequest, setOutgoingRequest] = useState<Friendship | null>(
+    null
+  );
 
   // Для достижений
   const [achievements, setAchievements] = useState<Achievement[]>([]);
-  const [achievementsLoading, setAchievementsLoading] = useState<boolean>(false);
-  const [currentAchievementIndex, setCurrentAchievementIndex] = useState<number>(0);
-  const [selectedAchievement, setSelectedAchievement] = useState<Achievement | null>(null);
-  const [isAchievementModalOpen, setIsAchievementModalOpen] = useState<boolean>(false);
+  const [achievementsLoading, setAchievementsLoading] =
+    useState<boolean>(false);
+  const [currentAchievementIndex, setCurrentAchievementIndex] =
+    useState<number>(0);
+  const [selectedAchievement, setSelectedAchievement] =
+    useState<Achievement | null>(null);
+  const [isAchievementModalOpen, setIsAchievementModalOpen] =
+    useState<boolean>(false);
 
   // Для избранных вопросов
-  const [favoriteQuestions, setFavoriteQuestions] = useState<FavoriteQuestion[]>([]);
+  const [favoriteQuestions, setFavoriteQuestions] = useState<
+    FavoriteQuestion[]
+  >([]);
   const [favoritesLoading, setFavoritesLoading] = useState<boolean>(false);
   const [currentFavoriteIndex, setCurrentFavoriteIndex] = useState<number>(0);
-  const [selectedQuestion, setSelectedQuestion] = useState<FavoriteQuestion | null>(null);
-  const [isQuestionModalOpen, setIsQuestionModalOpen] = useState<boolean>(false);
+  const [selectedQuestion, setSelectedQuestion] =
+    useState<FavoriteQuestion | null>(null);
+  const [isQuestionModalOpen, setIsQuestionModalOpen] =
+    useState<boolean>(false);
 
   // Для модальных окон уведомлений
   const [isSuccessModalOpen, setIsSuccessModalOpen] = useState(false);
@@ -108,11 +121,10 @@ export function UserPage() {
     type?: 'warning' | 'danger' | 'info';
   } | null>(null);
 
-
   // Загрузка данных профиля пользователя
   useEffect(() => {
     if (!userId) {
-      setError("ID пользователя не найден");
+      setError('ID пользователя не найден');
       setLoading(false);
       return;
     }
@@ -133,7 +145,7 @@ export function UserPage() {
         setUserAvatar(null);
       }
     };
-    
+
     loadUserAvatar();
 
     const loadUserProfile = async () => {
@@ -141,20 +153,25 @@ export function UserPage() {
         setLoading(true);
         setError(null);
 
-        const response = await api.get<ApiResponse<User>>(`/api/auth/user/id/${userId}`, {
-          withCredentials: true,
-        });
-
+        const response = await api.get<ApiResponse<User>>(
+          `/api/auth/user/id/${userId}`,
+          {
+            withCredentials: true,
+          }
+        );
 
         if (!response.data.success) {
-          throw new Error(response.data.message || "Ошибка при загрузке профиля");
+          throw new Error(
+            response.data.message || 'Ошибка при загрузке профиля'
+          );
         }
 
         setUser(response.data.data);
       } catch (err) {
-        let errorMessage = "Ошибка при загрузке профиля";
+        let errorMessage = 'Ошибка при загрузке профиля';
         if (axios.isAxiosError(err)) {
-          errorMessage = err.response?.data?.message || err.message || errorMessage;
+          errorMessage =
+            err.response?.data?.message || err.message || errorMessage;
         } else if (err instanceof Error) {
           errorMessage = err.message;
         }
@@ -174,11 +191,14 @@ export function UserPage() {
     const loadUserFriends = async () => {
       try {
         setFriendsLoading(true);
-        
+
         // Получаем друзей конкретного пользователя
-        const response = await api.get<ApiResponse<FriendUser[]>>(`/api/friendship/user/${user.id}/friends`, {
-          withCredentials: true,
-        });
+        const response = await api.get<ApiResponse<FriendUser[]>>(
+          `/api/friendship/user/${user.id}/friends`,
+          {
+            withCredentials: true,
+          }
+        );
 
         if (response.data.success) {
           setFriends(response.data.data || []);
@@ -203,10 +223,10 @@ export function UserPage() {
         setFriendshipStatus('loading');
         setIncomingRequest(null);
         setOutgoingRequest(null);
-        
+
         // Проверяем общий статус дружбы
         const statusResponse = await checkFriendshipStatus(user.id);
-        
+
         if (statusResponse.success && statusResponse.data) {
           setFriendshipStatus(statusResponse.data.status);
         } else {
@@ -214,7 +234,10 @@ export function UserPage() {
         }
 
         // Если статус pending, проверяем входящие и исходящие заявки
-        if (statusResponse.success && statusResponse.data?.status === 'pending') {
+        if (
+          statusResponse.success &&
+          statusResponse.data?.status === 'pending'
+        ) {
           // Проверяем входящие заявки
           const incomingResponse = await getIncomingRequests();
           if (incomingResponse.success && incomingResponse.data) {
@@ -254,18 +277,20 @@ export function UserPage() {
 
         if (data?.achievements) {
           // Преобразуем полученные достижения в нужный формат
-          const earnedAchievements = data.achievements.map(userAchievement => ({
-            id: userAchievement.achievement.id,
-            key: userAchievement.achievement.key,
-            title: userAchievement.achievement.title,
-            description: userAchievement.achievement.description,
-            icon: userAchievement.achievement.icon,
-            category: userAchievement.achievement.category,
-            points: userAchievement.achievement.points,
-            rarity: userAchievement.achievement.rarity,
-            earned: true,
-            earned_at: userAchievement.earned_at
-          }));
+          const earnedAchievements = data.achievements.map(
+            (userAchievement) => ({
+              id: userAchievement.achievement.id,
+              key: userAchievement.achievement.key,
+              title: userAchievement.achievement.title,
+              description: userAchievement.achievement.description,
+              icon: userAchievement.achievement.icon,
+              category: userAchievement.achievement.category,
+              points: userAchievement.achievement.points,
+              rarity: userAchievement.achievement.rarity,
+              earned: true,
+              earned_at: userAchievement.earned_at,
+            })
+          );
           setAchievements(earnedAchievements);
         } else {
           // Если нет достижений
@@ -290,7 +315,9 @@ export function UserPage() {
       setFavoritesLoading(true);
       try {
         // Получаем публичные избранные вопросы пользователя
-        const response = await api.get<ApiResponse<{ favorites: FavoriteQuestion[] }>>(`/api/favorites/user/${user.id}`, {
+        const response = await api.get<
+          ApiResponse<{ favorites: FavoriteQuestion[] }>
+        >(`/api/favorites/user/${user.id}`, {
           withCredentials: true,
         });
 
@@ -300,7 +327,10 @@ export function UserPage() {
           setFavoriteQuestions([]);
         }
       } catch (error) {
-        console.error('Ошибка при загрузке избранных вопросов пользователя:', error);
+        console.error(
+          'Ошибка при загрузке избранных вопросов пользователя:',
+          error
+        );
         setFavoriteQuestions([]);
       } finally {
         setFavoritesLoading(false);
@@ -313,7 +343,7 @@ export function UserPage() {
   // Функции для карусели достижений
   const nextAchievements = () => {
     if (achievements.length > 3) {
-      setCurrentAchievementIndex((prev) => 
+      setCurrentAchievementIndex((prev) =>
         prev + 3 >= achievements.length ? 0 : prev + 3
       );
     }
@@ -321,14 +351,17 @@ export function UserPage() {
 
   const prevAchievements = () => {
     if (achievements.length > 3) {
-      setCurrentAchievementIndex((prev) => 
+      setCurrentAchievementIndex((prev) =>
         prev - 3 < 0 ? Math.max(0, achievements.length - 3) : prev - 3
       );
     }
   };
 
   const getVisibleAchievements = () => {
-    return achievements.slice(currentAchievementIndex, currentAchievementIndex + 3);
+    return achievements.slice(
+      currentAchievementIndex,
+      currentAchievementIndex + 3
+    );
   };
 
   // Обработчики для модального окна достижений
@@ -354,7 +387,11 @@ export function UserPage() {
   };
 
   // Функции для модальных окон уведомлений
-  const showSuccessModal = (title: string, message: string, type: 'success' | 'info' | 'warning' = 'success') => {
+  const showSuccessModal = (
+    title: string,
+    message: string,
+    type: 'success' | 'info' | 'warning' = 'success'
+  ) => {
     setSuccessModalData({ title, message, type });
     setIsSuccessModalOpen(true);
   };
@@ -366,9 +403,9 @@ export function UserPage() {
 
   // Функции для модального окна подтверждения
   const showConfirmModal = (
-    title: string, 
-    message: string, 
-    onConfirm: () => void, 
+    title: string,
+    message: string,
+    onConfirm: () => void,
     confirmText: string = 'Подтвердить',
     type: 'warning' | 'danger' | 'info' = 'warning'
   ) => {
@@ -384,7 +421,7 @@ export function UserPage() {
   // Функции для карусели избранных вопросов
   const nextFavorites = () => {
     if (favoriteQuestions.length > 3) {
-      setCurrentFavoriteIndex((prev) => 
+      setCurrentFavoriteIndex((prev) =>
         prev + 3 >= favoriteQuestions.length ? 0 : prev + 3
       );
     }
@@ -392,20 +429,23 @@ export function UserPage() {
 
   const prevFavorites = () => {
     if (favoriteQuestions.length > 3) {
-      setCurrentFavoriteIndex((prev) => 
+      setCurrentFavoriteIndex((prev) =>
         prev - 3 < 0 ? Math.max(0, favoriteQuestions.length - 3) : prev - 3
       );
     }
   };
 
   const getVisibleFavorites = () => {
-    return favoriteQuestions.slice(currentFavoriteIndex, currentFavoriteIndex + 3);
+    return favoriteQuestions.slice(
+      currentFavoriteIndex,
+      currentFavoriteIndex + 3
+    );
   };
 
   // Функции для карусели друзей
   const nextFriends = () => {
     if (friends.length > 5) {
-      setCurrentFriendsIndex((prev) => 
+      setCurrentFriendsIndex((prev) =>
         prev + 5 >= friends.length ? 0 : prev + 5
       );
     }
@@ -413,7 +453,7 @@ export function UserPage() {
 
   const prevFriends = () => {
     if (friends.length > 5) {
-      setCurrentFriendsIndex((prev) => 
+      setCurrentFriendsIndex((prev) =>
         prev - 5 < 0 ? Math.max(0, friends.length - 5) : prev - 5
       );
     }
@@ -429,16 +469,27 @@ export function UserPage() {
 
     try {
       const response = await sendFriendRequest(user.id);
-      
+
       if (response.success) {
         setFriendshipStatus('pending');
-        showSuccessModal('Успешно!', `Заявка на дружбу отправлена пользователю ${user.username}`);
+        showSuccessModal(
+          'Успешно!',
+          `Заявка на дружбу отправлена пользователю ${user.username}`
+        );
       } else {
-        showSuccessModal('Ошибка', response.message || 'Ошибка при отправке заявки на дружбу', 'warning');
+        showSuccessModal(
+          'Ошибка',
+          response.message || 'Ошибка при отправке заявки на дружбу',
+          'warning'
+        );
       }
     } catch (error) {
       console.error('Ошибка при отправке заявки на дружбу:', error);
-      showSuccessModal('Ошибка', 'Ошибка при отправке заявки на дружбу', 'warning');
+      showSuccessModal(
+        'Ошибка',
+        'Ошибка при отправке заявки на дружбу',
+        'warning'
+      );
     }
   };
 
@@ -448,13 +499,20 @@ export function UserPage() {
 
     try {
       const response = await acceptFriendRequest(incomingRequest.id);
-      
+
       if (response.success) {
         setFriendshipStatus('accepted');
         setIncomingRequest(null);
-        showSuccessModal('Успешно!', `Заявка на дружбу от ${user?.username} принята!`);
+        showSuccessModal(
+          'Успешно!',
+          `Заявка на дружбу от ${user?.username} принята!`
+        );
       } else {
-        showSuccessModal('Ошибка', response.message || 'Ошибка при принятии заявки', 'warning');
+        showSuccessModal(
+          'Ошибка',
+          response.message || 'Ошибка при принятии заявки',
+          'warning'
+        );
       }
     } catch (error) {
       console.error('Ошибка при принятии заявки:', error);
@@ -468,13 +526,20 @@ export function UserPage() {
 
     try {
       const response = await rejectFriendRequest(incomingRequest.id);
-      
+
       if (response.success) {
         setFriendshipStatus('none');
         setIncomingRequest(null);
-        showSuccessModal('Успешно!', `Заявка на дружбу от ${user?.username} отклонена`);
+        showSuccessModal(
+          'Успешно!',
+          `Заявка на дружбу от ${user?.username} отклонена`
+        );
       } else {
-        showSuccessModal('Ошибка', response.message || 'Ошибка при отклонении заявки', 'warning');
+        showSuccessModal(
+          'Ошибка',
+          response.message || 'Ошибка при отклонении заявки',
+          'warning'
+        );
       }
     } catch (error) {
       console.error('Ошибка при отклонении заявки:', error);
@@ -492,18 +557,26 @@ export function UserPage() {
       async () => {
         try {
           const response = await removeFriend(user.id);
-          
+
           if (response.success) {
             setFriendshipStatus('none');
             setIncomingRequest(null);
             setOutgoingRequest(null);
             showSuccessModal('Успешно!', `${user.username} удален из друзей`);
           } else {
-            showSuccessModal('Ошибка', response.message || 'Ошибка при удалении из друзей', 'warning');
+            showSuccessModal(
+              'Ошибка',
+              response.message || 'Ошибка при удалении из друзей',
+              'warning'
+            );
           }
         } catch (error) {
           console.error('Ошибка при удалении из друзей:', error);
-          showSuccessModal('Ошибка', 'Ошибка при удалении из друзей', 'warning');
+          showSuccessModal(
+            'Ошибка',
+            'Ошибка при удалении из друзей',
+            'warning'
+          );
         }
       },
       'Удалить',
@@ -518,12 +591,20 @@ export function UserPage() {
 
   if (loading) return <div className={styles.loading}>Загрузка профиля...</div>;
   if (error) return <div className={styles.error}>Ошибка: {error}</div>;
-  if (!user) return <div className={styles.notFound}>Пользователь не найден</div>;
+  if (!user)
+    return <div className={styles.notFound}>Пользователь не найден</div>;
 
   return (
     <section className={styles.profileSection}>
-      <div style={{ display: 'flex', alignItems: 'center', gap: '16px', marginBottom: '24px' }}>
-        <button 
+      <div
+        style={{
+          display: 'flex',
+          alignItems: 'center',
+          gap: '16px',
+          marginBottom: '24px',
+        }}
+      >
+        <button
           onClick={() => navigate(-1)}
           style={{
             appearance: 'none',
@@ -538,15 +619,17 @@ export function UserPage() {
             transition: 'all 0.2s ease-in-out',
             boxShadow: '0 3px 6px rgba(0, 0, 0, 0.2)',
             textShadow: '0 1px 0 #f3e0c0',
-            fontFamily: 'inherit'
+            fontFamily: 'inherit',
           }}
           onMouseEnter={(e) => {
-            e.currentTarget.style.background = 'linear-gradient(180deg, #f0c33b, #c48a00)';
+            e.currentTarget.style.background =
+              'linear-gradient(180deg, #f0c33b, #c48a00)';
             e.currentTarget.style.transform = 'translateY(-1px)';
             e.currentTarget.style.boxShadow = '0 5px 10px rgba(0, 0, 0, 0.3)';
           }}
           onMouseLeave={(e) => {
-            e.currentTarget.style.background = 'linear-gradient(180deg, #d4a017, #a97400)';
+            e.currentTarget.style.background =
+              'linear-gradient(180deg, #d4a017, #a97400)';
             e.currentTarget.style.transform = 'translateY(0)';
             e.currentTarget.style.boxShadow = '0 3px 6px rgba(0, 0, 0, 0.2)';
           }}
@@ -558,47 +641,61 @@ export function UserPage() {
       <div className={styles.mainContainer}>
         {/* Левый блок (2/3 ширины) */}
         <div className={styles.leftBlock}>
-          
           {/* Блок 1.1 - Основная информация */}
           <h3 className={styles.blockTitle}>👤 Профиль</h3>
           <div className={styles.profileInfoBlock}>
-            <div className={styles.avatarSection} style={{ position: 'relative' }}>
-              <Link 
-                to="/avatar-shop" 
+            <div
+              className={styles.avatarSection}
+              style={{ position: 'relative' }}
+            >
+              <Link
+                to="/avatar-shop"
                 className={styles.avatarShopLink}
                 style={{
                   position: 'absolute',
                   top: '16px',
                   right: '8px',
-                  zIndex: 10
+                  zIndex: 10,
                 }}
               >
                 🛒
               </Link>
-              
+
               <img
-                src={userAvatar?.imageUrl || (user?.image_url && user.image_url !== null ? user.image_url : "/default-avatar.svg")}
+                src={
+                  userAvatar?.imageUrl ||
+                  (user?.image_url && user.image_url !== null
+                    ? user.image_url
+                    : '/ChatGPT Image Sep 17, 2025, 09_40_09 PM.png')
+                }
                 alt="Аватар"
                 className={styles.avatar}
               />
-              
+
               {/* Кнопки управления дружбой */}
               {friendshipStatus === 'none' && (
-                <button 
+                <button
                   className={styles.editButton}
                   onClick={handleSendFriendRequest}
                   style={{
                     background: 'linear-gradient(180deg, #d4a017, #a97400)',
                     borderColor: '#6b3e15',
-                    marginTop: '10px' /* Опущена вниз на 10px */
+                    marginTop: '10px' /* Опущена вниз на 10px */,
                   }}
                 >
                   Добавить в друзья
                 </button>
               )}
-              
+
               {friendshipStatus === 'pending' && incomingRequest && (
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', alignItems: 'center' }}>
+                <div
+                  style={{
+                    display: 'flex',
+                    flexDirection: 'column',
+                    gap: '8px',
+                    alignItems: 'center',
+                  }}
+                >
                   <div style={{ display: 'flex', gap: '8px' }}>
                     <button
                       className={`${styles.requestActionButton} ${styles.requestActionButtonAccept}`}
@@ -615,46 +712,59 @@ export function UserPage() {
                   </div>
                 </div>
               )}
-              
-              {friendshipStatus === 'pending' && !incomingRequest && outgoingRequest && (
-                <div 
-                  className={styles.editButton}
-                  style={{
-                    background: 'linear-gradient(180deg, #d4a017, #a97400)',
-                    borderColor: '#6b3e15',
-                    cursor: 'default',
-                    padding: '8px 57px', /* Увеличена высота для размещения текста в одну линию */
-                    minWidth: '300px', /* Увеличено еще на 50%: 200px * 1.5 = 300px */
-                    whiteSpace: 'nowrap', /* Текст в одну линию */
-                    marginTop: '8px' /* Опущена вниз на 8px */
-                  }}
-                >
-                  Заявка отправлена
-                </div>
-              )}
 
-              {friendshipStatus === 'pending' && !incomingRequest && !outgoingRequest && (
-                <div 
-                  className={styles.editButton}
+              {friendshipStatus === 'pending' &&
+                !incomingRequest &&
+                outgoingRequest && (
+                  <div
+                    className={styles.editButton}
+                    style={{
+                      background: 'linear-gradient(180deg, #d4a017, #a97400)',
+                      borderColor: '#6b3e15',
+                      cursor: 'default',
+                      padding:
+                        '8px 57px' /* Увеличена высота для размещения текста в одну линию */,
+                      minWidth:
+                        '300px' /* Увеличено еще на 50%: 200px * 1.5 = 300px */,
+                      whiteSpace: 'nowrap' /* Текст в одну линию */,
+                      marginTop: '8px' /* Опущена вниз на 8px */,
+                    }}
+                  >
+                    Заявка отправлена
+                  </div>
+                )}
+
+              {friendshipStatus === 'pending' &&
+                !incomingRequest &&
+                !outgoingRequest && (
+                  <div
+                    className={styles.editButton}
+                    style={{
+                      background: 'linear-gradient(180deg, #d4a017, #a97400)',
+                      borderColor: '#6b3e15',
+                      cursor: 'default',
+                      padding:
+                        '8px 57px' /* Увеличена высота для размещения текста в одну линию */,
+                      minWidth:
+                        '300px' /* Увеличено еще на 50%: 200px * 1.5 = 300px */,
+                      whiteSpace: 'nowrap' /* Текст в одну линию */,
+                      marginTop: '8px' /* Опущена вниз на 8px */,
+                    }}
+                  >
+                    Заявка отправлена
+                  </div>
+                )}
+
+              {friendshipStatus === 'accepted' && (
+                <div
                   style={{
-                    background: 'linear-gradient(180deg, #d4a017, #a97400)',
-                    borderColor: '#6b3e15',
-                    cursor: 'default',
-                    padding: '8px 57px', /* Увеличена высота для размещения текста в одну линию */
-                    minWidth: '300px', /* Увеличено еще на 50%: 200px * 1.5 = 300px */
-                    whiteSpace: 'nowrap', /* Текст в одну линию */
-                    marginTop: '8px' /* Опущена вниз на 8px */
+                    display: 'flex',
+                    flexDirection: 'row',
+                    gap: '12px',
+                    alignItems: 'center',
                   }}
                 >
-                  Заявка отправлена
-                </div>
-              )}
-              
-              {friendshipStatus === 'accepted' && (
-                <div style={{ display: 'flex', flexDirection: 'row', gap: '12px', alignItems: 'center' }}>
-                  <div className={styles.friendsButton}>
-                    ✓ В друзьях
-                  </div>
+                  <div className={styles.friendsButton}>✓ В друзьях</div>
                   <button
                     className={styles.removeFriendButton}
                     onClick={handleRemoveFriend}
@@ -666,8 +776,12 @@ export function UserPage() {
             </div>
             <div className={styles.basicInfo}>
               <h2 className={styles.username}>{user.username}</h2>
-              <p className={styles.registrationDate}>{formatRegistrationDate(user.createdAt)}</p>
-              <p className={styles.friendsCount}>{getFriendsCountText(friends.length)}</p>
+              <p className={styles.registrationDate}>
+                {formatRegistrationDate(user.createdAt)}
+              </p>
+              <p className={styles.friendsCount}>
+                {getFriendsCountText(friends.length)}
+              </p>
             </div>
           </div>
 
@@ -677,14 +791,14 @@ export function UserPage() {
               <h3 className={styles.blockTitle}>🏆 Достижения</h3>
               {achievements.length > 3 && (
                 <div className={styles.carouselControls}>
-                  <button 
+                  <button
                     className={styles.carouselButton}
                     onClick={prevAchievements}
                     aria-label="Предыдущие достижения"
                   >
                     ←
                   </button>
-                  <button 
+                  <button
                     className={styles.carouselButton}
                     onClick={nextAchievements}
                     aria-label="Следующие достижения"
@@ -694,17 +808,22 @@ export function UserPage() {
                 </div>
               )}
             </div>
-            
+
             <div className={styles.achievementsCarousel}>
               {achievementsLoading ? (
                 <div className={styles.loading}>Загрузка достижений...</div>
               ) : achievements.length === 0 ? (
-                <div className={styles.emptyMessage}>У пользователя пока нет достижений</div>
+                <div className={styles.emptyMessage}>
+                  У пользователя пока нет достижений
+                </div>
               ) : (
                 <div className={styles.achievementsList}>
                   {getVisibleAchievements().map((achievement) => (
-                    <div key={achievement.id} className={styles.achievementWrapper}>
-                      <AchievementCard 
+                    <div
+                      key={achievement.id}
+                      className={styles.achievementWrapper}
+                    >
+                      <AchievementCard
                         achievement={achievement}
                         className={styles.profileAchievementCard}
                         onClick={handleAchievementClick}
@@ -714,10 +833,21 @@ export function UserPage() {
                 </div>
               )}
             </div>
-            
+
             {achievements.length > 0 && (
               <div className={styles.achievementsIndicator}>
-                {achievements.length > 3 ? `${currentAchievementIndex + 1}-${Math.min(currentAchievementIndex + 3, achievements.length)} из ${achievements.length}` : `${achievements.length} достижени${achievements.length === 1 ? 'е' : achievements.length < 5 ? 'я' : 'й'}`}
+                {achievements.length > 3
+                  ? `${currentAchievementIndex + 1}-${Math.min(
+                      currentAchievementIndex + 3,
+                      achievements.length
+                    )} из ${achievements.length}`
+                  : `${achievements.length} достижени${
+                      achievements.length === 1
+                        ? 'е'
+                        : achievements.length < 5
+                        ? 'я'
+                        : 'й'
+                    }`}
               </div>
             )}
           </div>
@@ -728,14 +858,14 @@ export function UserPage() {
               <h3 className={styles.blockTitle}>⭐ Избранные вопросы</h3>
               {favoriteQuestions.length > 3 && (
                 <div className={styles.carouselControls}>
-                  <button 
+                  <button
                     className={styles.carouselButton}
                     onClick={prevFavorites}
                     aria-label="Предыдущие вопросы"
                   >
                     ↑
                   </button>
-                  <button 
+                  <button
                     className={styles.carouselButton}
                     onClick={nextFavorites}
                     aria-label="Следующие вопросы"
@@ -745,17 +875,21 @@ export function UserPage() {
                 </div>
               )}
             </div>
-            
+
             <div className={styles.favoritesCarousel}>
               {favoritesLoading ? (
-                <div className={styles.loading}>Загрузка избранных вопросов...</div>
+                <div className={styles.loading}>
+                  Загрузка избранных вопросов...
+                </div>
               ) : favoriteQuestions.length === 0 ? (
-                <div className={styles.emptyMessage}>У пользователя нет публичных избранных вопросов</div>
+                <div className={styles.emptyMessage}>
+                  У пользователя нет публичных избранных вопросов
+                </div>
               ) : (
                 <div className={styles.questionsList}>
                   {getVisibleFavorites().map((favorite) => (
-                    <div 
-                      key={favorite.id} 
+                    <div
+                      key={favorite.id}
                       className={styles.questionCard}
                       onClick={() => handleQuestionClick(favorite)}
                     >
@@ -767,18 +901,20 @@ export function UserPage() {
                           Фаза {favorite.question.topic.phaseId}
                         </span>
                       </div>
-                      
+
                       <div className={styles.questionContent}>
                         <p className={styles.questionText}>
                           {favorite.question.text}
                         </p>
-                        
+
                         <div className={styles.questionMeta}>
                           <span className={styles.questionType}>
                             {favorite.question.questionType}
                           </span>
                           <span className={styles.addedDate}>
-                            {new Date(favorite.createdAt).toLocaleDateString('ru-RU')}
+                            {new Date(favorite.createdAt).toLocaleDateString(
+                              'ru-RU'
+                            )}
                           </span>
                         </div>
                       </div>
@@ -787,10 +923,21 @@ export function UserPage() {
                 </div>
               )}
             </div>
-            
+
             {favoriteQuestions.length > 0 && (
               <div className={styles.favoritesIndicator}>
-                {favoriteQuestions.length > 3 ? `${currentFavoriteIndex + 1}-${Math.min(currentFavoriteIndex + 3, favoriteQuestions.length)} из ${favoriteQuestions.length}` : `${favoriteQuestions.length} вопрос${favoriteQuestions.length === 1 ? '' : favoriteQuestions.length < 5 ? 'а' : 'ов'}`}
+                {favoriteQuestions.length > 3
+                  ? `${currentFavoriteIndex + 1}-${Math.min(
+                      currentFavoriteIndex + 3,
+                      favoriteQuestions.length
+                    )} из ${favoriteQuestions.length}`
+                  : `${favoriteQuestions.length} вопрос${
+                      favoriteQuestions.length === 1
+                        ? ''
+                        : favoriteQuestions.length < 5
+                        ? 'а'
+                        : 'ов'
+                    }`}
               </div>
             )}
           </div>
@@ -798,7 +945,6 @@ export function UserPage() {
 
         {/* Правый блок (1/3 ширины) */}
         <div className={styles.rightBlock}>
-          
           {/* Секция статистики */}
           <div className={styles.statisticsBlock}>
             <h3 className={styles.blockTitle}>📊 Статистика</h3>
@@ -817,13 +963,13 @@ export function UserPage() {
           {/* Секция друзей */}
           <div className={styles.friendsSection}>
             <h3 className={styles.blockTitle}>👥 Друзья</h3>
-            
+
             {friendsLoading ? (
               <div className={styles.loading}>Загрузка...</div>
             ) : (
               <>
                 {/* Информация о количестве друзей с кнопками карусели */}
-                <div 
+                <div
                   style={{
                     display: 'flex',
                     alignItems: 'center',
@@ -837,11 +983,11 @@ export function UserPage() {
                     boxShadow: '0 3px 6px rgba(0, 0, 0, 0.15)',
                     fontWeight: '700',
                     fontSize: '1.1rem',
-                    textShadow: '0 1px 0 #f3e0c0'
+                    textShadow: '0 1px 0 #f3e0c0',
                   }}
                 >
                   {friends.length > 5 && (
-                    <button 
+                    <button
                       onClick={prevFriends}
                       style={{
                         width: '32px',
@@ -856,27 +1002,29 @@ export function UserPage() {
                         transition: 'all 0.2s ease',
                         display: 'flex',
                         alignItems: 'center',
-                        justifyContent: 'center'
+                        justifyContent: 'center',
                       }}
                       onMouseEnter={(e) => {
-                        e.currentTarget.style.background = 'rgba(44, 24, 16, 0.2)';
+                        e.currentTarget.style.background =
+                          'rgba(44, 24, 16, 0.2)';
                         e.currentTarget.style.transform = 'scale(1.1)';
                       }}
                       onMouseLeave={(e) => {
-                        e.currentTarget.style.background = 'rgba(44, 24, 16, 0.1)';
+                        e.currentTarget.style.background =
+                          'rgba(44, 24, 16, 0.1)';
                         e.currentTarget.style.transform = 'scale(1)';
                       }}
                     >
                       ←
                     </button>
                   )}
-                  
+
                   <div style={{ textAlign: 'center', flex: 1 }}>
                     👥 {getFriendsCountText(friends.length)}
                   </div>
-                  
+
                   {friends.length > 5 && (
-                    <button 
+                    <button
                       onClick={nextFriends}
                       style={{
                         width: '32px',
@@ -891,14 +1039,16 @@ export function UserPage() {
                         transition: 'all 0.2s ease',
                         display: 'flex',
                         alignItems: 'center',
-                        justifyContent: 'center'
+                        justifyContent: 'center',
                       }}
                       onMouseEnter={(e) => {
-                        e.currentTarget.style.background = 'rgba(44, 24, 16, 0.2)';
+                        e.currentTarget.style.background =
+                          'rgba(44, 24, 16, 0.2)';
                         e.currentTarget.style.transform = 'scale(1.1)';
                       }}
                       onMouseLeave={(e) => {
-                        e.currentTarget.style.background = 'rgba(44, 24, 16, 0.1)';
+                        e.currentTarget.style.background =
+                          'rgba(44, 24, 16, 0.1)';
                         e.currentTarget.style.transform = 'scale(1)';
                       }}
                     >
@@ -906,14 +1056,16 @@ export function UserPage() {
                     </button>
                   )}
                 </div>
-                
+
                 <div className={styles.friendsList}>
                   {friends.length === 0 ? (
-                    <div className={styles.emptyMessage}>У пользователя еще нет друзей</div>
+                    <div className={styles.emptyMessage}>
+                      У пользователя еще нет друзей
+                    </div>
                   ) : (
                     getVisibleFriends().map((friend) => (
-                      <div 
-                        key={friend.id} 
+                      <div
+                        key={friend.id}
                         className={styles.friendCard}
                         onClick={() => handleFriendClick(friend.id)}
                         style={{
@@ -922,26 +1074,30 @@ export function UserPage() {
                           justifyContent: 'space-between',
                           gap: '12px',
                           padding: '18px',
-                          background: 'linear-gradient(180deg, #f5deb3, #fff8dc)',
+                          background:
+                            'linear-gradient(180deg, #f5deb3, #fff8dc)',
                           borderRadius: '12px',
                           border: '2px solid #8b5a2b',
                           boxShadow: '0 4px 12px rgba(0, 0, 0, 0.15)',
                           transition: 'all 0.2s ease-in-out',
                           position: 'relative',
                           overflow: 'hidden',
-                          cursor: 'pointer'
+                          cursor: 'pointer',
                         }}
                         onMouseEnter={(e) => {
                           e.currentTarget.style.transform = 'translateY(-3px)';
-                          e.currentTarget.style.boxShadow = '0 6px 16px rgba(0, 0, 0, 0.2)';
+                          e.currentTarget.style.boxShadow =
+                            '0 6px 16px rgba(0, 0, 0, 0.2)';
                           e.currentTarget.style.borderColor = '#8b5a2b';
                           e.currentTarget.style.background = '#fff8dc';
                         }}
                         onMouseLeave={(e) => {
                           e.currentTarget.style.transform = 'translateY(0)';
-                          e.currentTarget.style.boxShadow = '0 4px 12px rgba(0, 0, 0, 0.15)';
+                          e.currentTarget.style.boxShadow =
+                            '0 4px 12px rgba(0, 0, 0, 0.15)';
                           e.currentTarget.style.borderColor = '#6b3e15';
-                          e.currentTarget.style.background = 'linear-gradient(180deg, #f5deb3, #fff8dc)';
+                          e.currentTarget.style.background =
+                            'linear-gradient(180deg, #f5deb3, #fff8dc)';
                         }}
                       >
                         {/* Декоративная полоска сверху */}
@@ -952,20 +1108,39 @@ export function UserPage() {
                             left: 0,
                             right: 0,
                             height: '4px',
-                            background: 'linear-gradient(90deg, #d4a017, #a97400)'
+                            background:
+                              'linear-gradient(90deg, #d4a017, #a97400)',
                           }}
                         />
-                        <div style={{ display: 'flex', alignItems: 'flex-start', gap: '12px', flex: 1 }}>
+                        <div
+                          style={{
+                            display: 'flex',
+                            alignItems: 'flex-start',
+                            gap: '12px',
+                            flex: 1,
+                          }}
+                        >
                           <UserAvatar
                             userId={friend.id}
-                            fallbackImageUrl={friend.image_url || "/default-avatar.svg"}
+                            fallbackImageUrl={
+                              friend.image_url ||
+                              '/ChatGPT Image Sep 17, 2025, 09_40_09 PM.png'
+                            }
                             size="medium"
                             shape="square"
                             alt={`Аватар ${friend.username}`}
                             className={styles.friendAvatar}
                           />
-                          <div style={{ display: 'flex', flexDirection: 'column', flex: 1 }}>
-                            <h4 className={styles.friendName}>{friend.username}</h4>
+                          <div
+                            style={{
+                              display: 'flex',
+                              flexDirection: 'column',
+                              flex: 1,
+                            }}
+                          >
+                            <h4 className={styles.friendName}>
+                              {friend.username}
+                            </h4>
                             <p className={styles.friendScore}>
                               🏆 {friend.score ?? 0} очков
                             </p>
@@ -975,22 +1150,24 @@ export function UserPage() {
                     ))
                   )}
                 </div>
-                
+
                 {/* Индикатор карусели друзей */}
                 {friends.length > 0 && (
-                  <div 
+                  <div
                     style={{
                       textAlign: 'center',
                       marginTop: '16px',
                       fontSize: '0.9rem',
                       color: '#8b7355',
-                      fontWeight: '500'
+                      fontWeight: '500',
                     }}
                   >
-                    {friends.length > 5 ? 
-                      `${currentFriendsIndex + 1}-${Math.min(currentFriendsIndex + 5, friends.length)} из ${friends.length}` : 
-                      getFriendsCountText(friends.length)
-                    }
+                    {friends.length > 5
+                      ? `${currentFriendsIndex + 1}-${Math.min(
+                          currentFriendsIndex + 5,
+                          friends.length
+                        )} из ${friends.length}`
+                      : getFriendsCountText(friends.length)}
                   </div>
                 )}
               </>
@@ -1037,7 +1214,6 @@ export function UserPage() {
           type={confirmModalData.type}
         />
       )}
-
     </section>
   );
 }
