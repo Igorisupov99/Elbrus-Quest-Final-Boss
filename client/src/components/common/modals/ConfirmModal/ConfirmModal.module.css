@@ -47,7 +47,7 @@
   background: #2a1b10;
   color: #f7f4ef;
   cursor: pointer;
-  font-size: 18px;
+  font-size: 21.6px;
   font-weight: bold;
   line-height: 1;
   display: grid;
@@ -89,7 +89,7 @@
 }
 
 .icon {
-  font-size: 24px;
+  font-size: 28.8px;
   filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.3));
 }
 
@@ -221,7 +221,7 @@
   }
   
   .icon {
-    font-size: 20px;
+    font-size: 24px;
   }
   
   .modalActions {

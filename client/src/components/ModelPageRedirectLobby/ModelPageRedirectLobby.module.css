@@ -5,7 +5,7 @@
 }
 .title {
   margin: 2px 0 14px;
-  font-size: 18px;
+  font-size: 21.6px;
   font-weight: 800;
 }
 .buttons {
@@ -17,7 +17,7 @@
   appearance: none;
   border-radius: 10px;
   padding: 9px 14px;
-  font-size: 14px;
+  font-size: 16.8px;
   font-weight: 700;
   cursor: pointer;
   transition: transform 80ms ease, box-shadow 120ms ease, border-color 120ms ease, filter 120ms ease;

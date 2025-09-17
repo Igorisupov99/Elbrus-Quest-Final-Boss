@@ -67,7 +67,7 @@
 }
 
 .icon {
-  font-size: 64px;
+  font-size: 76.8px;
   display: block;
   animation: shake 0.5s ease-in-out infinite;
   filter: drop-shadow(0 4px 8px rgba(244, 67, 54, 0.3));
@@ -87,7 +87,7 @@
 
 .title {
   margin: 0 0 20px 0;
-  font-size: 28px;
+  font-size: 33.6px;
   font-weight: 900;
   letter-spacing: 0.5px;
   color: var(--rpg-error);
@@ -105,7 +105,7 @@
 .message {
   margin: 0 0 16px 0;
   color: var(--rpg-text);
-  font-size: 18px;
+  font-size: 21.6px;
   font-weight: 600;
   line-height: 1.4;
 }
@@ -113,7 +113,7 @@
 .statsMessage {
   margin: 0 0 12px 0;
   color: var(--rpg-muted);
-  font-size: 16px;
+  font-size: 19.2px;
   font-weight: 500;
   line-height: 1.4;
 }
@@ -121,13 +121,13 @@
 .statsNumber {
   color: var(--rpg-error);
   font-weight: 700;
-  font-size: 18px;
+  font-size: 21.6px;
 }
 
 .percentageMessage {
   margin: 0 0 12px 0;
   color: var(--rpg-warning);
-  font-size: 18px;
+  font-size: 21.6px;
   font-weight: 700;
   line-height: 1.4;
 }
@@ -135,14 +135,14 @@
 .percentageNumber {
   color: var(--rpg-error);
   font-weight: 900;
-  font-size: 20px;
+  font-size: 24px;
   text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
 }
 
 .phaseMessage {
   margin: 0;
   color: var(--rpg-muted);
-  font-size: 16px;
+  font-size: 19.2px;
   font-weight: 500;
   line-height: 1.4;
 }
@@ -150,13 +150,13 @@
 .phaseNumber {
   color: var(--rpg-warning);
   font-weight: 700;
-  font-size: 18px;
+  font-size: 21.6px;
   text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
 }
 
 .countdown {
   color: var(--rpg-muted);
-  font-size: 14px;
+  font-size: 16.8px;
   font-style: italic;
   border-top: 1px solid var(--rpg-border);
   padding-top: 16px;
@@ -166,5 +166,5 @@
 .timer {
   color: var(--rpg-error);
   font-weight: 700;
-  font-size: 16px;
+  font-size: 19.2px;
 }

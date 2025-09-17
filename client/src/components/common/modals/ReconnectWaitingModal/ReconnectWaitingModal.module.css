@@ -41,7 +41,7 @@
 }
 
 .icon {
-  font-size: 48px;
+  font-size: 57.6px;
   animation: pulse 2s infinite;
 }
 
@@ -56,14 +56,14 @@
 
 .title {
   margin: 0;
-  font-size: 24px;
+  font-size: 28.8px;
   font-weight: bold;
   color: #ff6b35;
 }
 
 .message {
   margin: 0;
-  font-size: 16px;
+  font-size: 19.2px;
   line-height: 1.5;
   color: #495057;
 }
@@ -109,7 +109,7 @@
 }
 
 .timerText {
-  font-size: 32px;
+  font-size: 38.4px;
   font-weight: bold;
   color: #ff6b35;
   z-index: 2;
@@ -127,7 +127,7 @@
 
 .timerLabel {
   margin: 0;
-  font-size: 14px;
+  font-size: 16.8px;
   color: #6c757d;
   font-weight: 500;
 }
