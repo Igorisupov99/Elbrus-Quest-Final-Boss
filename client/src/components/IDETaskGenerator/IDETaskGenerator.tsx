@@ -51,6 +51,7 @@ const IDETaskGenerator: React.FC<IDETaskGeneratorProps> = ({
   // Генерация новой задачи
   const handleGenerateTask = useCallback(async () => {
     try {
+      console.log('🎯 Начинаем генерацию IDE задачи:', { language, difficulty: selectedDifficulty, topic: selectedTopic });
       setIsGenerating(true);
       setError(null);
       setHintIndex(0);
@@ -61,10 +62,11 @@ const IDETaskGenerator: React.FC<IDETaskGeneratorProps> = ({
         topic: selectedTopic
       });
 
+      console.log('✅ IDE задача сгенерирована:', response.task);
       setCurrentTask(response.task);
       onTaskGenerated(response.task);
     } catch (err: any) {
-      console.error('Ошибка генерации задачи:', err);
+      console.error('❌ Ошибка генерации задачи:', err);
       setError(err.message || 'Не удалось сгенерировать задачу');
     } finally {
       setIsGenerating(false);
