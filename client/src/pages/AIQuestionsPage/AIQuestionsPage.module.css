@@ -24,7 +24,7 @@
   margin: 0;
   padding: 1rem;
   min-height: 100vh;
-  font-family: 'Cinzel', serif;
+  font-family: 'Cormorant Garamond', serif;
   position: relative;
   overflow-y: auto;
   overflow-x: auto;
@@ -866,7 +866,7 @@
   cursor: pointer;
   font-weight: 600;
   transition: all 0.3s ease;
-  font-family: 'Cinzel', serif;
+  font-family: 'Cormorant Garamond', serif;
 }
 
 .tab:hover {
@@ -897,7 +897,7 @@
   cursor: pointer;
   font-weight: 500;
   transition: all 0.3s ease;
-  font-family: 'Cinzel', serif;
+  font-family: 'Cormorant Garamond', serif;
   font-size: 0.9rem;
 }
 

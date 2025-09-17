@@ -51,6 +51,7 @@ interface LobbyState {
     isOpen: boolean;
     phaseNumber: number;
     rewardPoints: number;
+    isGameComplete: boolean;
   };
   examFailureModal: {
     isOpen: boolean;
@@ -277,6 +278,7 @@ export const initialState: LobbyState = {
     isOpen: false,
     phaseNumber: 1,
     rewardPoints: 0,
+    isGameComplete: false,
   },
   examFailureModal: {
     isOpen: false,
@@ -379,12 +381,13 @@ const lobbyPageReducer = createSlice({
     },
     openPhaseTransitionModal(
       state,
-      action: PayloadAction<{ phaseNumber: number; rewardPoints: number }>
+      action: PayloadAction<{ phaseNumber: number; rewardPoints: number; isGameComplete?: boolean }>
     ) {
       state.phaseTransitionModal = {
         isOpen: true,
         phaseNumber: action.payload.phaseNumber,
         rewardPoints: action.payload.rewardPoints,
+        isGameComplete: action.payload.isGameComplete || false,
       };
     },
     closePhaseTransitionModal(state) {

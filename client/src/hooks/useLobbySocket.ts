@@ -158,12 +158,12 @@ export function useLobbySocket(lobbyId: number, onAnswerInputSync?: (answer: str
     };
 
     const onPassTurnNotification = () => {
-      dispatch(setModalResult('Ход будет передан следующему игроку'));
+      dispatch(setModalResult('🔄 Ход передан следующему игроку!'));
       setTimeout(() => {
         dispatch(setModalResult(null));
         dispatch(closeModal());
         dispatch(closeExamModal());
-      }, 2000);
+      }, 3000); // Увеличили время показа до 3 секунд
     };
     
     const onOpenModal = (payload: { questionId: number; topic: string; question: string }) => {
@@ -319,7 +319,8 @@ export function useLobbySocket(lobbyId: number, onAnswerInputSync?: (answer: str
       message: string; 
       rewardPoints: number; 
       sessionScore: number; 
-      userScores?: Array<{ userId: number; userScore: number }> 
+      userScores?: Array<{ userId: number; userScore: number }>; 
+      examId?: string;
     }) => {
       // Обновляем общий счет лобби
       dispatch(mergeScores({
@@ -345,11 +346,15 @@ export function useLobbySocket(lobbyId: number, onAnswerInputSync?: (answer: str
       }
 
       // Открываем модальное окно поздравления с переходом на новую фазу
-      // Определяем номер фазы на основе награды (30 очков = фаза 2, 60 очков = фаза 3)
-      const phaseNumber = payload.rewardPoints === 30 ? 2 : 3;
+      // Определяем номер фазы и проверяем, является ли это последним экзаменом
+      const examId = payload.examId || 'exam';
+      const phaseNumber = examId === 'exam' ? 1 : examId === 'exam2' ? 2 : examId === 'exam3' ? 3 : 4;
+      const isGameComplete = examId === 'exam4'; // Последний экзамен
+      
       dispatch(openPhaseTransitionModal({
         phaseNumber,
-        rewardPoints: payload.rewardPoints
+        rewardPoints: payload.rewardPoints,
+        isGameComplete
       }));
     };
 

@@ -29,7 +29,7 @@
   flex-direction: column;
   gap: 16px;
   border: 3px solid #8b5a2b;
-  font-family: 'Cinzel', serif;
+  font-family: 'Cormorant Garamond', serif;
   animation: slideIn 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
   position: relative;
 }
@@ -94,7 +94,7 @@
   color: #4b2e05;
   font-size: 16px;
   text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.1);
-  font-family: 'Cinzel', serif;
+  font-family: 'Cormorant Garamond', serif;
 }
 
 /* Секция темы */
@@ -126,7 +126,7 @@
   font-weight: 800;
   text-align: center;
   text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.2), 1px 1px 2px rgba(0, 0, 0, 0.3);
-  font-family: 'Cinzel', serif;
+  font-family: 'Cormorant Garamond', serif;
   letter-spacing: 0.5px;
   text-transform: uppercase;
 }
@@ -166,7 +166,7 @@
   letter-spacing: 1px;
   margin-bottom: 8px;
   text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.1);
-  font-family: 'Cinzel', serif;
+  font-family: 'Cormorant Garamond', serif;
 }
 
 .question {
@@ -190,7 +190,7 @@
   border: 2px solid #8b5a2b;
   border-radius: 12px;
   font-size: 16px;
-  font-family: 'Cinzel', serif;
+  font-family: 'Cormorant Garamond', serif;
   background: rgba(255, 248, 220, 0.9);
   color: #4b2e05;
   transition: all 0.3s ease;
@@ -226,11 +226,42 @@
   background: linear-gradient(145deg, rgba(255, 248, 220, 0.95) 0%, rgba(248, 235, 215, 0.9) 100%);
   border: 2px solid #8b5a2b;
   color: #4b2e05;
-  font-family: 'Cinzel', serif;
+  font-family: 'Cormorant Garamond', serif;
   box-shadow: 
     inset 0 1px 0 rgba(255, 248, 230, 0.8),
     inset 0 -1px 0 rgba(139, 90, 43, 0.2),
     0 4px 8px rgba(0, 0, 0, 0.15);
+}
+
+.turnNotification {
+  background: linear-gradient(135deg, #ff6b35 0%, #ff8c42 50%, #ffaa5e 100%) !important;
+  border: 3px solid #d63000 !important;
+  color: white !important;
+  font-size: 18px !important;
+  font-weight: 900 !important;
+  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.7) !important;
+  box-shadow: 
+    0 6px 20px rgba(255, 107, 53, 0.4),
+    0 0 0 1px rgba(255, 107, 53, 0.3),
+    inset 0 1px 0 rgba(255, 255, 255, 0.2) !important;
+  animation: turnPulse 0.8s ease-in-out infinite alternate !important;
+  transform: scale(1.05) !important;
+  z-index: 1000 !important;
+}
+
+@keyframes turnPulse {
+  0% {
+    box-shadow: 
+      0 6px 20px rgba(255, 107, 53, 0.4),
+      0 0 0 1px rgba(255, 107, 53, 0.3),
+      inset 0 1px 0 rgba(255, 255, 255, 0.2);
+  }
+  100% {
+    box-shadow: 
+      0 8px 25px rgba(255, 107, 53, 0.6),
+      0 0 0 3px rgba(255, 107, 53, 0.5),
+      inset 0 1px 0 rgba(255, 255, 255, 0.3);
+  }
 }
 
 .actions {
@@ -268,7 +299,7 @@
   transition: all 0.3s ease;
   box-shadow: 0 3px 6px rgba(0, 0, 0, 0.2);
   text-shadow: 0 1px 0 #f3e0c0;
-  font-family: 'Cinzel', serif;
+  font-family: 'Cormorant Garamond', serif;
   min-height: auto;
 }
 
@@ -310,7 +341,7 @@
   color: #4b2e05;
   font-size: 18px;
   font-weight: 600;
-  font-family: 'Cinzel', serif;
+  font-family: 'Cormorant Garamond', serif;
   text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.1);
 }
 
@@ -331,7 +362,7 @@
   color: #4b2e05;
   font-size: 16px;
   font-weight: 600;
-  font-family: 'Cinzel', serif;
+  font-family: 'Cormorant Garamond', serif;
   text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.1);
 }
 
@@ -350,7 +381,7 @@
   font-weight: 700;
   margin: 0;
   color: #4b2e05;
-  font-family: 'Cinzel', serif;
+  font-family: 'Cormorant Garamond', serif;
   text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.1);
 }
 
@@ -443,7 +474,7 @@
   font-weight: 700;
   color: #2e7d32;
   font-size: 16px;
-  font-family: 'Cinzel', serif;
+  font-family: 'Cormorant Garamond', serif;
   text-transform: uppercase;
   letter-spacing: 1px;
   text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.1);
@@ -461,5 +492,5 @@
   box-shadow: 
     inset 0 1px 0 rgba(255, 248, 230, 0.8),
     inset 0 -1px 0 rgba(76, 175, 80, 0.1);
-  font-family: 'Cinzel', serif;
+  font-family: 'Cormorant Garamond', serif;
 }
