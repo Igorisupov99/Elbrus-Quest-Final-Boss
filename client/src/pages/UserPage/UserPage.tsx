@@ -20,7 +20,7 @@ import { AchievementCard } from '../../components/Achievement/AchievementCard/Ac
 import { AchievementModal } from '../../components/Achievement/AchievementModal/AchievementModal';
 import { FavoriteQuestionModal } from '../../components/FavoriteQuestionModal/FavoriteQuestionModal';
 import { UserAvatar } from '../../components/common/UserAvatar';
-import { SuccessModal } from '../../components/common/modals/SuccessModal/SuccessModal';
+import SuccessModal from '../../components/common/modals/SuccessModal/SuccessModal';
 import { ConfirmModal } from '../../components/common/modals/ConfirmModal/ConfirmModal';
 import type { Achievement } from '../../types/achievement';
 import type { FavoriteQuestion } from '../../types/favorite';

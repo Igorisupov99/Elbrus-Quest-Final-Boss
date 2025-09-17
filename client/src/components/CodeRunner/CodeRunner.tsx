@@ -4,6 +4,7 @@ import TaskGeneratorSection from './TaskGeneratorSection';
 import EditorSection from './EditorSection';
 import type { IDETask, IDETaskValidation } from '../../types/ideTask';
 import styles from './CodeRunner.module.css';
+import * as monaco from 'monaco-editor';
 
 interface CodeRunnerProps {
   initialCode?: string;
@@ -12,7 +13,7 @@ interface CodeRunnerProps {
   onCodeChange?: (code: string) => void;
 }
 
-interface ExecutionResult {
+export interface ExecutionResult {
   type: 'log' | 'error' | 'warn' | 'result' | 'clear';
   message: string;
   timestamp: Date;

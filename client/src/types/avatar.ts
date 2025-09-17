@@ -45,6 +45,7 @@ export interface AvatarShopState {
 
 export interface AvatarShopFilters {
   rarity?: AvatarRarity;
+  category?: AvatarCategory;
   showOwned?: boolean;
   showLocked?: boolean;
   searchQuery?: string;

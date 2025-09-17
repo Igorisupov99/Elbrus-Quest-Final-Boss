@@ -10,7 +10,7 @@ interface EditorSectionProps {
   output: ExecutionResult[];
   isRunning: boolean;
   showTaskGenerator: boolean;
-  onCodeChange: (code: string) => void;
+  onCodeChange: (value: string | undefined) => void;
   onEditorDidMount: (editor: any) => void;
   onRunCode: () => void;
   onClearOutput: () => void;

@@ -12,7 +12,6 @@ interface PhaseTransitionModalProps {
 export default function PhaseTransitionModal({
   isOpen,
   onClose,
-  phaseNumber,
   rewardPoints,
   isGameComplete = false,
 }: PhaseTransitionModalProps) {

@@ -24,9 +24,11 @@ export interface IDETestCase {
 
 export interface IDETaskValidation {
   isCorrect: boolean;
+  isValid: boolean;
   passedTests: number;
   totalTests: number;
   testResults: IDETestResult[];
+  message: string;
   errorMessage?: string;
 }
 
