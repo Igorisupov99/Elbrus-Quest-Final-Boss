@@ -1309,10 +1309,15 @@ export default Counter;`,
       'api', 'rest', 'graphql', 'websocket', 'jwt', 'oauth', 'cors',
       
       // Концепции программирования
-      'алгоритм', 'структура данных', 'массив', 'объект', 'функция', 'класс', 'метод', 'переменная',
+      'алгоритм', 'структура данных', 'типы данных', 'тип данных', 'массив', 'объект', 'функция', 'класс', 'метод', 'переменная',
       'цикл', 'условие', 'рекурсия', 'паттерн', 'архитектура', 'рефакторинг', 'тестирование',
       'debug', 'отладка', 'ошибка', 'исключение', 'асинхронность', 'промис', 'async', 'await',
       'компонент', 'хук', 'состояние', 'пропс', 'роутинг', 'маршрутизация',
+      'примитивы', 'ссылочные типы', 'значения', 'ссылки', 'типизация', 'статическая типизация', 'динамическая типизация',
+      'синтаксис', 'семантика', 'операторы', 'выражения', 'инструкции', 'блоки кода', 'область видимости',
+      'замыкания', 'контекст', 'this', 'bind', 'call', 'apply', 'прототип', 'наследование',
+      'полиморфизм', 'инкапсуляция', 'абстракция', 'интерфейс', 'абстрактный класс',
+      'итераторы', 'генераторы', 'декораторы', 'миксины', 'композиция', 'агрегация',
       
       // IT термины
       'программирование', 'разработка', 'код', 'кодинг', 'программист', 'разработчик',
@@ -1320,6 +1325,21 @@ export default Counter;`,
       'база данных', 'сервер', 'клиент', 'браузер', 'домен', 'хостинг',
       'версионирование', 'коммит', 'ветка', 'мерж', 'пулл реквест', 'pull request',
       'контейнер', 'микросервис', 'монолит', 'scalability', 'масштабируемость',
+      
+      // Веб-разработка
+      'веб-разработка', 'веб-приложение', 'веб-сайт', 'сайт', 'веб-страница', 'страница',
+      'интерфейс', 'пользовательский интерфейс', 'ui', 'ux', 'дизайн', 'верстка',
+      'адаптивность', 'responsive', 'мобильная версия', 'десктопная версия',
+      'селектор', 'стили', 'стилизация', 'анимация', 'переходы', 'эффекты',
+      'события', 'обработчики событий', 'event listener', 'event handler',
+      'формы', 'валидация', 'валидация форм', 'отправка данных', 'получение данных',
+      'загрузка', 'fetch', 'ajax', 'xmlhttprequest', 'axios', 'http', 'https',
+      'запрос', 'ответ', 'статус код', 'код ответа', 'заголовки', 'headers',
+      'cookies', 'сессии', 'localStorage', 'sessionStorage', 'кеширование',
+      'производительность', 'оптимизация', 'скорость загрузки', 'время отклика',
+      'безопасность', 'защита', 'уязвимости', 'xss', 'csrf', 'sql injection',
+      'тестирование', 'юнит-тесты', 'интеграционные тесты', 'e2e тесты',
+      'отладка', 'логирование', 'консоль', 'devtools', 'инспектор',
       
       // Английские термины
       'programming', 'coding', 'development', 'software', 'application', 'app',
@@ -1329,7 +1349,31 @@ export default Counter;`,
       'inheritance', 'polymorphism', 'encapsulation', 'abstraction',
       'database', 'query', 'table', 'index', 'migration', 'schema',
       'authentication', 'authorization', 'security', 'encryption', 'hashing',
-      'performance', 'optimization', 'caching', 'memory', 'cpu', 'bandwidth'
+      'performance', 'optimization', 'caching', 'memory', 'cpu', 'bandwidth',
+      'data types', 'data type', 'primitives', 'reference types', 'values', 'references',
+      'typing', 'static typing', 'dynamic typing', 'type checking', 'type safety',
+      
+      // Web development terms
+      'web development', 'web application', 'website', 'web page', 'page',
+      'user interface', 'ui', 'ux', 'design', 'layout', 'styling',
+      'responsive', 'mobile', 'desktop', 'tablet', 'viewport',
+      'selector', 'css selector', 'animation', 'transition', 'effect',
+      'event', 'event listener', 'event handler', 'event delegation',
+      'form', 'validation', 'form validation', 'data submission', 'data fetching',
+      'loading', 'fetch', 'ajax', 'xmlhttprequest', 'axios', 'http', 'https',
+      'request', 'response', 'status code', 'headers', 'cookies', 'sessions',
+      'localStorage', 'sessionStorage', 'caching', 'cache', 'performance',
+      'optimization', 'loading speed', 'response time', 'security', 'protection',
+      'vulnerabilities', 'xss', 'csrf', 'sql injection', 'testing',
+      'unit test', 'integration test', 'e2e test', 'debugging', 'logging',
+      'console', 'devtools', 'inspector', 'browser', 'dom', 'bom',
+      'seo', 'accessibility', 'a11y', 'semantic', 'html5', 'css3',
+      'es6', 'es2015', 'es2017', 'es2018', 'es2019', 'es2020', 'es2021', 'es2022',
+      'arrow function', 'destructuring', 'spread operator', 'rest operator',
+      'template literal', 'class', 'extends', 'super', 'constructor',
+      'module', 'import', 'export', 'default', 'named export', 'import/export',
+      'promise', 'async/await', 'generator', 'iterator', 'symbol', 'map', 'set',
+      'weakmap', 'weakset', 'proxy', 'reflect', 'decorator', 'mixin'
     ];
 
     const messageLower = message.toLowerCase();
@@ -1341,32 +1385,103 @@ export default Counter;`,
 
     // Дополнительные паттерны для вопросов по программированию
     const programmingPatterns = [
-      /как\s+(создать|написать|реализовать|использовать|настроить|подключить|установить)/i,
-      /что\s+(такое|означает|делает|возвращает)\s+(в\s+)?(javascript|js|typescript|ts|react|node|html|css|git|api|код|программировании|разработке)/i,
-      /почему\s+(не\s+работает|ошибка|падает)/i,
-      /какой\s+(лучший|правильный|оптимальный)/i,
+      // Вопросы "как"
+      /как\s+(создать|написать|реализовать|использовать|настроить|подключить|установить|настроить|конфигурировать)/i,
+      /как\s+(работает|функционирует|действует|выполняется|обрабатывается)/i,
+      /как\s+(исправить|решить|устранить|исправить|оптимизировать|улучшить)/i,
+      /как\s+(сделать|выполнить|осуществить|реализовать|внедрить)/i,
+      
+      // Вопросы "что"
+      /что\s+(такое|означает|делает|возвращает|представляет|является)/i,
+      /что\s+(такое|означает|делает|возвращает)\s+(в\s+)?(javascript|js|typescript|ts|react|node|html|css|git|api|код|программировании|разработке|веб-разработке)/i,
+      /что\s+(происходит|случается|выполняется|обрабатывается)\s+(когда|если|при)/i,
+      
+      // Вопросы "какие"
+      /какие\s+(бывают|существуют|есть|используются|применяются)\s+(типы|виды|способы|методы|подходы|паттерны|алгоритмы|структуры|функции|классы|компоненты|инструменты|технологии)/i,
+      /какие\s+(типы\s+данных|структуры\s+данных|алгоритмы|паттерны|архитектуры|фреймворки|библиотеки|инструменты|технологии|языки\s+программирования)/i,
+      /какие\s+(преимущества|недостатки|особенности|характеристики|свойства)/i,
+      
+      // Вопросы "почему"
+      /почему\s+(не\s+работает|ошибка|падает|не\s+компилируется|не\s+выполняется)/i,
+      /почему\s+(лучше|хуже|рекомендуется|не\s+рекомендуется)/i,
+      /почему\s+(используется|применяется|выбирается|предпочитается)/i,
+      
+      // Вопросы "какой"
+      /какой\s+(лучший|правильный|оптимальный|подходящий|рекомендуемый)/i,
+      /какой\s+(синтаксис|способ|метод|подход|алгоритм|паттерн)/i,
+      
+      // Сравнения и различия
       /разница\s+между/i,
       /отличия\s+от/i,
+      /отличие\s+от/i,
+      /сравнение\s+(между|с)/i,
       /преимущества\s+и\s+недостатки/i,
-      /как\s+работает/i,
+      /плюсы\s+и\s+минусы/i,
+      
+      // Списки и перечисления
+      /список\s+(типов|видов|методов|функций|классов|компонентов|инструментов|технологий)/i,
+      /перечисли\s+(типы|виды|методы|функции|классы|компоненты|инструменты|технологии)/i,
+      /назови\s+(типы|виды|методы|функции|классы|компоненты|инструменты|технологии)/i,
+      /перечислите\s+(типы|виды|методы|функции|классы|компоненты|инструменты|технологии)/i,
+      
+      // Принципы и концепции
       /принцип\s+работы/i,
-      /пример\s+кода/i,
+      /принципы\s+(программирования|разработки|дизайна)/i,
+      /концепция\s+(программирования|разработки|дизайна)/i,
+      /основы\s+(программирования|разработки|веб-разработки)/i,
+      
+      // Синтаксис и код
       /синтаксис/i,
+      /пример\s+кода/i,
+      /пример\s+использования/i,
+      /код\s+примера/i,
+      /как\s+написать\s+код/i,
+      
+      // Ошибки и отладка
       /ошибка\s+в\s+коде/i,
       /не\s+компилируется/i,
       /не\s+работает/i,
+      /не\s+выполняется/i,
+      /не\s+загружается/i,
       /как\s+исправить/i,
+      /как\s+отладить/i,
+      /как\s+найти\s+ошибку/i,
+      
+      // Оптимизация и производительность
       /как\s+оптимизировать/i,
+      /как\s+улучшить\s+производительность/i,
+      /как\s+ускорить/i,
+      /оптимизация\s+кода/i,
+      /производительность\s+кода/i,
+      
+      // Практики и стандарты
       /лучшие\s+практики/i,
       /best\s+practices/i,
       /code\s+review/i,
+      /стандарты\s+кодирования/i,
+      /стиль\s+кода/i,
+      
+      // Тестирование
       /unit\s+test/i,
       /integration\s+test/i,
+      /тестирование\s+кода/i,
+      /как\s+тестировать/i,
+      /написание\s+тестов/i,
+      
+      // Английские паттерны
       /difference\s+between/i,
       /what\s+is\s+the\s+difference/i,
-      /how\s+to\s+(create|write|implement|use|setup|install|configure)/i,
+      /what\s+(types|kinds|ways|methods|approaches|patterns|algorithms|structures|functions|classes|components)\s+(are\s+there|exist|are\s+used)/i,
+      /list\s+(of\s+)?(types|kinds|methods|functions|classes|components)/i,
+      /name\s+(types|kinds|methods|functions|classes|components)/i,
+      /how\s+to\s+(create|write|implement|use|setup|install|configure|fix|debug|optimize)/i,
       /what\s+does\s+(it|this|that)\s+(do|mean|return)/i,
-      /why\s+(doesn't|does\s+not)\s+(work|compile)/i
+      /why\s+(doesn't|does\s+not)\s+(work|compile|run|execute)/i,
+      /how\s+does\s+(it|this|that)\s+(work|function|operate)/i,
+      /what\s+is\s+(the\s+)?(best|right|correct|optimal|recommended)/i,
+      /explain\s+(how|what|why|when|where)/i,
+      /describe\s+(how|what|why|when|where)/i,
+      /tell\s+me\s+(about|how|what|why)/i
     ];
 
     // Паттерны для исключения непрограммистских вопросов
