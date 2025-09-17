@@ -186,7 +186,7 @@ result;`);
     <div className={styles.container}>
       <div className={styles.header}>
         <h1 className={styles.title}>
-          🤖 Вопросы от АИ
+          🤖 Вопросы от AI
         </h1>
         <p className={styles.subtitle}>
           Получайте теоретические вопросы по программированию и решайте практические задачи в IDE
@@ -389,7 +389,7 @@ result;`);
                   </button>
                   
                   <button
-                    className={styles.clearButton}
+                    className={styles.clearTextButton}
                     onClick={handleClearQuestion}
                   >
                     🗑️ Очистить
@@ -440,14 +440,12 @@ result;`);
             </p>
           </div>
           
-          <div className={styles.codeRunnerContainer}>
-            <CodeRunner
-              initialCode={codeRunnerCode}
-              language={selectedLanguage as 'javascript' | 'typescript'}
-              height="100%"
-              onCodeChange={setCodeRunnerCode}
-            />
-          </div>
+          <CodeRunner
+            initialCode={codeRunnerCode}
+            language={selectedLanguage as 'javascript' | 'typescript'}
+            height="100%"
+            onCodeChange={setCodeRunnerCode}
+          />
         </div>
       )}
 

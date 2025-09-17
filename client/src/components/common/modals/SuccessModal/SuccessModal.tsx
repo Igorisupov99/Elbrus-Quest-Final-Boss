@@ -9,7 +9,7 @@ interface SuccessModalProps {
   type?: 'success' | 'info' | 'warning';
 }
 
-export const SuccessModal: React.FC<SuccessModalProps> = ({
+const SuccessModal: React.FC<SuccessModalProps> = ({
   isOpen,
   onClose,
   title,
@@ -61,3 +61,5 @@ export const SuccessModal: React.FC<SuccessModalProps> = ({
     </div>
   );
 };
+
+export default SuccessModal;

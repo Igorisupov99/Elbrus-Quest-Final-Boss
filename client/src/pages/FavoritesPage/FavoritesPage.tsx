@@ -169,9 +169,6 @@ const FavoritesPage: React.FC = () => {
                   </h3>
 
                   <div className={styles.questionMeta}>
-                    <span className={styles.questionType}>
-                      Тип: {favorite.question.questionType}
-                    </span>
                     <span className={styles.addedDate}>
                       Добавлено:{' '}
                       {new Date(favorite.createdAt).toLocaleDateString('ru-RU')}
@@ -183,7 +180,7 @@ const FavoritesPage: React.FC = () => {
                       className={styles.aiChatButton}
                       onClick={() => handleOpenAIChat(favorite)}
                     >
-                      🤖 Обсудить с АИ
+                      🤖 Обсудить с AI
                     </button>
                     {favorite.question.mentorTip && (
                       <button

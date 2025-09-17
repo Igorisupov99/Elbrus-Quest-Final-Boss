@@ -43,16 +43,20 @@ export default function UserProfileModal({
         setError(null);
 
         // Получаем данные профиля пользователя через API
-        const response = await api.get<ApiResponse<User>>(`/api/auth/user/${username}`, {
-          withCredentials: true,
-        });
+        const response = await api.get<ApiResponse<User>>(
+          `/api/auth/user/${username}`,
+          {
+            withCredentials: true,
+          }
+        );
 
         if (!response.data.success) {
-          throw new Error(response.data.message || 'Ошибка при загрузке профиля');
+          throw new Error(
+            response.data.message || 'Ошибка при загрузке профиля'
+          );
         }
 
         setUser(response.data.data);
-
       } catch (err) {
         setError('Ошибка при загрузке профиля пользователя');
         console.error('Error loading user profile:', err);
@@ -81,30 +85,37 @@ export default function UserProfileModal({
 
         <h2 className={styles.modalHeader}>Профиль пользователя</h2>
 
-        {loading && (
-          <div className={styles.loading}>Загрузка профиля...</div>
-        )}
+        {loading && <div className={styles.loading}>Загрузка профиля...</div>}
 
-        {error && (
-          <div className={styles.error}>{error}</div>
-        )}
+        {error && <div className={styles.error}>{error}</div>}
 
         {user && !loading && !error && (
           <div className={styles.profileContainer}>
             <img
-              src={user.image_url || "/default-avatar.png"}
+              src={
+                user.image_url || '/ChatGPT Image Sep 17, 2025, 09_40_09 PM.png'
+              }
               alt="Аватар"
               className={styles.avatar}
               onError={(e) => {
-                (e.target as HTMLImageElement).src = "/default-avatar.png";
+                (e.target as HTMLImageElement).src =
+                  '/ChatGPT Image Sep 17, 2025, 09_40_09 PM.png';
               }}
             />
 
             <div className={styles.userInfo}>
               <h3>{user.username}</h3>
-              {user.email && <p><strong>Email:</strong> {user.email}</p>}
-              <p><strong>Роль:</strong> {user.role || "Пользователь"}</p>
-              <p><strong>Очки:</strong> {user.score ?? 0}</p>
+              {user.email && (
+                <p>
+                  <strong>Email:</strong> {user.email}
+                </p>
+              )}
+              <p>
+                <strong>Роль:</strong> {user.role || 'Пользователь'}
+              </p>
+              <p>
+                <strong>Очки:</strong> {user.score ?? 0}
+              </p>
             </div>
           </div>
         )}

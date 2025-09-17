@@ -6,24 +6,27 @@ interface PhaseTransitionModalProps {
   onClose: () => void;
   phaseNumber: number;
   rewardPoints: number;
+  isGameComplete?: boolean;
 }
 
 export default function PhaseTransitionModal({
   isOpen,
   onClose,
-  phaseNumber,
+  phaseNumber: _phaseNumber,
   rewardPoints,
+  isGameComplete = false,
 }: PhaseTransitionModalProps) {
-  // Автоматически закрываем модалку через 3 секунды
+  // Автоматически закрываем модалку через 3 или 7 секунд
   useEffect(() => {
     if (isOpen) {
+      const delay = isGameComplete ? 7000 : 3000;
       const timer = setTimeout(() => {
         onClose();
-      }, 3000);
+      }, delay);
 
       return () => clearTimeout(timer);
     }
-  }, [isOpen, onClose]);
+  }, [isOpen, onClose, isGameComplete]);
 
   if (!isOpen) return null;
 
@@ -31,25 +34,27 @@ export default function PhaseTransitionModal({
     <div className={styles.modalOverlay}>
       <div className={styles.modalContent}>
         <div className={styles.iconContainer}>
-          <span className={styles.icon}>🎉</span>
+          <span className={styles.icon}>{isGameComplete ? '🏆' : '🎉'}</span>
         </div>
 
         <h2 className={styles.title}>Поздравляем!</h2>
         
         <div className={styles.messageContainer}>
           <p className={styles.message}>
-            Экзамен успешно сдан!
+            {isGameComplete ? 'Вы прошли игру!' : 'Экзамен успешно сдан!'}
           </p>
-          <p className={styles.phaseMessage}>
-            Вы переходите на фазу {phaseNumber}
-          </p>
+          {!isGameComplete && (
+            <p className={styles.phaseMessage}>
+              Вы переходите на следующую фазу
+            </p>
+          )}
           <p className={styles.rewardMessage}>
             Каждый игрок получил <span className={styles.rewardPoints}>+{rewardPoints} очков</span>
           </p>
         </div>
 
         <div className={styles.countdown}>
-          Модалка закроется через <span className={styles.timer}>3</span> секунды
+          Модалка закроется через <span className={styles.timer}>{isGameComplete ? '7' : '3'}</span> секунды
         </div>
       </div>
     </div>

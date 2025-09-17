@@ -8,7 +8,7 @@ import MainPageChat from '../../components/MainPageChat/MainPageChat';
 import ModelPageCreateRoom from '../../components/ModelPageCreateRoom/ModelPageCreateRoom';
 import ModelPageRedirectLobby from '../../components/ModelPageRedirectLobby/ModelPageRedirectLobby';
 import ModelPageEnterPassword from '../../components/ModelPageEnterPassword/ModelPageEnterPassword';
-import { SuccessModal } from '../../components/common/modals/SuccessModal/SuccessModal';
+import SuccessModal from '../../components/common/modals/SuccessModal/SuccessModal';
 import EditRoomModal from '../../components/common/modals/EditRoomModal/EditRoomModal';
 import DeleteRoomModal from '../../components/common/modals/DeleteRoomModal/DeleteRoomModal';
 import { AchievementNotification } from '../../components/Achievement/AchievementNotification/AchievementNotification';

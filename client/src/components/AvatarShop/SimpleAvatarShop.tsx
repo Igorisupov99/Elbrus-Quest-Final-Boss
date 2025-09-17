@@ -1,10 +1,10 @@
 import React, { useEffect, useState, useCallback, useMemo } from 'react';
 import { useAppDispatch, useAppSelector } from '../../store/hooks';
-import { 
-  fetchAvatars, 
-  fetchUserAvatars, 
+import {
+  fetchAvatars,
+  fetchUserAvatars,
   fetchCurrentAvatar,
-  clearError 
+  clearError,
 } from '../../store/avatarSlice';
 import { SimpleAvatarCard } from './AvatarCard/SimpleAvatarCard';
 import { AvatarFilters } from './AvatarFilters/AvatarFilters';
@@ -16,24 +16,24 @@ import styles from './AvatarShop.module.css';
  */
 const SimpleAvatarShopComponent: React.FC = () => {
   console.log('🚀 SimpleAvatarShop render');
-  
+
   const dispatch = useAppDispatch();
   const loading = useAppSelector((state) => state.avatar.loading);
   const error = useAppSelector((state) => state.avatar.error);
-  
+
   // Получаем данные напрямую из Redux без селектора
   const avatars = useAppSelector((state) => state.avatar.avatars);
   const userAvatars = useAppSelector((state) => state.avatar.userAvatars);
   const currentAvatar = useAppSelector((state) => state.avatar.currentAvatar);
   const userScore = useAppSelector((state) => state.auth.user?.score || 0);
-  
+
   // Вычисляем данные карточек локально с мемоизацией
   const avatarCardsData = useMemo(() => {
-    return avatars.map(avatar => {
-      const isOwned = userAvatars.some(ua => ua.avatarId === avatar.id);
+    return avatars.map((avatar) => {
+      const isOwned = userAvatars.some((ua) => ua.avatarId === avatar.id);
       const isEquipped = currentAvatar?.id === avatar.id;
       const canAfford = userScore >= avatar.price;
-      
+
       return {
         avatar,
         isOwned,
@@ -52,7 +52,7 @@ const SimpleAvatarShopComponent: React.FC = () => {
         await Promise.all([
           dispatch(fetchAvatars({})),
           dispatch(fetchUserAvatars()),
-          dispatch(fetchCurrentAvatar())
+          dispatch(fetchCurrentAvatar()),
         ]);
       } catch (error) {
         console.error('Ошибка загрузки данных:', error);
@@ -71,36 +71,36 @@ const SimpleAvatarShopComponent: React.FC = () => {
   // Применяем локальные фильтры с мемоизацией
   const filteredAvatarCardsData = useMemo(() => {
     return avatarCardsData.filter(({ avatar, isOwned }) => {
-      // Фильтр по категории
-      if (filters.category && avatar.category !== filters.category) {
-        return false;
-      }
-      
       // Фильтр по редкости
       if (filters.rarity && avatar.rarity !== filters.rarity) {
         return false;
       }
-      
+
       // Фильтр по поиску
       if (filters.searchQuery) {
         const searchLower = filters.searchQuery.toLowerCase();
-        if (!avatar.name.toLowerCase().includes(searchLower) && 
-            !avatar.description?.toLowerCase().includes(searchLower)) {
+        if (
+          !avatar.name.toLowerCase().includes(searchLower) &&
+          !avatar.description?.toLowerCase().includes(searchLower)
+        ) {
           return false;
         }
       }
-      
+
       // Фильтр по владению
       if (filters.showOwned && !isOwned) return false;
       if (filters.showLocked && isOwned) return false;
-      
+
       return true;
     });
   }, [avatarCardsData, filters]);
 
-  const handleFiltersChange = useCallback((filtersUpdater: (prev: AvatarShopFilters) => AvatarShopFilters) => {
-    setFilters(filtersUpdater);
-  }, []);
+  const handleFiltersChange = useCallback(
+    (filtersUpdater: (prev: AvatarShopFilters) => AvatarShopFilters) => {
+      setFilters(filtersUpdater);
+    },
+    []
+  );
 
   if (error) {
     return (
@@ -108,7 +108,7 @@ const SimpleAvatarShopComponent: React.FC = () => {
         <div className={styles.error}>
           <h2>Ошибка загрузки магазина</h2>
           <p>{error}</p>
-          <button 
+          <button
             onClick={() => {
               dispatch(clearError());
               dispatch(fetchAvatars({}));
@@ -140,8 +140,11 @@ const SimpleAvatarShopComponent: React.FC = () => {
           <div className={styles.resultsHeader}>
             <h2>Доступные аватары</h2>
             <p>Найдено: {filteredAvatarCardsData.length} аватаров</p>
-            {avatarCardsData.find(card => card.isEquipped) && (
-              <p>Текущий аватар: {avatarCardsData.find(card => card.isEquipped)?.avatar.name}</p>
+            {avatarCardsData.find((card) => card.isEquipped) && (
+              <p>
+                Текущий аватар:{' '}
+                {avatarCardsData.find((card) => card.isEquipped)?.avatar.name}
+              </p>
             )}
           </div>
 
@@ -153,16 +156,18 @@ const SimpleAvatarShopComponent: React.FC = () => {
             </div>
           ) : (
             <div className={styles.avatarGrid}>
-              {filteredAvatarCardsData.map(({ avatar, isOwned, isEquipped, canAfford }) => (
-                <SimpleAvatarCard
-                  key={avatar.id}
-                  avatar={avatar}
-                  isOwned={isOwned}
-                  isEquipped={isEquipped}
-                  canAfford={canAfford}
-                  userScore={userScore}
-                />
-              ))}
+              {filteredAvatarCardsData.map(
+                ({ avatar, isOwned, isEquipped, canAfford }) => (
+                  <SimpleAvatarCard
+                    key={avatar.id}
+                    avatar={avatar}
+                    isOwned={isOwned}
+                    isEquipped={isEquipped}
+                    canAfford={canAfford}
+                    userScore={userScore}
+                  />
+                )
+              )}
             </div>
           )}
         </>

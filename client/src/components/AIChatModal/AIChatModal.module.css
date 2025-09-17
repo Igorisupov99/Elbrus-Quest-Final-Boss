@@ -45,7 +45,7 @@
   flex-direction: column;
   position: relative;
   overflow: hidden;
-  font-family: 'Cinzel', serif;
+  font-family: 'Cormorant Garamond', serif;
 }
 
 .modal::before {

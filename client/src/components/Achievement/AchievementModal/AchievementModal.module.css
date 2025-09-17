@@ -80,7 +80,8 @@
 }
 
 .earned {
-  background: linear-gradient(145deg, #ecfdf5, #d1fae5);
+  background: linear-gradient(145deg, rgba(196, 212, 160, 0.9) 0%, rgba(168, 184, 130, 0.9) 50%, rgba(140, 156, 107, 0.9) 100%);
+  backdrop-filter: blur(8px);
 }
 
 .earned::before {
@@ -90,7 +91,7 @@
   left: 0;
   right: 0;
   height: 4px;
-  background: linear-gradient(90deg, #10b981, #059669);
+  background: linear-gradient(90deg, #6b7c32, #4a4c2a);
   border-radius: 16px 16px 0 0;
 }
 
@@ -98,7 +99,7 @@
   position: absolute;
   top: 16px;
   right: 48px;
-  color: #10b981;
+  color: #4a4c2a;
   font-size: 20px;
   font-weight: bold;
   z-index: 1;
@@ -143,9 +144,9 @@
 .points {
   font-size: 16px;
   font-weight: 600;
-  color: #059669;
+  color: #4a4c2a;
   margin: 0;
-  background: rgba(16, 185, 129, 0.1);
+  background: rgba(107, 124, 50, 0.15);
   padding: 4px 8px;
   border-radius: 8px;
   display: inline-block;

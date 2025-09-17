@@ -112,7 +112,7 @@ export const AIChatModal: React.FC<AIChatModalProps> = ({
       <div className={styles.modal} onClick={(e) => e.stopPropagation()}>
         <div className={styles.header}>
           <div className={styles.headerInfo}>
-            <h2 className={styles.title}>🤖 Обсуждение с АИ</h2>
+            <h2 className={styles.title}>🤖 Обсуждение с AI</h2>
             <p className={styles.questionPreview}>
               Вопрос: {question.question.text.length > 60 
                 ? `${question.question.text.substring(0, 60)}...` 
