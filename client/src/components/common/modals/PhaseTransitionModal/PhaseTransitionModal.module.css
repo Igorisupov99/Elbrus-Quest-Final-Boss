@@ -66,7 +66,7 @@
 }
 
 .icon {
-  font-size: 64px;
+  font-size: 76.8px;
   display: block;
   animation: bounce 1s ease-in-out infinite;
   filter: drop-shadow(0 4px 8px rgba(255, 215, 0, 0.3));
@@ -86,7 +86,7 @@
 
 .title {
   margin: 0 0 20px 0;
-  font-size: 28px;
+  font-size: 33.6px;
   font-weight: 900;
   letter-spacing: 0.5px;
   color: var(--rpg-gold);
@@ -104,7 +104,7 @@
 .message {
   margin: 0 0 16px 0;
   color: var(--rpg-text);
-  font-size: 18px;
+  font-size: 21.6px;
   font-weight: 600;
   line-height: 1.4;
 }
@@ -112,14 +112,14 @@
 .phaseMessage {
   margin: 0 0 12px 0;
   color: var(--rpg-success-light);
-  font-size: 20px;
+  font-size: 24px;
   font-weight: 700;
   line-height: 1.4;
 }
 
 .phaseNumber {
   color: var(--rpg-gold);
-  font-size: 24px;
+  font-size: 28.8px;
   font-weight: 900;
   text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
   background: linear-gradient(45deg, var(--rpg-gold), var(--rpg-gold-2));
@@ -131,19 +131,19 @@
 .rewardMessage {
   margin: 0;
   color: var(--rpg-muted);
-  font-size: 16px;
+  font-size: 19.2px;
   line-height: 1.4;
 }
 
 .rewardPoints {
   color: var(--rpg-success);
   font-weight: 700;
-  font-size: 18px;
+  font-size: 21.6px;
 }
 
 .countdown {
   color: var(--rpg-muted);
-  font-size: 14px;
+  font-size: 16.8px;
   font-style: italic;
   border-top: 1px solid var(--rpg-border);
   padding-top: 16px;
@@ -153,5 +153,5 @@
 .timer {
   color: var(--rpg-gold-2);
   font-weight: 700;
-  font-size: 16px;
+  font-size: 19.2px;
 }

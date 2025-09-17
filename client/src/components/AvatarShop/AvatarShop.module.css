@@ -60,7 +60,7 @@
 .error h2 {
   color: #d32f2f;
   margin: 0 0 16px 0;
-  font-size: 24px;
+  font-size: 28.8px;
   font-weight: 700;
   text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.1);
 }
@@ -83,7 +83,7 @@
   color: #2c1810;
   border-radius: 8px;
   padding: 12px 24px;
-  font-size: 14px;
+  font-size: 16.8px;
   font-weight: bold;
   cursor: pointer;
   transition: all 0.2s ease-in-out;
@@ -123,7 +123,7 @@
 
 .loadingContainer p {
   color: var(--fantasy-muted);
-  font-size: 16px;
+  font-size: 19.2px;
   margin: 0;
   font-weight: 600;
 }
@@ -165,14 +165,14 @@
 .resultsHeader h3 {
   margin: 0;
   color: var(--fantasy-text);
-  font-size: 18px;
+  font-size: 21.6px;
   font-weight: 600;
   text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.1);
 }
 
 .currentAvatar {
   color: var(--fantasy-muted);
-  font-size: 14px;
+  font-size: 16.8px;
   font-weight: 500;
 }
 
@@ -217,7 +217,7 @@
 }
 
 .emptyIcon {
-  font-size: 64px;
+  font-size: 76.8px;
   margin-bottom: 16px;
   opacity: 0.6;
 }
@@ -225,7 +225,7 @@
 .emptyState h3 {
   margin: 0 0 8px 0;
   color: var(--fantasy-text);
-  font-size: 24px;
+  font-size: 28.8px;
   font-weight: 600;
   text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.1);
 }
@@ -233,7 +233,7 @@
 .emptyState p {
   margin: 0;
   color: var(--fantasy-muted);
-  font-size: 16px;
+  font-size: 19.2px;
   font-weight: 500;
 }
 
@@ -247,7 +247,7 @@
 .resultsHeader h2 {
   margin: 0 0 8px 0;
   color: var(--fantasy-text);
-  font-size: 24px;
+  font-size: 28.8px;
   font-weight: 600;
   text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.1);
 }
@@ -255,7 +255,7 @@
 .resultsHeader p {
   margin: 0;
   color: var(--fantasy-muted);
-  font-size: 14px;
+  font-size: 16.8px;
   font-weight: 500;
 }
 

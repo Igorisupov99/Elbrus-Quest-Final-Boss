@@ -55,7 +55,7 @@
   right: 12px;
   background: none;
   border: none;
-  font-size: 24px;
+  font-size: 28.8px;
   color: var(--fantasy-muted);
   cursor: pointer;
   width: 32px;
@@ -100,7 +100,7 @@
   top: 16px;
   right: 48px;
   color: #4a4c2a;
-  font-size: 20px;
+  font-size: 24px;
   font-weight: bold;
   z-index: 1;
 }
@@ -115,7 +115,7 @@
 }
 
 .icon {
-  font-size: 48px;
+  font-size: 57.6px;
   width: 64px;
   height: 64px;
   display: flex;
@@ -133,7 +133,7 @@
 }
 
 .title {
-  font-size: 24px;
+  font-size: 28.8px;
   font-weight: 700;
   margin: 0 0 8px 0;
   color: var(--fantasy-text);
@@ -142,7 +142,7 @@
 }
 
 .points {
-  font-size: 16px;
+  font-size: 19.2px;
   font-weight: 600;
   color: #4a4c2a;
   margin: 0;
@@ -157,7 +157,7 @@
 }
 
 .sectionTitle {
-  font-size: 18px;
+  font-size: 21.6px;
   font-weight: 600;
   color: var(--fantasy-text);
   margin: 0 0 12px 0;
@@ -165,7 +165,7 @@
 }
 
 .description {
-  font-size: 16px;
+  font-size: 19.2px;
   color: var(--fantasy-muted);
   margin: 0;
   line-height: 1.6;
@@ -192,19 +192,19 @@
 }
 
 .detailLabel {
-  font-size: 14px;
+  font-size: 16.8px;
   font-weight: 600;
   color: var(--fantasy-text);
 }
 
 .detailValue {
-  font-size: 14px;
+  font-size: 16.8px;
   color: var(--fantasy-muted);
   font-weight: 500;
 }
 
 .rarity {
-  font-size: 12px;
+  font-size: 14.4px;
   padding: 4px 8px;
   border-radius: 12px;
   font-weight: 600;
@@ -250,7 +250,7 @@
   color: #2c1810;
   border-radius: 8px;
   padding: 12px 24px;
-  font-size: 16px;
+  font-size: 19.2px;
   font-weight: bold;
   cursor: pointer;
   transition: all 0.2s ease-in-out;
@@ -302,17 +302,17 @@
   }
   
   .icon {
-    font-size: 40px;
+    font-size: 48px;
     width: 56px;
     height: 56px;
   }
   
   .title {
-    font-size: 20px;
+    font-size: 24px;
   }
   
   .description {
-    font-size: 14px;
+    font-size: 16.8px;
     padding: 12px;
   }
   

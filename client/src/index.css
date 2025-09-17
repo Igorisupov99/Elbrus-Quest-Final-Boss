@@ -4,6 +4,10 @@
   box-sizing: border-box;
 }
 
+html {
+  font-size: 23px; /* 16px * 1.2 = 19.2px - увеличение на 20% */
+}
+
 html,
 body,
 #root {

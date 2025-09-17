@@ -64,7 +64,7 @@
 
 .title {
   margin: 0;
-  font-size: 22px;
+  font-size: 26.4px;
   font-weight: 700;
   color: #4b2e05;
   text-align: center;
@@ -99,7 +99,7 @@
 }
 
 .questionLabel {
-  font-size: 14px;
+  font-size: 16.8px;
   font-weight: 700;
   color: #8b5a2b;
   text-transform: uppercase;
@@ -110,7 +110,7 @@
 }
 
 .question {
-  font-size: 18px;
+  font-size: 21.6px;
   margin: 0;
   color: #4b2e05;
   line-height: 1.5;
@@ -129,7 +129,7 @@
   padding: 12px 16px;
   border: 2px solid #8b5a2b;
   border-radius: 12px;
-  font-size: 16px;
+  font-size: 19.2px;
   font-family: 'Cormorant Garamond', serif;
   background: rgba(255, 248, 220, 0.9);
   color: #4b2e05;
@@ -203,7 +203,7 @@
 }
 
 .timerText {
-  font-size: 18px;
+  font-size: 21.6px;
   font-weight: 700;
   margin: 0;
   color: #4b2e05;
@@ -278,7 +278,7 @@
   padding: 10px 16px;
   border: 2px solid #6b3e15;
   border-radius: 8px;
-  font-size: 13px;
+  font-size: 15.6px;
   font-weight: bold;
   cursor: pointer;
   transition: all 0.3s ease;
@@ -358,7 +358,7 @@
 
 .userInfo {
   text-align: center;
-  font-size: 12px;
+  font-size: 14.4px;
   color: #5c3b09;
   font-weight: 600;
   margin-bottom: 12px;
@@ -388,20 +388,20 @@
 }
 
 .helpIcon {
-  font-size: 16px;
+  font-size: 19.2px;
 }
 
 .helpTitle {
   font-weight: 700;
   color: #4b2e05;
-  font-size: 14px;
+  font-size: 16.8px;
   font-family: 'Cormorant Garamond', serif;
 }
 
 .helpText {
   color: #5c3d2e;
   line-height: 1.5;
-  font-size: 14px;
+  font-size: 16.8px;
   font-family: 'Cormorant Garamond', serif;
 }
 
@@ -428,7 +428,7 @@
 }
 
 .result {
-  font-size: 16px;
+  font-size: 19.2px;
   font-weight: bold;
   text-align: center;
   padding: 16px;
@@ -452,7 +452,7 @@
   color: #2c1810;
   border-radius: 8px;
   padding: 10px 16px;
-  font-size: 14px;
+  font-size: 16.8px;
   font-weight: bold;
   cursor: pointer;
   transition: all 0.3s ease;

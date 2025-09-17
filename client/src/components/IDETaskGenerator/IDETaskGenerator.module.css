@@ -191,7 +191,7 @@
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  font-size: 14px;
+  font-size: 16.8px;
   transition: background-color 0.2s;
   flex-shrink: 0;
 }
