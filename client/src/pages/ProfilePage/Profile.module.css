@@ -53,7 +53,7 @@
 .header {
   color: #4b2e05;
   font-weight: 700;
-  font-size: 2.2rem;
+  font-size: 22px;
   margin: 0 0 30px 0;
   text-align: center;
   text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3), 1px 1px 2px rgba(0, 0, 0, 0.5);
@@ -213,7 +213,7 @@
   background: linear-gradient(145deg, #d4a017 0%, #f0c33b 50%, #a97400 100%);
   color: #2c1810;
   font-weight: bold;
-  font-size: 1.3rem;
+  font-size: 18px;
   border-radius: 12px;
   padding: 8px 57px !important; /* Увеличена высота для размещения текста в одну линию */
   width: auto !important;
@@ -331,28 +331,28 @@
 }
 
 .username {
-  font-size: 1.49rem;
+  font-size: 18px;
   font-weight: 700;
   color: #2c1810;
   margin: 0;
 }
 
 .userEmail {
-  font-size: 1.02rem;
+  font-size: 18px;
   color: #6b4e3d;
   margin: 4px 0;
   font-weight: 500;
 }
 
 .friendsCount {
-  font-size: 1.3rem;
+  font-size: 18px;
   color: #8b4513;
   margin: 0;
   font-weight: 500;
 }
 
 .registrationDate {
-  font-size: 0.9rem;
+  font-size: 18px;
   color: #6b4e3d;
   margin: 4px 0 8px 0;
   font-weight: 500;
@@ -411,7 +411,7 @@
 .blockTitle {
   color: #4b2e05;
   font-weight: 700;
-  font-size: 1.54rem;
+  font-size: 22px;
   margin: 0 0 30px 0;
   text-align: center;
   text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3), 1px 1px 2px rgba(0, 0, 0, 0.5);
@@ -480,14 +480,14 @@
 }
 
 .statValue {
-  font-size: 2rem;
+  font-size: 18px;
   font-weight: 700;
   color: #d8a35d;
   margin-bottom: 6px;
 }
 
 .statLabel {
-  font-size: 1.1rem;
+  font-size: 18px;
   color: #5c3d2e;
   font-weight: 600;
 }
@@ -978,7 +978,7 @@
   }
 
   .header {
-    font-size: 1.5rem;
+    font-size: 22px;
     margin-bottom: 24px;
   }
 
@@ -1386,8 +1386,6 @@
 .modalContent {
   position: relative;
   width: min(607px, 95vw); /* Reduced by additional 10% */
-  max-height: 85vh;
-  overflow: auto;
   background: linear-gradient(180deg, #24170e, #2c1b10);
   color: #f7f4ef;
   border: 2px solid #4f311b;
@@ -1468,7 +1466,7 @@
 
 .modalTitle {
   margin: 0;
-  font-size: 1.8rem;
+  font-size: 22px;
   font-weight: 700;
   color: #f7f4ef;
   text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
@@ -1650,7 +1648,7 @@
   }
 
   .modalTitle {
-    font-size: 1.5rem;
+    font-size: 22px;
   }
 
   .modalSubtitle {
@@ -1764,6 +1762,120 @@
 }
 
 .removeFriendButton:active {
+  transform: translateY(0);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+/* ===== Form Styles for Settings Modal ===== */
+.formGroup {
+  margin-bottom: 20px;
+}
+
+.formGroup label {
+  display: block;
+  margin-bottom: 8px;
+  font-size: 18px;
+  font-weight: 600;
+  color: #f7f4ef;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+}
+
+.formGroup input,
+.formGroup textarea {
+  width: 100%;
+  padding: 12px 16px;
+  border: 2px solid #4f311b;
+  border-radius: 8px;
+  background: linear-gradient(180deg, #2a1b10, #352214);
+  color: #f7f4ef;
+  font-size: 18px;
+  font-family: inherit;
+  box-sizing: border-box;
+  transition: all 0.2s ease;
+}
+
+.formGroup input:focus,
+.formGroup textarea:focus {
+  outline: none;
+  border-color: #b8922d;
+  box-shadow: 0 0 0 3px rgba(184, 146, 45, 0.2);
+  background: linear-gradient(180deg, #352214, #3c2418);
+}
+
+.formGroup input::placeholder,
+.formGroup textarea::placeholder {
+  color: #8b7355;
+}
+
+.formGroup textarea {
+  resize: vertical;
+  min-height: 80px;
+}
+
+.saveBtn {
+  appearance: none;
+  border: 2px solid #b8922d;
+  background: linear-gradient(145deg, #d4a017 0%, #f0c33b 50%, #a97400 100%);
+  color: #2c1810;
+  font-weight: bold;
+  font-size: 18px;
+  border-radius: 8px;
+  padding: 12px 24px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  text-shadow: 0 1px 0 #f3e0c0;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+  margin-top: 16px;
+  width: 100%;
+}
+
+.saveBtn:hover {
+  background: linear-gradient(145deg, #f0c33b 0%, #ffd700 50%, #d4a017 100%);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.4);
+}
+
+.saveBtn:active {
+  transform: translateY(0);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+.errorWithMargin {
+  background: linear-gradient(135deg, #e74c3c, #c0392b);
+  color: white;
+  padding: 12px 16px;
+  border-radius: 8px;
+  margin-bottom: 16px;
+  font-size: 14px;
+  font-weight: 500;
+  box-shadow: 0 2px 8px rgba(231, 76, 60, 0.3);
+}
+
+.deleteBtn {
+  appearance: none;
+  border: 2px solid #b21e2f;
+  background: linear-gradient(135deg, #dc3545, #c82333);
+  color: white;
+  font-weight: bold;
+  font-size: 18px;
+  border-radius: 8px;
+  padding: 12px 24px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  text-shadow: 0 1px 0 rgba(0, 0, 0, 0.3);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+  margin-top: 16px;
+  width: 100%;
+}
+
+.deleteBtn:hover {
+  background: linear-gradient(135deg, #e74c3c, #c0392b);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.4);
+  border-color: #a01e2a;
+}
+
+.deleteBtn:active {
   transform: translateY(0);
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
 }

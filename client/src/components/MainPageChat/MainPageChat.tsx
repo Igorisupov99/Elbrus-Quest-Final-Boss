@@ -144,9 +144,9 @@ export default function MainPageChat() {
             setMessage(e.target.value);
             // Auto-resize textarea
             const textarea = e.target as HTMLTextAreaElement;
-            textarea.style.height = '40px'; // Reset to minimum height first
+            textarea.style.height = '48px'; // Reset to minimum height first
             const newHeight = Math.max(
-              40,
+              48,
               Math.min(textarea.scrollHeight, 120)
             );
             textarea.style.height = newHeight + 'px';

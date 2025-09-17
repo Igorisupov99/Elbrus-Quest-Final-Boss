@@ -1061,7 +1061,7 @@
   display: flex;
   gap: 8px;
   margin-top: 10px;
-  align-items: flex-end;
+  align-items: center;
   box-sizing: border-box;
   overflow: hidden; /* Prevent children from overflowing */
 }
@@ -1069,17 +1069,17 @@
 .chatInput {
   flex: 1;
   min-width: 0; /* Allow input to shrink properly */
-  min-height: 40px;
+  min-height: 48px;
   max-height: 120px;
   height: auto;
   border-radius: 10px;
   border: 1px solid rgba(0, 0, 0, 0.2);
   background: #fffaf0;
   outline: none;
-  padding: 10px 12px;
+  padding: 13px 14px;
   color: #5c3d2e;
   font-family: inherit;
-  font-size: inherit;
+  font-size: 18px;
   box-sizing: border-box;
   resize: none;
   overflow-y: auto;
@@ -1089,15 +1089,18 @@
 
 .chatInput::placeholder {
   color: #a0522d;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .sendButton {
   background: linear-gradient(180deg, #d8a35d, #b0752d);
   border: 2px solid #6b3e15;
-  border-radius: 8px;
-  padding: 10px 14px;
+  border-radius: 10px;
+  padding: 10px 16px;
   font-weight: bold;
-  font-size: 1rem;
+  font-size: 18px;
   color: #2c1810;
   text-shadow: 0 1px 0 #f3e0c0;
   box-shadow: 0 4px 0 #6b3e15, 0 6px 10px rgba(0, 0, 0, 0.25);
@@ -1110,6 +1113,11 @@
   white-space: nowrap; /* Prevent text wrapping */
   overflow: hidden; /* Hide any overflow text */
   text-overflow: ellipsis; /* Add ellipsis if text is too long */
+  min-height: 48px; /* Match the minimum height of chatInput */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 4px; /* Compensate for box-shadow to align with input */
 }
 
 .sendButton:hover {
