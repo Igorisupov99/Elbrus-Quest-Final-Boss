@@ -13,28 +13,41 @@
 /* Основная секция профиля */
 .profileSection {
   min-height: 100vh;
-  background: radial-gradient(
-      circle at 30% 20%,
-      rgba(139, 90, 43, 0.2) 0%,
-      transparent 60%
-    ),
-    radial-gradient(
-      circle at 70% 80%,
-      rgba(212, 165, 116, 0.15) 0%,
-      transparent 60%
-    ),
-    linear-gradient(
-      135deg,
-      #d4a574 0%,
-      #c8996a 25%,
-      #b8895c 50%,
-      #a67a4e 75%,
-      #946b40 100%
-    );
   font-family: 'Cinzel', serif;
   padding: 20px;
+  display: flex;
+  flex-direction: column;
   box-sizing: border-box;
   position: relative;
+}
+
+.profileSection::before {
+  content: '';
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: url('/fcbdb22c-619d-4a24-b5b5-784e11027e94.png') no-repeat center
+    center;
+  background-size: cover;
+  z-index: -2;
+}
+
+.profileSection::after {
+  content: '';
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(
+    135deg,
+    rgba(244, 225, 193, 0.7),
+    rgba(230, 210, 181, 0.7),
+    rgba(216, 195, 165, 0.7)
+  );
+  z-index: -1;
 }
 
 .header {
