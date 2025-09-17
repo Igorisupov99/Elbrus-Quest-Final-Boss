@@ -1124,7 +1124,8 @@ function initLobbySockets(nsp) {
                     message: '🎉 Экзамен успешно сдан! Каждый игрок получил +30 очков!',
                     rewardPoints,
                     sessionScore: lobbyTotalScore,
-                    userScores: userScores
+                    userScores: userScores,
+                    examId: state.examId
                   });
                   
                   // Отправляем обновление счётчика неправильных ответов (обнуляем после экзамена)
@@ -1325,7 +1326,8 @@ function initLobbySockets(nsp) {
                   message: '🎉 Экзамен успешно сдан! Каждый игрок получил +30 очков!',
                   rewardPoints,
                   sessionScore: lobbyTotalScore,
-                  userScores: userScores
+                  userScores: userScores,
+                  examId: state.examId
                 });
                 
                 // Отправляем обновление счётчика неправильных ответов (обнуляем после экзамена)

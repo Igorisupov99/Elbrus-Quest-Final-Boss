@@ -666,6 +666,7 @@ export function LobbyPage() {
           onClose={() => dispatch(closePhaseTransitionModal())}
           phaseNumber={phaseTransitionModal.phaseNumber}
           rewardPoints={phaseTransitionModal.rewardPoints}
+          isGameComplete={phaseTransitionModal.isGameComplete}
         />
 
         <ExamFailureModal
