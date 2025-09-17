@@ -352,7 +352,10 @@ const CodeRunner: React.FC<CodeRunnerProps> = ({
           <div className={styles.editorActions}>
             <button
               className={styles.taskButton}
-              onClick={() => setShowTaskGenerator(!showTaskGenerator)}
+              onClick={() => {
+                console.log('🎯 Переключаем генератор задач:', !showTaskGenerator);
+                setShowTaskGenerator(!showTaskGenerator);
+              }}
               title="Генератор задач"
             >
               {showTaskGenerator ? '🎯 Скрыть задачи' : '🎯 IDE Задачи'}
