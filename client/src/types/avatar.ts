@@ -11,7 +11,12 @@ export interface Avatar {
 
 export type AvatarRarity = 'common' | 'rare' | 'epic' | 'legendary';
 
-export type AvatarCategory = 'animals' | 'fantasy' | 'robots' | 'nature' | 'space';
+export type AvatarCategory =
+  | 'animals'
+  | 'fantasy'
+  | 'robots'
+  | 'nature'
+  | 'space';
 
 export interface UserAvatar {
   id: number;
@@ -39,7 +44,6 @@ export interface AvatarShopState {
 }
 
 export interface AvatarShopFilters {
-  category?: AvatarCategory;
   rarity?: AvatarRarity;
   showOwned?: boolean;
   showLocked?: boolean;
