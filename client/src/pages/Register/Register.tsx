@@ -43,7 +43,7 @@ export function Register() {
       if (result) {
         setToast({
           type: 'success',
-          message: 'Герой создан! Добро пожаловать в Elbrus Quest.',
+          message: 'Герой создан! Добро пожаловать в QUESTCODE.',
         });
         setTimeout(() => {
           navigate('/');

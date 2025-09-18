@@ -40,7 +40,7 @@ export function Login() {
     if (loginUser.fulfilled.match(result)) {
       setToast({
         type: 'success',
-        message: 'Добро пожаловать в Elbrus Quest!',
+        message: 'Добро пожаловать в QUESTCODE!',
       });
     } else {
       setToast({
