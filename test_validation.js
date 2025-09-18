@@ -1,28 +1,63 @@
 const axios = require('axios');
 
-// Тестовые данные для функции fibonacci
+// Тестовые данные для функции countFrequency
 const testData = {
-  taskId: 'test-fibonacci',
-  userCode: `function fibonacci(n) {
-  if (n <= 1) return n;
-  return fibonacci(n - 1) + fibonacci(n - 2);
-}
+  taskId: 'test-count-frequency',
+  userCode: `function countFrequency(input) {
+  // Если входной параметр - объект, возвращаем его ключи
+  if (typeof input === 'object' && input !== null && !Array.isArray(input)) {
+    return Object.keys(input);
+  }
+  
+  // Если это массив, работаем как раньше
+  if (Array.isArray(input)) {
+    // Инициализируем пустой объект для хранения частот элементов
+    const frequency = {};
 
-// И возвращаем, и выводим
-const result = fibonacci(5);
-console.log(result);
-result;`,
-  taskDescription: 'Напишите функцию fibonacci, которая возвращает n-е число Фибоначчи',
+    // Проходим по каждому элементу массива
+    for (let i = 0; i < input.length; i++) {
+      const element = input[i];
+
+      // Если элемент уже есть в объекте, увеличиваем его частоту на 1
+      if (frequency[element]) {
+        frequency[element]++;
+      } else {
+        // Если элемента ещё нет в объекте, добавляем его с частотой 1
+        frequency[element] = 1;
+      }
+    }
+
+    // Находим элементы, которые встречаются только один раз (уникальные)
+    const uniqueElements = [];
+    for (const element in frequency) {
+      if (frequency[element] === 1) {
+        uniqueElements.push(Number(element));
+      }
+    }
+
+    // Возвращаем массив уникальных элементов
+    return uniqueElements;
+  }
+  
+  // Для других типов данных возвращаем пустой массив
+  return [];
+}`,
+  taskDescription: 'Напишите функцию countFrequency, которая принимает объект и возвращает массив его ключей',
   testCases: [
     {
-      "input": "5",
-      "expectedOutput": "5",
-      "description": "fibonacci(5) должно возвращать 5"
+      "input": {"a": 1, "b": 2, "c": 3},
+      "expectedOutput": ["a", "b", "c"],
+      "description": "Ключи объекта"
     },
     {
-      "input": "10", 
-      "expectedOutput": "55",
-      "description": "fibonacci(10) должно возвращать 55"
+      "input": {"x": 10, "y": 20},
+      "expectedOutput": ["x", "y"],
+      "description": "Значения объекта"
+    },
+    {
+      "input": {},
+      "expectedOutput": [],
+      "description": "Пустой объект"
     }
   ]
 };

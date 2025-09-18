@@ -173,9 +173,15 @@ class MessageManager {
   generateTestCasesFromDescription(description, language, userCode = '') {
     const lowerDesc = description.toLowerCase();
     
-    // Анализируем код пользователя, чтобы понять количество параметров
+    // Анализируем код пользователя, чтобы понять количество параметров и тип задачи
     const functionInfo = this.findFunctionInCode(userCode);
     const paramCount = functionInfo ? functionInfo.paramCount : 0;
+    
+    // Анализируем код пользователя для определения типа задачи
+    const codeAnalysis = this.analyzeUserCode(userCode);
+    if (codeAnalysis.taskType) {
+      return this.generateTestCasesByTaskType(codeAnalysis.taskType, paramCount);
+    }
     
     // Для задач с числами
     if (lowerDesc.includes('максимальн') || lowerDesc.includes('максимум') || lowerDesc.includes('наибольш')) {
@@ -219,6 +225,17 @@ class MessageManager {
         lowerDesc.includes('неповторяющ') || lowerDesc.includes('distinct') ||
         lowerDesc.includes('дубликат') || lowerDesc.includes('duplicate')) {
       return this.generateUniqueTestCases();
+    }
+    
+    if (lowerDesc.includes('нод') || lowerDesc.includes('gcd') || 
+        lowerDesc.includes('евклид') || lowerDesc.includes('euclid') ||
+        lowerDesc.includes('наибольший общий делитель')) {
+      return this.generateGCDTestCases();
+    }
+    
+    if (lowerDesc.includes('гласн') || lowerDesc.includes('vowel') || 
+        lowerDesc.includes('countvowel') || lowerDesc.includes('подсчет гласных')) {
+      return this.generateVowelCountTestCases();
     }
     
     if (lowerDesc.includes('строк') || lowerDesc.includes('string') || 
@@ -407,6 +424,125 @@ class MessageManager {
       { input: 'WORLD', expectedOutput: 'world', description: 'Преобразование в нижний регистр' },
       { input: 'test', expectedOutput: 4, description: 'Длина строки' },
       { input: '', expectedOutput: 0, description: 'Пустая строка' }
+    ];
+  }
+
+  // Генерация тестов для подсчета гласных
+  generateVowelCountTestCases() {
+    return [
+      { input: 'hello', expectedOutput: 2, description: 'Подсчет гласных в "hello"' },
+      { input: 'world', expectedOutput: 1, description: 'Подсчет гласных в "world"' },
+      { input: 'programming', expectedOutput: 3, description: 'Подсчет гласных в "programming"' },
+      { input: 'aeiou', expectedOutput: 5, description: 'Все гласные' },
+      { input: 'bcdfg', expectedOutput: 0, description: 'Без гласных' },
+      { input: '', expectedOutput: 0, description: 'Пустая строка' },
+      { input: 'HELLO', expectedOutput: 2, description: 'Заглавные буквы' },
+      { input: 'Hello World', expectedOutput: 3, description: 'С пробелами' }
+    ];
+  }
+
+  // Анализ кода пользователя для определения типа задачи
+  analyzeUserCode(userCode) {
+    if (!userCode || !userCode.trim()) {
+      return { taskType: null };
+    }
+
+    const code = userCode.toLowerCase();
+    
+    // Проверяем на НОД (алгоритм Евклида)
+    if (code.includes('gcd') || code.includes('nod') || code.includes('нод') ||
+        (code.includes('while') && code.includes('%') && code.includes('b !== 0')) ||
+        (code.includes('евклид') || code.includes('euclid'))) {
+      return { taskType: 'gcd' };
+    }
+    
+    // Проверяем на подсчет гласных
+    if (code.includes('vowel') || code.includes('гласн') || 
+        (code.includes('aeiou') && code.includes('count')) ||
+        (code.includes('includes') && code.includes('aeiou'))) {
+      return { taskType: 'vowel_count' };
+    }
+    
+    // Проверяем на подсчет символов
+    if (code.includes('length') && code.includes('string')) {
+      return { taskType: 'string_length' };
+    }
+    
+    // Проверяем на преобразование регистра
+    if (code.includes('touppercase') || code.includes('tolowercase')) {
+      return { taskType: 'case_conversion' };
+    }
+    
+    // Проверяем на суммирование
+    if (code.includes('sum') || code.includes('сумм') || 
+        (code.includes('+') && code.includes('for'))) {
+      return { taskType: 'sum' };
+    }
+    
+    // Проверяем на поиск максимума/минимума
+    if (code.includes('max') || code.includes('min') || 
+        code.includes('максимум') || code.includes('минимум')) {
+      return { taskType: 'max_min' };
+    }
+    
+    return { taskType: null };
+  }
+
+  // Генерация тестовых случаев по типу задачи
+  generateTestCasesByTaskType(taskType, paramCount) {
+    switch (taskType) {
+      case 'gcd':
+        return this.generateGCDTestCases();
+      case 'vowel_count':
+        return this.generateVowelCountTestCases();
+      case 'string_length':
+        return this.generateStringLengthTestCases();
+      case 'case_conversion':
+        return this.generateCaseConversionTestCases();
+      case 'sum':
+        return this.generateSumTestCases(paramCount);
+      case 'max_min':
+        return this.generateMaxMinTestCases('max', paramCount);
+      default:
+        return this.generateDefaultTestCases(paramCount);
+    }
+  }
+
+  // Генерация тестов для длины строки
+  generateStringLengthTestCases() {
+    return [
+      { input: 'hello', expectedOutput: 5, description: 'Длина строки "hello"' },
+      { input: 'world', expectedOutput: 5, description: 'Длина строки "world"' },
+      { input: 'test', expectedOutput: 4, description: 'Длина строки "test"' },
+      { input: '', expectedOutput: 0, description: 'Пустая строка' },
+      { input: 'a', expectedOutput: 1, description: 'Один символ' }
+    ];
+  }
+
+  // Генерация тестов для преобразования регистра
+  generateCaseConversionTestCases() {
+    return [
+      { input: 'hello', expectedOutput: 'HELLO', description: 'Преобразование в верхний регистр' },
+      { input: 'WORLD', expectedOutput: 'world', description: 'Преобразование в нижний регистр' },
+      { input: 'Test', expectedOutput: 'TEST', description: 'Смешанный регистр в верхний' },
+      { input: 'Test', expectedOutput: 'test', description: 'Смешанный регистр в нижний' },
+      { input: '', expectedOutput: '', description: 'Пустая строка' }
+    ];
+  }
+
+  // Генерация тестов для НОД (алгоритм Евклида)
+  generateGCDTestCases() {
+    return [
+      { input: [48, 18], expectedOutput: 6, description: 'НОД(48, 18) = 6' },
+      { input: [56, 42], expectedOutput: 14, description: 'НОД(56, 42) = 14' },
+      { input: [17, 13], expectedOutput: 1, description: 'НОД(17, 13) = 1 (взаимно простые)' },
+      { input: [100, 25], expectedOutput: 25, description: 'НОД(100, 25) = 25' },
+      { input: [0, 5], expectedOutput: 5, description: 'НОД(0, 5) = 5' },
+      { input: [5, 0], expectedOutput: 5, description: 'НОД(5, 0) = 5' },
+      { input: [0, 0], expectedOutput: 0, description: 'НОД(0, 0) = 0' },
+      { input: [1, 1], expectedOutput: 1, description: 'НОД(1, 1) = 1' },
+      { input: [12, 8], expectedOutput: 4, description: 'НОД(12, 8) = 4' },
+      { input: [15, 25], expectedOutput: 5, description: 'НОД(15, 25) = 5' }
     ];
   }
 
