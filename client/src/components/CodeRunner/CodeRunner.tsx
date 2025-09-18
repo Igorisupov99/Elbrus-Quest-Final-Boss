@@ -50,12 +50,18 @@ const CodeRunner: React.FC<CodeRunnerProps> = ({
 
   // Выполнение кода
   const handleRunCode = useCallback(async () => {
-    if (!code.trim() || isRunning) return;
+    if (isRunning) return;
 
     setIsRunning(true);
     setOutput(prev => [...prev, { type: 'clear', message: '', timestamp: new Date() }]);
 
     try {
+      // Если код пустой, просто выводим сообщение
+      if (!code.trim()) {
+        setOutput(prev => [...prev, { type: 'log', message: 'Код пустой. Напишите что-нибудь для выполнения.', timestamp: new Date() }]);
+        return;
+      }
+
       // Создаем изолированную среду выполнения
       const console = {
         log: (...args: any[]) => {
@@ -124,9 +130,10 @@ const CodeRunner: React.FC<CodeRunnerProps> = ({
   }, [onCodeChange]);
 
   const handleCodeValidation = useCallback((validation: IDETaskValidation) => {
+    const validationMessage = validation.message || 'Нет дополнительной информации';
     const message = validation.isValid 
-      ? `✅ Код прошел валидацию: ${validation.message}`
-      : `❌ Ошибка валидации: ${validation.message}`;
+      ? `✅ Код прошел валидацию: ${validationMessage}`
+      : `❌ Ошибка валидации: ${validationMessage}`;
     setOutput(prev => [...prev, { type: validation.isValid ? 'log' : 'error', message, timestamp: new Date() }]);
   }, []);
 

@@ -80,7 +80,7 @@ const EditorSection: React.FC<EditorSectionProps> = ({
             <button
               className={styles.runButton}
               onClick={onRunCode}
-              disabled={!code.trim() || isRunning}
+              disabled={isRunning}
             >
               {isRunning ? '⏳ Выполняю...' : '▶️ Запустить'}
             </button>

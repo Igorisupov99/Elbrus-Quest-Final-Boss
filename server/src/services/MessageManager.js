@@ -737,7 +737,12 @@ class MessageManager {
 
 НЕ СОЗДАВАЙТЕ ТЕОРЕТИЧЕСКИЕ ВОПРОСЫ типа "объясните что такое..." или "опишите принцип..."
 
-ВАЖНО: ТЕСТ_КЕЙСЫ должен быть валидным JSON массивом с объектами, содержащими поля input, expectedOutput и description.`;
+КРИТИЧЕСКИ ВАЖНО: 
+- ТЕСТ_КЕЙСЫ должен быть валидным JSON массивом с объектами, содержащими поля input, expectedOutput и description
+- Тип данных в input должен соответствовать тому, что ожидает функция (если функция принимает строку, input должен быть строкой)
+- Если функция принимает массив, input должен быть массивом
+- Если функция принимает число, input должен быть числом
+- Всегда проверяй соответствие типов данных между функцией и тестовыми случаями`;
 
       const response = await this.sendMessageDirect('system', prompt, 'question_generator');
       return this.parseIDETask(response.message, language, difficulty, topic, '');
@@ -759,20 +764,24 @@ class MessageManager {
       if (!userCode || !userCode.trim()) {
         return {
           isCorrect: false,
+          isValid: false,
           passedTests: 0,
           totalTests: testCases.length,
           testResults: [],
-          errorMessage: 'Код не может быть пустым'
+          errorMessage: 'Код не может быть пустым',
+          message: 'Код не может быть пустым'
         };
       }
 
       if (!testCases || testCases.length === 0) {
         return {
           isCorrect: false,
+          isValid: false,
           passedTests: 0,
           totalTests: 0,
           testResults: [],
-          errorMessage: 'Нет тестовых случаев для проверки'
+          errorMessage: 'Нет тестовых случаев для проверки',
+          message: 'Нет тестовых случаев для проверки'
         };
       }
       
@@ -785,10 +794,14 @@ class MessageManager {
       // Детальная обработка результатов
       const validationResult = {
         isCorrect: results.passedTests === results.totalTests,
+        isValid: results.passedTests === results.totalTests,
         passedTests: results.passedTests,
         totalTests: results.totalTests,
         testResults: results.testResults,
-        errorMessage: results.errorMessage
+        errorMessage: results.errorMessage,
+        message: results.passedTests === results.totalTests 
+          ? `Все тесты пройдены успешно (${results.passedTests}/${results.totalTests})`
+          : `Пройдено тестов: ${results.passedTests}/${results.totalTests}`
       };
 
       // Добавляем дополнительную информацию об ошибках
@@ -806,6 +819,7 @@ class MessageManager {
           validationResult.errorMessage = validationResult.errorMessage 
             ? `${validationResult.errorMessage}. Детали: ${errorDetails}`
             : errorDetails;
+          validationResult.message = validationResult.errorMessage;
         }
       }
       
@@ -833,10 +847,12 @@ class MessageManager {
       
       return {
         isCorrect: false,
+        isValid: false,
         passedTests: 0,
         totalTests: testCases.length,
         testResults: [],
-        errorMessage: errorMessage
+        errorMessage: errorMessage,
+        message: errorMessage
       };
     }
   }
@@ -910,6 +926,7 @@ class MessageManager {
             expectedOutput: expected
           });
         } catch (testError) {
+          console.log(`Ошибка в тесте: ${testError.message}`);
           testResults.push({
             testCase: {
               input: testCase.input,
@@ -968,17 +985,35 @@ class MessageManager {
 
   // Упрощенное выполнение функции с аргументами
   executeFunctionWithArgs(func, input, paramCount) {
-    // Если функция принимает один параметр и вход - массив, передаем массив как есть
-    if (paramCount === 1 && Array.isArray(input)) {
-      return func(input);
-    }
-    // Если функция принимает несколько параметров и вход - массив, используем spread
-    else if (paramCount > 1 && Array.isArray(input)) {
-      return func(...input);
-    }
-    // Иначе передаем как есть
-    else {
-      return func(input);
+    try {
+      // Если функция принимает один параметр и вход - массив, передаем массив как есть
+      if (paramCount === 1 && Array.isArray(input)) {
+        return func(input);
+      }
+      // Если функция принимает несколько параметров и вход - массив, используем spread
+      else if (paramCount > 1 && Array.isArray(input)) {
+        return func(...input);
+      }
+      // Иначе передаем как есть
+      else {
+        return func(input);
+      }
+    } catch (error) {
+      // Если произошла ошибка, попробуем альтернативные способы передачи аргументов
+      try {
+        // Если вход - массив, попробуем передать как строку (для функций, ожидающих строку)
+        if (Array.isArray(input)) {
+          return func(input.join(' '));
+        }
+        // Если вход - строка, попробуем передать как массив (для функций, ожидающих массив)
+        else if (typeof input === 'string') {
+          return func(input.split(' '));
+        }
+        // Последняя попытка - передать как есть
+        return func(input);
+      } catch (fallbackError) {
+        throw new Error(`Ошибка выполнения функции: ${fallbackError.message}`);
+      }
     }
   }
 
