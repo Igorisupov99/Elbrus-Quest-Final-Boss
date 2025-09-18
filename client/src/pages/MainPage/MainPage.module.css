@@ -976,6 +976,7 @@
   margin: 0 0 8px 0;
   font-weight: 700;
   color: #5c3d2e;
+  font-size: 16.2px; /* Как в лобби */
   display: flex;
   align-items: center;
   gap: 8px;
@@ -1035,7 +1036,7 @@
 
 .systemMessage {
   align-self: center;
-  font-size: 0.85rem;
+  font-size: 14.4px; /* Как в лобби */
   color: #7f8c8d;
   font-style: italic;
 }
@@ -1052,7 +1053,7 @@
 
 .systemMessage {
   align-self: center;
-  font-size: 0.85rem;
+  font-size: 14.4px; /* Как в лобби */
   color: #7f8c8d;
   font-style: italic;
 }
@@ -1079,7 +1080,7 @@
   padding: 13px 14px;
   color: #5c3d2e;
   font-family: inherit;
-  font-size: 18px;
+  font-size: 16.2px; /* Как в лобби */
   box-sizing: border-box;
   resize: none;
   overflow-y: auto;
@@ -1100,7 +1101,7 @@
   border-radius: 10px;
   padding: 10px 16px;
   font-weight: bold;
-  font-size: 18px;
+  font-size: 14.4px; /* Как в лобби */
   color: #2c1810;
   text-shadow: 0 1px 0 #f3e0c0;
   box-shadow: 0 4px 0 #6b3e15, 0 6px 10px rgba(0, 0, 0, 0.25);
