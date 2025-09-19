@@ -190,3 +190,148 @@
 }
 
 /* Активные стили убраны из CSS файла - используем только инлайн стили в компоненте */
+
+/* ===== HOVER ЭФФЕКТЫ ДЛЯ ДОСТУПНЫХ ТОЧЕК ===== */
+
+/* Ховер для доступных обычных точек */
+.poi.available:hover .marker {
+  transform: scale(1.15);
+  background: radial-gradient(circle at 30% 30%, #fff3a0, #ffd54f 65%, #ff9800);
+  border-color: #ff9800;
+  border-width: 3px;
+  box-shadow: 
+    0 0 0 3px rgba(255, 193, 7, 0.4) inset,
+    0 0 20px rgba(255, 152, 0, 0.6),
+    0 4px 12px rgba(0,0,0,0.4);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Ховер для доступных экзаменов */
+.poi[data-point-id^="exam"].available:hover .starIcon {
+  transform: scale(1.2);
+  filter: drop-shadow(0 0 25px rgba(255, 193, 7, 0.9)) brightness(1.3);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  animation: starRotate 6s linear infinite, hoverGlow 1.5s ease-in-out infinite;
+}
+
+/* Дополнительный эффект свечения для ховера экзаменов */
+.poi[data-point-id^="exam"].available:hover .marker::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 120%;
+  height: 120%;
+  transform: translate(-50%, -50%);
+  background: radial-gradient(circle, rgba(255, 193, 7, 0.3) 0%, transparent 70%);
+  border-radius: 50%;
+  animation: hoverGlow 1.5s ease-in-out infinite;
+  pointer-events: none;
+  z-index: -1;
+}
+
+@keyframes hoverGlow {
+  0% {
+    opacity: 0.3;
+    transform: translate(-50%, -50%) scale(0.8);
+  }
+  50% {
+    opacity: 0.6;
+    transform: translate(-50%, -50%) scale(1.1);
+  }
+  100% {
+    opacity: 0.3;
+    transform: translate(-50%, -50%) scale(0.8);
+  }
+}
+
+/* Улучшенная анимация пульсации при ховере для обычных точек */
+.poi.available:hover .marker {
+  animation: hoverPulse 1.5s ease-in-out infinite;
+}
+
+@keyframes hoverPulse {
+  0% {
+    box-shadow: 
+      0 0 0 3px rgba(255, 193, 7, 0.4) inset,
+      0 0 20px rgba(255, 152, 0, 0.6),
+      0 4px 12px rgba(0,0,0,0.4);
+  }
+  50% {
+    box-shadow: 
+      0 0 0 3px rgba(255, 193, 7, 0.4) inset,
+      0 0 30px rgba(255, 152, 0, 0.8),
+      0 6px 16px rgba(0,0,0,0.5);
+  }
+  100% {
+    box-shadow: 
+      0 0 0 3px rgba(255, 193, 7, 0.4) inset,
+      0 0 20px rgba(255, 152, 0, 0.6),
+      0 4px 12px rgba(0,0,0,0.4);
+  }
+}
+
+/* Дополнительный эффект для ховера - легкое покачивание только маркера */
+.poi.available:hover .marker {
+  animation: hoverPulse 1.5s ease-in-out infinite, gentleSway 2s ease-in-out infinite;
+}
+
+@keyframes gentleSway {
+  0%, 100% {
+    transform: scale(1.15) rotate(0deg);
+  }
+  25% {
+    transform: scale(1.15) rotate(1deg);
+  }
+  75% {
+    transform: scale(1.15) rotate(-1deg);
+  }
+}
+
+/* Специальный эффект для экзаменов при ховере - вращение звезды */
+.poi[data-point-id^="exam"].available:hover .starIcon {
+  animation: starRotate 6s linear infinite;
+}
+
+@keyframes starRotate {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+/* Убираем стандартную анимацию пульсации при ховере - теперь объединено выше */
+
+/* Анимация для экзаменов теперь объединена выше */
+
+/* Отключаем ховер для заблокированных и завершенных элементов */
+.poi.locked:hover,
+.poi.completed:hover {
+  cursor: not-allowed;
+}
+
+.poi.locked:hover .marker,
+.poi.completed:hover .marker,
+.poi.locked:hover .starIcon,
+.poi.completed:hover .starIcon {
+  transform: none;
+  animation: none;
+  filter: none;
+}
+
+/* Убираем эффекты для активных элементов при ховере (чтобы не конфликтовать с активным состоянием) */
+.poi.active:hover .marker,
+.poi.active:hover .starIcon {
+  animation: none;
+}
+
+.poi.active:hover {
+  animation: none;
+}
+
+/* Убираем анимацию покачивания с самого элемента .poi, чтобы не влиять на позиционирование */
+.poi.available:hover {
+  animation: none;
+}
