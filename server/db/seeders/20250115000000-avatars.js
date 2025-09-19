@@ -88,7 +88,7 @@ module.exports = {
         price: 250,
         rarity: 'rare',
         category: 'fantasy',
-        description: 'Дух леса, владеющий древней мудростью',
+        description: 'Дух леса, владеющий древней мудростью и силой природы',
         isActive: true,
         createdAt: new Date(),
         updatedAt: new Date(),
