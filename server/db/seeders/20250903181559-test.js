@@ -367,7 +367,7 @@ module.exports = {
       // 8. Основы JavaScript
       {
         topic_id: 8,
-        question_text: 'Какое ключевое слово объявляет переменную?',
+        question_text: 'Какое ключевое слово объявляет изменяемую переменную?',
         correct_answer: 'let',
         mentor_tip: 'let и const для объявления переменных',
         question_type: 'тип',
