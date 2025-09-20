@@ -6,7 +6,7 @@ class MessageManager {
   constructor() {
     this.conversations = new Map(); // Хранилище диалогов по userId
     this.totalTokens = 0;
-    this.tokenLimit = 300000; // в день
+    this.tokenLimit = 30000000; // в день
   }
 
   async sendMessage(userId, message, role = 'assistant', context = '') {
